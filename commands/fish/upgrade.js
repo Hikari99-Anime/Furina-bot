@@ -1,14 +1,14 @@
 const {
-EmbedBuilder,
-ActionRowBuilder,
-ButtonBuilder,
-ButtonStyle
+EmbedBuilder
 }=require("discord.js");
 
 
 const {
 rods,
-rodTitles
+rodTitles,
+upgrade,
+emoji,
+formatMoney
 }=require("../../config");
 
 
@@ -19,15 +19,27 @@ save
 
 
 
+function upgradeCost(base,level){
+
+
+return Math.floor(
+base.price * (level+1) * 0.5
+);
+
+
+}
+
+
+
 module.exports={
 
 
-name:"rod",
+name:"upgrade",
 
 aliases:[
 
-"can",
-"cancau"
+"cuonghoa",
+"nangcap"
 
 ],
 
@@ -45,30 +57,17 @@ message.author.id
 
 
 
-const list=
-Object.keys(
-user.can.danhSach || {}
-);
+const id=
+user.can.dangDung;
 
 
 
-if(!list.length)
+if(!id)
 
 return message.reply({
-
 content:
-"╰・❌ Bạn chưa có cần câu"
-
+"╰・❌ Bạn chưa trang bị cần câu"
 });
-
-
-
-
-let text="";
-
-
-
-for(const id of list){
 
 
 
@@ -83,12 +82,96 @@ user.rodData[id];
 
 if(!rod)
 
-continue;
+return message.reply(
+"╰・❌ Không tìm thấy dữ liệu cần"
+);
 
+
+
+if(rod.destroyed)
+
+return message.reply({
+content:
+"╰・❌ Cần đã bị phá hủy, hãy sửa chữa trước"
+});
+
+
+
+if(rod.level>=15)
+
+return message.reply({
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#ffd43b")
+
+.setTitle(
+"╭・✨ Cường hóa tối đa"
+)
+
+.setDescription(
+`
+${base.emoji} ${base.name}
+
+⭐ +${rod.level}
+
+╰・Cần đã đạt cấp cao nhất
+`
+)
+
+]
+
+});
+
+
+
+const price=
+upgradeCost(base,rod.level);
+
+
+
+if(user.money<price)
+
+return message.reply({
+content:
+`╰・❌ Cần ${formatMoney(price)} ${emoji.money} để cường hóa`
+});
+
+
+
+user.money-=price;
+
+
+
+const successRate=
+upgrade.success[rod.level];
+
+
+const roll=
+Math.random()*100;
+
+
+
+let resultText;
+
+let color;
+
+
+
+if(roll<successRate){
+
+
+rod.level++;
+
+rod.luck+=upgrade.luckPerLevel;
+
+
+color="#8affb2";
 
 
 let title="";
-
 
 if(rodTitles[rod.level])
 
@@ -96,248 +179,119 @@ title=
 `\n${rodTitles[rod.level]}`;
 
 
-
-const active=
-
-user.can.dangDung===id
-
-?
-
-" 🟢"
-
-:
-
-"";
-
-
-
-
-text+=
+resultText=
 `
-${base.emoji} ${base.name}${active}
+✅ Cường hóa thành công!
 
-　⭐ +${rod.level}${title}
+⭐ +${rod.level}${title}
 
-　🍀 Luck ${rod.luck}
-
-　🎯 ${rod.uses}/${rod.maxUses}
-
+🍀 Luck ${rod.luck}
 `;
 
 
-
 }
 
+else{
+
+
+const destroyChance=
+upgrade.destroy[rod.level+1] || 0;
+
+
+const destroyRoll=
+Math.random()*100;
 
 
 
-const row=
-new ActionRowBuilder();
+if(destroyRoll<destroyChance){
 
 
+rod.destroyed=true;
 
-for(const id of list.slice(0,5)){
-
-
-
-row.addComponents(
-
-new ButtonBuilder()
-
-.setCustomId(
-"equip_"+id
-)
-
-.setLabel(
-rods[id].name
-)
-
-.setStyle(
-ButtonStyle.Primary
-)
-
-);
+rod.uses=0;
 
 
-}
+color="#ff5555";
 
 
-
-
-const msg=
-await message.reply({
-
-embeds:[
-
-new EmbedBuilder()
-
-.setColor("#89ddff")
-
-.setTitle(
-"╭・🎣 Bộ sưu tập cần"
-)
-
-.setDescription(
+resultText=
 `
-╭・🌊 Danh sách
+💥 Cường hóa thất bại, cần đã bị phá hủy!
 
-${text}
+╰・Hãy sửa chữa để dùng lại
+`;
 
-
-╰・🟢 Đang dùng
-
-${
-
-rods[user.can.dangDung]
-
-?
-
-rods[user.can.dangDung].name
-
-:
-
-"Chưa có"
 
 }
 
+else{
+
+
+color="#ffcc66";
+
+
+resultText=
 `
-)
+❌ Cường hóa thất bại
 
-.setFooter({
+⭐ Vẫn +${rod.level}
 
-text:"✦ Fishing Adventure"
-
-})
-
-],
-
-components:[row]
-
-});
+╰・Xu đã bị mất, thử lại nhé
+`;
 
 
+}
 
 
+}
 
-const collector=
-msg.createMessageComponentCollector({
-
-time:60000
-
-});
-
-
-
-
-collector.on(
-"collect",
-async interaction=>{
-
-
-
-if(
-interaction.user.id !== message.author.id
-)
-
-return interaction.reply({
-
-content:
-"╰・❌ Đây không phải cần của bạn",
-
-ephemeral:true
-
-});
-
-
-
-
-const id=
-interaction.customId.replace(
-"equip_",
-""
-);
-
-
-
-if(!user.can.danhSach[id])
-
-return interaction.reply({
-
-content:
-"╰・❌ Bạn chưa sở hữu cần này",
-
-ephemeral:true
-
-});
-
-
-
-
-user.can.dangDung=id;
 
 
 save();
 
 
 
-
-const rod=
-user.rodData[id];
-
-
-
-
-interaction.update({
+message.reply({
 
 embeds:[
 
 new EmbedBuilder()
 
-.setColor("#a8ffb8")
+.setColor(color)
 
 .setTitle(
-"╭・🎣 Đã đổi cần"
+"╭・✨ Cường Hóa Cần Câu"
 )
 
 .setDescription(
 `
-${rods[id].emoji} ${rods[id].name}
+${base.emoji} ${base.name}
 
 
-╭・✨ Thông số
+╭・🎲 Tỉ lệ thành công
+
+${successRate}%
 
 
-⭐ Cường hóa
+╭・💸 Chi phí
 
-+${rod.level}
-
-
-🍀 Luck
-
-${rod.luck}
+${formatMoney(price)} ${emoji.money}
 
 
-🎯 Độ bền
+${resultText}
 
-${rod.uses}/${rod.maxUses}
-
-
-╰・🌊 Sẵn sàng câu cá
+╰・💰 Số dư: ${formatMoney(user.money)} ${emoji.money}
 `
 )
 
 .setFooter({
-
-text:"Fishing Adventure"
-
+text:"✦ Fishing Adventure"
 })
 
 ]
 
 });
 
-
-});
 
 
 }

@@ -3,8 +3,22 @@ require("dotenv").config();
 
 const {
     chests,
-    keys
+    keys,
+    rods,
+    baits,
+    emoji,
+    formatMoney
 } = require("./config");
+
+
+const {
+    getUser
+} = require("./data");
+
+
+const {
+    purchase
+} = require("./commands/fish/buy");
 
 
 const {
@@ -379,6 +393,11 @@ if(interaction.customId === "shop_rod"){
 
 
 
+const rodIds=
+Object.keys(rods);
+
+
+
 const embed = new EmbedBuilder()
 
 
@@ -394,33 +413,13 @@ const embed = new EmbedBuilder()
 
 .setDescription(
 
-`
-🌱 **Beginner Rod**
+rodIds.map(rid=>{
 
-💰 5,000 Fcoin
+const r=rods[rid];
 
-> Cần câu cơ bản
+return `${r.emoji} **${r.name}**\n💰 ${formatMoney(r.price)} ${emoji.money} · 🍀 Luck ${r.luck}`;
 
-
-━━━━━━━━━━━━
-
-
-🌊 **Ocean Rod**
-
-💰 20,000 Fcoin
-
-> Tăng cơ hội cá hiếm
-
-
-━━━━━━━━━━━━
-
-
-✨ **Legend Rod**
-
-💰 50,000 Fcoin
-
-> Cần câu huyền thoại
-`
+}).join("\n\n━━━━━━━━━━━━\n\n")
 
 );
 
@@ -431,35 +430,17 @@ const row = new ActionRowBuilder()
 
 .addComponents(
 
+rodIds.map(rid=>
 
 new ButtonBuilder()
 
-.setCustomId("buy_canthuong")
+.setCustomId("buy_"+rid)
 
-.setLabel("🌱 Beginner")
-
-.setStyle(ButtonStyle.Primary),
-
-
-
-new ButtonBuilder()
-
-.setCustomId("buy_can3")
-
-.setLabel("🌊 Ocean")
-
-.setStyle(ButtonStyle.Primary),
-
-
-
-new ButtonBuilder()
-
-.setCustomId("buy_can5")
-
-.setLabel("✨ Legend")
+.setLabel(rods[rid].name)
 
 .setStyle(ButtonStyle.Primary)
 
+)
 
 );
 
@@ -577,6 +558,11 @@ if(interaction.customId === "shop_bait"){
 
 
 
+const baitIds=
+Object.keys(baits);
+
+
+
 const embed = new EmbedBuilder()
 
 
@@ -592,27 +578,34 @@ const embed = new EmbedBuilder()
 
 .setDescription(
 
-`
-🪱 Common Bait
+baitIds.map(bid=>{
 
-💰 100 Fcoin
+const b=baits[bid];
 
+return `${b.emoji} **${b.name}**\n💰 ${formatMoney(b.price)} ${emoji.money}`;
 
-━━━━━━━━━━━━
+}).join("\n\n━━━━━━━━━━━━\n\n")
 
-
-✨ Silver Bait
-
-💰 500 Fcoin
+);
 
 
-━━━━━━━━━━━━
+
+const row = new ActionRowBuilder()
 
 
-🌟 Golden Bait
+.addComponents(
 
-💰 1000 Fcoin
-`
+baitIds.map(bid=>
+
+new ButtonBuilder()
+
+.setCustomId("buy_"+bid)
+
+.setLabel(baits[bid].name)
+
+.setStyle(ButtonStyle.Success)
+
+)
 
 );
 
@@ -621,6 +614,8 @@ const embed = new EmbedBuilder()
 return interaction.reply({
 
 embeds:[embed],
+
+components:[row],
 
 ephemeral:true
 
@@ -640,6 +635,11 @@ if(interaction.customId === "shop_key"){
 
 
 
+const keyIds=
+Object.keys(keys);
+
+
+
 const embed = new EmbedBuilder()
 
 
@@ -655,27 +655,34 @@ const embed = new EmbedBuilder()
 
 .setDescription(
 
-`
-🗝️ Bronze Key
+keyIds.map(kid=>{
 
-💰 5,000 Fcoin
+const k=keys[kid];
 
+return `${k.emoji} **${k.name}**\n💰 ${formatMoney(k.price)} ${emoji.money}`;
 
-━━━━━━━━━━━━
+}).join("\n\n━━━━━━━━━━━━\n\n")
 
-
-🔷 Silver Key
-
-💰 20,000 Fcoin
+);
 
 
-━━━━━━━━━━━━
+
+const row = new ActionRowBuilder()
 
 
-👑 Golden Key
+.addComponents(
 
-💰 50,000 Fcoin
-`
+keyIds.map(kid=>
+
+new ButtonBuilder()
+
+.setCustomId("buy_"+kid)
+
+.setLabel(keys[kid].name)
+
+.setStyle(ButtonStyle.Secondary)
+
+)
 
 );
 
@@ -684,6 +691,8 @@ const embed = new EmbedBuilder()
 return interaction.reply({
 
 embeds:[embed],
+
+components:[row],
 
 ephemeral:true
 
@@ -718,7 +727,7 @@ if(interaction.customId.startsWith("modal_")){
 
 
 
-const item = interaction.customId.replace(
+const itemID = interaction.customId.replace(
 
 "modal_",
 
@@ -740,25 +749,29 @@ interaction.fields.getTextInputValue(
 
 
 
+const user=
+getUser(
+interaction.guild.id,
+interaction.user.id
+);
 
 
-if(!Number.isInteger(amount) || amount<=0){
 
+const result=
+purchase(user,itemID,amount);
+
+
+
+if(!result.ok)
 
 return interaction.reply({
 
 content:
-
-"❌ Số lượng không hợp lệ",
+result.reason,
 
 ephemeral:true
 
 });
-
-
-}
-
-
 
 
 
@@ -767,15 +780,13 @@ return interaction.reply({
 content:
 
 `
-✅ Đã chọn mua
+✅ Mua thành công
 
-🎣 Vật phẩm:
-\`${item}\`
+${result.item.emoji} ${result.item.name} x${amount}
 
-📦 Số lượng:
-\`${amount}\`
+💸 Đã trả: ${formatMoney(result.price)} ${emoji.money}
 
-💰 Đang xử lý...
+💰 Số dư: ${formatMoney(user.money)} ${emoji.money}
 `,
 
 ephemeral:true
@@ -819,6 +830,206 @@ err
 
 
 
+
+
+
+
+// ======================
+// INTERACTION (SLASH COMMAND + TÀI XỈU BET MODAL)
+// ======================
+
+client.on(
+"interactionCreate",
+async interaction=>{
+
+
+try{
+
+
+if(
+interaction.isChatInputCommand() &&
+interaction.commandName === "ping"
+){
+
+return interaction.reply(
+"🏓 Pong! Bot đang online."
+);
+
+}
+
+
+
+if(
+interaction.isModalSubmit() &&
+interaction.customId.startsWith("txbet_")
+){
+
+
+const {
+addBet,
+getGame,
+hasBetType,
+totalBetOf
+} = require("./games/taixiugame");
+
+
+const {
+getUser
+} = require("./database");
+
+
+const type =
+interaction.customId.replace(
+"txbet_",
+""
+);
+
+
+const amount =
+Number(
+interaction.fields
+.getTextInputValue("money")
+);
+
+
+if(
+!Number.isInteger(amount)
+||
+amount<=0
+){
+
+return interaction.reply({
+content:
+"❌ Số tiền cược không hợp lệ",
+flags:64
+});
+
+}
+
+
+let number = null;
+
+
+if(type==="so"){
+
+
+number =
+Number(
+interaction.fields
+.getTextInputValue("sonum")
+);
+
+
+if(
+!Number.isInteger(number)
+||
+number<3
+||
+number>18
+){
+
+return interaction.reply({
+content:
+"❌ Số dự đoán phải từ 3 đến 18",
+flags:64
+});
+
+}
+
+
+}
+
+
+if(!getGame()){
+
+return interaction.reply({
+content:
+"❌ Ván tài xỉu đã kết thúc",
+flags:64
+});
+
+}
+
+
+if(
+hasBetType(interaction.user.id,type)
+){
+
+return interaction.reply({
+content:
+"❌ Bạn đã cược cửa này rồi",
+flags:64
+});
+
+}
+
+
+const user =
+getUser(
+interaction.guild.id,
+interaction.user.id
+);
+
+
+const daCuoc =
+totalBetOf(interaction.user.id);
+
+
+if(user.money < daCuoc+amount){
+
+return interaction.reply({
+content:
+"❌ Không đủ tiền",
+flags:64
+});
+
+}
+
+
+const label =
+
+type==="tai" ? "🔴 TÀI" :
+
+type==="xiu" ? "🔵 XỈU" :
+
+type==="chan" ? "⚫ CHẴN" :
+
+type==="le" ? "⚪ LẺ" :
+
+`🔢 SỐ ${number}`;
+
+
+addBet({
+id:interaction.user.id,
+type,
+number,
+money:amount
+});
+
+
+return interaction.reply({
+content:
+`✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${label}**`,
+flags:64
+});
+
+
+}
+
+
+}catch(err){
+
+console.log(
+"INTERACTION ERROR:",
+err
+);
+
+}
+
+
+}
+
+);
 
 
 
