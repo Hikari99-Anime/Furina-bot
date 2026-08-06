@@ -1,16 +1,20 @@
-const {EmbedBuilder}=require("discord.js");
+const {
+EmbedBuilder
+}=require("discord.js");
+
+
+const {
+fishList,
+baits,
+keys,
+emoji,
+formatMoney
+}=require("../../config");
+
 
 const {
 getUser
-}=require("../../database");
-
-
-const {
-baits,
-chests,
-keys,
-fishList
-}=require("../../config");
+}=require("../../data");
 
 
 
@@ -18,44 +22,97 @@ module.exports={
 
 
 name:"bag",
-aliases:["b"],
+
+aliases:[
+
+"balo",
+"inv",
+"inventory"
+
+],
 
 
 
 async execute(message){
 
 
-const user=getUser(
+
+const user=
+getUser(
 message.guild.id,
 message.author.id
 );
 
 
 
+
+
+// ======================
+// CÁ
+// ======================
+
+
 let fishText="";
 
+let totalFishMoney=0;
 
-for(const fish of fishList){
+
+
+for(const id in user.fish){
+
+
+
+const fish=
+fishList.find(
+x=>x.id===id
+);
+
+
+
+if(!fish)
+
+continue;
+
 
 
 const amount=
-user.fish[fish.name]?.length||0;
+user.fish[id].length;
 
 
-if(amount>0){
+
+let weight=0;
 
 
-let kg=0;
+
+for(const w of user.fish[id])
+
+weight+=w;
 
 
-for(const x of user.fish[fish.name])
-kg+=x;
+
+const price=
+Math.floor(
+weight*fish.sell
+);
+
+
+
+totalFishMoney+=price;
+
 
 
 fishText+=
-`${fish.emoji} ${fish.name} x${amount} (${kg.toFixed(1)}kg)\n`;
+`
+${fish.emoji} ${fish.name}
 
-}
+　🐟 ${amount} con
+
+　⚖️ ${weight.toFixed(2)} KG
+
+　💰 ${formatMoney(price)} ${emoji.money}
+
+`;
+
 
 
 }
@@ -63,87 +120,104 @@ fishText+=
 
 
 if(!fishText)
-fishText="Không có cá";
+
+fishText=
+"Chưa có cá nào";
 
 
+
+
+
+// ======================
+// MỒI
+// ======================
 
 
 let baitText="";
 
 
-for(const id in baits){
+
+for(const id in user.moi){
 
 
-const amount=
-user.moi[id]||0;
+
+if(user.moi[id]<=0)
+
+continue;
 
 
-if(amount>0){
+
+const bait=
+baits[id];
+
+
+
+if(!bait)
+
+continue;
+
 
 
 baitText+=
-`${baits[id].emoji} ${baits[id].name} x${amount}\n`;
+`
+${bait.emoji} ${bait.name}
+
+　×${user.moi[id]}
+
+`;
+
+
 
 }
 
-
-}
 
 
 if(!baitText)
-baitText="Không có mồi";
+
+baitText=
+"Không có mồi";
 
 
 
 
 
-let chestText="";
-
-
-for(const id in chests){
-
-
-const amount=
-user.chest[id]||0;
-
-
-if(amount>0){
-
-
-chestText+=
-`${chests[id].emoji} ${chests[id].name} x${amount}\n`;
-
-}
-
-
-}
-
-
-
-if(!chestText)
-chestText="Không có rương";
-
-
-
+// ======================
+// KEY
+// ======================
 
 
 let keyText="";
 
 
-for(const id in keys){
+
+for(const id in user.keys){
 
 
-const amount=
-user.keys[id]||0;
+
+if(user.keys[id]<=0)
+
+continue;
 
 
-if(amount>0){
+
+const key=
+keys[id];
+
+
+if(!key)
+
+continue;
+
 
 
 keyText+=
-`${keys[id].emoji} ${keys[id].name} x${amount}\n`;
+`
+${key.emoji} ${key.name}
 
-}
+　×${user.keys[id]}
+
+`;
+
 
 
 }
@@ -151,61 +225,63 @@ keyText+=
 
 
 if(!keyText)
-keyText="Không có chìa";
+
+keyText=
+"Không có chìa khóa";
 
 
 
 
-
-const embed=new EmbedBuilder()
-
-
-.setColor("#33ff99")
-
-
-.setTitle(
-`🎒 Túi đồ ${message.author.username}`
-)
-
-
-.setDescription(
-
-`
-🐟 **CÁ**
-
-${fishText}
-
-
-🪱 **MỒI**
-
-${baitText}
-
-
-🎁 **RƯƠNG**
-
-${chestText}
-
-
-🗝️ **CHÌA KHÓA**
-
-${keyText}
-
-`
-
-)
-
-
-.setThumbnail(
-message.author.displayAvatarURL()
-)
-
-
-.setTimestamp();
 
 
 
 message.reply({
-embeds:[embed]
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#89ddff")
+
+.setTitle(
+"╭・🎒 Túi đồ"
+)
+
+.setDescription(
+`
+╭・🐟 **Kho cá**
+
+${fishText}
+
+
+╭・🪱 **Mồi**
+
+${baitText}
+
+
+╭・🗝️ **Chìa khóa**
+
+${keyText}
+
+
+╭・💰 Giá trị cá
+
+${formatMoney(totalFishMoney)} ${emoji.money}
+
+
+╰・🌊 Fishing Adventure
+`
+)
+
+.setFooter({
+
+text:
+`👤 ${message.author.username}`
+
+})
+
+]
+
 });
 
 

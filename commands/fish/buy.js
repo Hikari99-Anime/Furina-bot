@@ -1,17 +1,21 @@
-const {EmbedBuilder}=require("discord.js");
-
 const {
-getUser,
-save
-}=require("../../database");
+EmbedBuilder
+}=require("discord.js");
 
 
 const {
 rods,
 baits,
 keys,
+emoji,
 formatMoney
 }=require("../../config");
+
+
+const {
+getUser,
+save
+}=require("../../data");
 
 
 
@@ -19,6 +23,7 @@ module.exports={
 
 
 name:"buy",
+
 aliases:["b"],
 
 
@@ -26,7 +31,9 @@ aliases:["b"],
 async execute(message,args){
 
 
-const user=getUser(
+
+const user=
+getUser(
 message.guild.id,
 message.author.id
 );
@@ -37,88 +44,198 @@ const id=args[0];
 
 
 const amount=
-Math.max(
-1,
-Number(args[1])||1
-);
+Number(args[1] || 1);
 
 
 
 if(!id)
 
+return message.reply({
+
+content:
+"╰・❌ Dùng: !buy <id> <số lượng>"
+
+});
+
+
+
+if(amount<=0)
+
 return message.reply(
-"❌ Ví dụ:\n`!buy can_1 1`"
+"╰・❌ Số lượng không hợp lệ"
 );
 
 
 
 let item;
+
 let type;
 
 
 
+// tìm vật phẩm
+
 if(rods[id]){
 
+
 item=rods[id];
+
 type="rod";
 
-}
 
+}
 
 else if(baits[id]){
 
+
 item=baits[id];
+
 type="bait";
 
-}
 
+}
 
 else if(keys[id]){
 
+
 item=keys[id];
+
 type="key";
+
 
 }
 
 
+else{
 
-if(!item)
 
 return message.reply(
-"❌ Không tìm thấy vật phẩm"
+"╰・❌ Không tìm thấy vật phẩm"
 );
+
+
+}
+
 
 
 
 const price=
-item.price*amount;
+item.price * amount;
 
 
 
-if(user.money<price)
-
-return message.reply(
-"❌ Không đủ tiền"
-);
+if(user.money < price){
 
 
+return message.reply({
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#ff8b8b")
+
+.setTitle(
+"╭・💰 Không đủ xu"
+)
+
+.setDescription(
+`
+Bạn cần:
+
+${formatMoney(price)} ${emoji.money}
+
+
+╰・Hãy kiếm thêm xu nhé
+`
+)
+
+]
+
+});
+
+
+}
+
+
+
+// trừ tiền
 
 user.money-=price;
 
 
 
-// CẦN
+
+// =================
+// 🎣 CẦN CÂU
+// =================
+
 
 if(type==="rod"){
 
 
-if(!user.can.danhSach[id])
 
-user.can.danhSach[id]=0;
+if(!user.can)
+
+user.can={
+
+dangDung:null,
+
+danhSach:{}
+
+};
 
 
-user.can.danhSach[id]+=
-item.uses*amount;
+
+if(!user.rodData)
+
+user.rodData={};
+
+
+
+
+user.can.danhSach[id]=1;
+
+
+
+
+// tạo dữ liệu cần
+
+if(!user.rodData[id]){
+
+
+user.rodData[id]={
+
+
+level:0,
+
+
+luck:item.luck,
+
+
+uses:item.uses,
+
+
+maxUses:item.uses,
+
+
+destroyed:false
+
+
+
+};
+
+
+}
+
+
+
+
+// tự trang bị nếu chưa có
+
+if(!user.can.dangDung)
+
+user.can.dangDung=id;
 
 
 
@@ -126,38 +243,64 @@ item.uses*amount;
 
 
 
-// MỒI
+
+// =================
+// 🪱 MỒI
+// =================
+
 
 if(type==="bait"){
 
 
-if(!user.moi[id])
 
-user.moi[id]=0;
+if(!user.moi)
+
+user.moi={};
 
 
-user.moi[id]+=amount;
 
+user.moi[id]=
+
+(user.moi[id] || 0)
+
++
+
+amount;
 
 
 }
 
 
 
-// KEY
+
+
+// =================
+// 🗝️ CHÌA KHÓA
+// =================
+
 
 if(type==="key"){
 
 
-if(!user.keys[id])
 
-user.keys[id]=0;
+if(!user.keys)
+
+user.keys={};
 
 
-user.keys[id]+=amount;
+
+user.keys[id]=
+
+(user.keys[id] || 0)
+
++
+
+amount;
 
 
 }
+
+
 
 
 
@@ -165,41 +308,52 @@ save();
 
 
 
-let icon=
-item.emoji;
 
 
+const embed=
 
-const embed=new EmbedBuilder()
+new EmbedBuilder()
 
-.setColor("#00ff99")
+.setColor("#9affb0")
 
-.setTitle("🛒 MUA THÀNH CÔNG")
+.setTitle(
+"╭・🛒 Mua thành công"
+)
 
 .setDescription(
-
 `
-${icon} **${item.name}**
+${item.emoji} ${item.name}
 
-📦 Số lượng:
+
+╭・📦 Số lượng
+
 x${amount}
 
 
-💰 Giá:
-${formatMoney(price)} xu
+╭・💸 Đã trả
+
+${formatMoney(price)} ${emoji.money}
 
 
-💵 Còn lại:
-${formatMoney(user.money)} xu
+╰・💰 Số dư
 
+${formatMoney(user.money)} ${emoji.money}
 `
+)
 
-);
+.setFooter({
+
+text:"✦ Fishing Adventure"
+
+});
+
 
 
 
 message.reply({
+
 embeds:[embed]
+
 });
 
 

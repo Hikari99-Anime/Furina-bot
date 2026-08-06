@@ -1,120 +1,185 @@
-const {EmbedBuilder}=require("discord.js");
-const {getUser}=require("../../database");
-const {chests,keys}=require("../../config");
+const {
+EmbedBuilder
+}=require("discord.js");
+
+
+const {
+chests,
+keys,
+emoji,
+formatMoney
+}=require("../../config");
+
+
+const {
+getUser,
+save
+}=require("../../data");
+
 
 
 module.exports={
 
 name:"chest",
-aliases:["c"],
+
+aliases:[
+"ruong",
+"open"
+],
 
 
-async execute(message){
+
+async execute(message,args){
 
 
-const user=getUser(
+const user=
+getUser(
 message.guild.id,
 message.author.id
 );
 
 
 
-let chestText="";
+const id=
+args[0];
 
 
 
-for(const id in chests){
+if(!id)
 
+return message.reply({
 
-const x=chests[id];
+embeds:[
 
-
-const amount=
-user.chest[id]||0;
-
-
-if(amount>0){
-
-chestText+=
-`${x.emoji} ${x.name} x${amount}\n`;
-
-}
-
-}
-
-
-
-if(!chestText)
-chestText="Không có rương";
-
-
-
-let keyText="";
-
-
-
-for(const id in keys){
-
-
-const x=keys[id];
-
-
-const amount=
-user.keys[id]||0;
-
-
-if(amount>0){
-
-keyText+=
-`${x.emoji} ${x.name} x${amount}\n`;
-
-}
-
-}
-
-
-
-if(!keyText)
-keyText="Không có chìa";
-
-
-
-
-const embed=new EmbedBuilder()
+new EmbedBuilder()
 
 .setColor("#ffaa00")
 
-.setTitle("🎁 KHO RƯƠNG")
-
-.setThumbnail(
-message.author.displayAvatarURL()
+.setTitle(
+"╭・🎁 RƯƠNG BÁU"
 )
 
 .setDescription(
-
 `
-🎁 **Rương**
+${Object.keys(chests)
+.map(x=>{
 
-${chestText}
+const c=chests[x];
+
+return `${c.emoji} ${c.name} ┆ ⭐${c.star}`;
+
+})
+.join("\n\n")}
 
 
-🗝️ **Chìa khóa**
+Dùng:
 
-${keyText}
-
-
-💡 Mở:
-\`!open chest_1\`
+\`!chest <tên rương>\`
 `
-
 )
 
-.setTimestamp();
+]
+
+});
+
+
+
+
+
+const chest=
+chests[id];
+
+
+
+if(!chest)
+
+return message.reply(
+"❌ Không tìm thấy rương"
+);
+
+
+
+const key=
+chest.key;
+
+
+
+if(!user.keys[key])
+
+return message.reply({
+
+content:
+"❌ Bạn không có chìa khóa"
+
+});
+
+
+
+user.keys[key]--;
+
+
+
+
+
+const reward=
+Math.floor(
+
+Math.random()*
+(
+chest.drop[0].max-
+chest.drop[0].min
+)
+
++
+chest.drop[0].min
+
+);
+
+
+
+user.money+=reward;
+
+
+save();
+
+
+
+
+
+const embed=
+new EmbedBuilder()
+
+.setColor("#ffd43b")
+
+.setTitle(
+"╭・🎁 MỞ RƯƠNG"
+)
+
+.setDescription(
+`
+${chest.emoji} ${chest.name}
+
+
+╭・✨ Phần thưởng
+
+
+${emoji.money} ${formatMoney(reward)} xu
+
+
+╰・Chúc mừng bạn 🎉
+`
+)
+
+.setFooter({
+text:"🎣 Fish System"
+});
 
 
 
 message.reply({
+
 embeds:[embed]
+
 });
 
 

@@ -5,16 +5,13 @@ chests,
 keys
 }=require("./config");
 
-
 const {
 Client,
 GatewayIntentBits,
 Collection
 }=require("discord.js");
 
-
 const fs=require("fs");
-
 
 
 const client=new Client({
@@ -33,9 +30,9 @@ GatewayIntentBits.MessageContent
 
 
 
-
-
+// ======================
 // LOAD COMMAND
+// ======================
 
 client.commands=new Collection();
 
@@ -44,10 +41,17 @@ client.commands=new Collection();
 function loadCommands(folder){
 
 
-for(const file of fs.readdirSync(folder)){
+const files=
+fs.readdirSync(folder);
 
 
-const path=`${folder}/${file}`;
+
+for(const file of files){
+
+
+const path=
+`${folder}/${file}`;
+
 
 
 if(fs.statSync(path).isDirectory()){
@@ -59,6 +63,7 @@ continue;
 }
 
 
+
 if(!file.endsWith(".js"))
 
 continue;
@@ -68,7 +73,8 @@ continue;
 try{
 
 
-const command=require(`./${path}`);
+const command=
+require(`./${path}`);
 
 
 
@@ -98,11 +104,6 @@ command
 
 
 }
-
-
-    if(command.aliases)
-        for(const alias of command.aliases)
-            client.commands.set(alias, command);
 
 
 }
@@ -147,16 +148,19 @@ loadCommands("commands");
 
 
 
-
+// ======================
 // READY
+// ======================
 
-
-client.once("ready",()=>{
+client.once(
+"ready",
+()=>{
 
 
 console.log(
 `🤖 ${client.user.tag} online`
 );
+
 
 
 console.log(
@@ -165,23 +169,25 @@ Object.keys(chests).length
 );
 
 
+
 console.log(
 "🔑 Key:",
 Object.keys(keys).length
 );
 
 
-});
+}
+
+);
 
 
 
 
 
 
-
-
-// MESSAGE
-
+// ======================
+// PREFIX COMMAND
+// ======================
 
 client.on(
 "messageCreate",
@@ -223,74 +229,19 @@ if(!command)
 
 return;
 
-<<<<<<< HEAD
-=======
-    if(!command)
-        return;
-
-
-
-
-
-
-
-    try{
-
-
-        await command.execute(
-
-            message,
-
-            args,
-
-            client
-
-        );
-
-
-    }
-
-
-
-    catch(err){
-
-
-        console.error(err);
-
-
-
-        message.reply(
-            "❌ Có lỗi xảy ra khi chạy lệnh."
-        );
-
-
-    }
-
-
-
-});
-
-
-
-
-
-
-
-// INTERACTION (SLASH COMMAND + TÀI XỈU BET MODAL)
-
-client.on(
-"interactionCreate",
-async interaction=>{
->>>>>>> 83de2d2a7b8e4473ffb5203cb4fc5e9fb1d26c27
 
 
 try{
 
 
 await command.execute(
+
 message,
+
 args,
+
 client
+
 );
 
 
@@ -305,29 +256,27 @@ err
 );
 
 
-<<<<<<< HEAD
+
 message.reply(
-"❌ Lệnh bị lỗi."
+"❌ Có lỗi xảy ra khi chạy lệnh."
 );
 
 
 }
 
 
-=======
->>>>>>> 83de2d2a7b8e4473ffb5203cb4fc5e9fb1d26c27
+}
 
-});
-
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> 83de2d2a7b8e4473ffb5203cb4fc5e9fb1d26c27
+);
 
 
 
+
+
+
+// ======================
+// LOGIN
+// ======================
 
 client.login(
 process.env.TOKEN
