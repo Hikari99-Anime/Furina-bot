@@ -138,6 +138,11 @@ module.exports = {
 name:"xidach",
 
 
+aliases:[
+    "xd"
+],
+
+
 
 async execute(message,args){
 

@@ -100,6 +100,11 @@ command
 }
 
 
+    if(command.aliases)
+        for(const alias of command.aliases)
+            client.commands.set(alias, command);
+
+
 }
 
 
@@ -218,6 +223,65 @@ if(!command)
 
 return;
 
+<<<<<<< HEAD
+=======
+    if(!command)
+        return;
+
+
+
+
+
+
+
+    try{
+
+
+        await command.execute(
+
+            message,
+
+            args,
+
+            client
+
+        );
+
+
+    }
+
+
+
+    catch(err){
+
+
+        console.error(err);
+
+
+
+        message.reply(
+            "❌ Có lỗi xảy ra khi chạy lệnh."
+        );
+
+
+    }
+
+
+
+});
+
+
+
+
+
+
+
+// INTERACTION (SLASH COMMAND + TÀI XỈU BET MODAL)
+
+client.on(
+"interactionCreate",
+async interaction=>{
+>>>>>>> 83de2d2a7b8e4473ffb5203cb4fc5e9fb1d26c27
 
 
 try{
@@ -241,6 +305,7 @@ err
 );
 
 
+<<<<<<< HEAD
 message.reply(
 "❌ Lệnh bị lỗi."
 );
@@ -249,11 +314,17 @@ message.reply(
 }
 
 
+=======
+>>>>>>> 83de2d2a7b8e4473ffb5203cb4fc5e9fb1d26c27
 
 });
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 83de2d2a7b8e4473ffb5203cb4fc5e9fb1d26c27
 
 
 
