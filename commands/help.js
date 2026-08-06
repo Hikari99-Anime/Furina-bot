@@ -137,6 +137,34 @@ Top nhiều cá.
 
 
 
+🃏 **XÌ DÁCH**
+
+\`!xidach <số tiền>\`
+
+Ví dụ:
+
+\`!xidach 1000\`
+
+Rút bài hoặc dừng, so điểm với nhà cái.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎲 **TÀI XỈU**
+
+\`!taixiu\`
+
+Mở ván cược Tài/Xỉu.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
 🎣 Chúc bạn câu được cá hiếm!
 
 `
