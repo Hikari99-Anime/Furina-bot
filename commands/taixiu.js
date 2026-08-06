@@ -21,9 +21,7 @@ const {
 
 createGame,
 
-getGame,
-
-playerBet
+getGame
 
 }=require("../games/taixiugame");
 
@@ -38,6 +36,43 @@ save
 
 }=require("../database");
 
+
+
+
+const SO_PAYOUT = {
+
+3:180, 4:60, 5:30, 6:17, 7:12, 8:8, 9:6, 10:6,
+
+11:6, 12:6, 13:8, 14:12, 15:17, 16:30, 17:60, 18:180
+
+};
+
+
+
+
+function nhanCua(p){
+
+
+if(p.type==="tai")
+return "🔴 TÀI";
+
+
+if(p.type==="xiu")
+return "🔵 XỈU";
+
+
+if(p.type==="chan")
+return "⚫ CHẴN";
+
+
+if(p.type==="le")
+return "⚪ LẺ";
+
+
+return `🔢 SỐ ${p.number}`;
+
+
+}
 
 
 
@@ -91,14 +126,40 @@ new ButtonBuilder()
 .setStyle(ButtonStyle.Danger),
 
 
-
 new ButtonBuilder()
 
 .setCustomId("tx_xiu")
 
 .setLabel("🔵 XỈU")
 
-.setStyle(ButtonStyle.Primary)
+.setStyle(ButtonStyle.Primary),
+
+
+new ButtonBuilder()
+
+.setCustomId("tx_chan")
+
+.setLabel("⚫ CHẴN")
+
+.setStyle(ButtonStyle.Secondary),
+
+
+new ButtonBuilder()
+
+.setCustomId("tx_le")
+
+.setLabel("⚪ LẺ")
+
+.setStyle(ButtonStyle.Secondary),
+
+
+new ButtonBuilder()
+
+.setCustomId("tx_so")
+
+.setLabel("🔢 CHỌN SỐ")
+
+.setStyle(ButtonStyle.Success)
 
 );
 
@@ -123,10 +184,9 @@ new EmbedBuilder()
 `
 ⏳ Thời gian: **30 giây**
 
-Chọn cửa:
+Chọn cửa (có thể cược nhiều cửa cùng lúc):
 
-🔴 TÀI
-🔵 XỈU
+🔴 TÀI · 🔵 XỈU · ⚫ CHẴN · ⚪ LẺ · 🔢 CHỌN SỐ (3-18)
 
 
 Chưa có cược
@@ -162,7 +222,7 @@ game.players.map(
 
 p=>
 
-`<@${p.id}> | ${p.choice.toUpperCase()} | ${p.money} xu`
+`<@${p.id}> | ${nhanCua(p)} | ${p.money.toLocaleString()} xu`
 
 ).join("\n")
 
@@ -192,7 +252,7 @@ new EmbedBuilder()
 ${time} giây
 
 
-👥 Người chơi:
+👥 Cược:
 
 ${list}
 
@@ -250,12 +310,67 @@ return;
 
 
 
-let choice =
-interaction.customId==="tx_tai"
-?
-"tai"
-:
-"xiu";
+if(interaction.customId==="tx_so"){
+
+
+const modal =
+new ModalBuilder()
+
+.setCustomId("txbet_so")
+
+.setTitle("🔢 Chọn số + tiền cược");
+
+
+const numberInput =
+new TextInputBuilder()
+
+.setCustomId("sonum")
+
+.setLabel("Số dự đoán (tổng 3 xúc xắc, 3-18)")
+
+.setPlaceholder("Ví dụ: 12")
+
+.setStyle(TextInputStyle.Short);
+
+
+const moneyInput =
+new TextInputBuilder()
+
+.setCustomId("money")
+
+.setLabel("Số tiền cược")
+
+.setPlaceholder("Ví dụ: 1000")
+
+.setStyle(TextInputStyle.Short);
+
+
+modal.addComponents(
+
+new ActionRowBuilder().addComponents(numberInput),
+
+new ActionRowBuilder().addComponents(moneyInput)
+
+);
+
+
+return interaction.showModal(modal);
+
+
+}
+
+
+
+
+let type =
+
+interaction.customId==="tx_tai" ? "tai" :
+
+interaction.customId==="tx_xiu" ? "xiu" :
+
+interaction.customId==="tx_chan" ? "chan" :
+
+"le";
 
 
 
@@ -265,7 +380,7 @@ const modal =
 new ModalBuilder()
 
 .setCustomId(
-"txbet_"+choice
+"txbet_"+type
 )
 
 .setTitle(
@@ -315,8 +430,8 @@ await interaction.showModal(modal);
 
 
 
-
 }
+
 
 };
 
@@ -364,12 +479,9 @@ dice[0]+dice[1]+dice[2];
 
 
 
-const result =
-total>=11
-?
-"tai"
-:
-"xiu";
+const isTai = total>=11;
+
+const isChan = total%2===0;
 
 
 
@@ -392,14 +504,46 @@ p.id
 
 
 
-if(p.choice===result){
+let win=false;
+
+let payout=1;
 
 
-user.money += p.money;
+
+if(p.type==="tai")
+win = isTai;
+
+else if(p.type==="xiu")
+win = !isTai;
+
+else if(p.type==="chan")
+win = isChan;
+
+else if(p.type==="le")
+win = !isChan;
+
+else if(p.type==="so"){
+
+win = p.number===total;
+
+payout = SO_PAYOUT[p.number] || 1;
+
+}
+
+
+
+
+if(win){
+
+
+const thang = p.money*payout;
+
+
+user.money += thang;
 
 
 text +=
-`✅ <@${p.id}> +${p.money} xu\n`;
+`✅ <@${p.id}> [${nhanCua(p)}] +${thang.toLocaleString()} xu\n`;
 
 
 
@@ -410,7 +554,7 @@ user.money -= p.money;
 
 
 text +=
-`❌ <@${p.id}> -${p.money} xu\n`;
+`❌ <@${p.id}> [${nhanCua(p)}] -${p.money.toLocaleString()} xu\n`;
 
 
 
@@ -447,15 +591,10 @@ ${dice.join(" | ")}
 
 🔢 Tổng:
 
-${total}
+${total} (${isTai?"TÀI":"XỈU"} · ${isChan?"CHẴN":"LẺ"})
 
 
-📌 Kết quả:
-
-${result.toUpperCase()}
-
-
-👥 Người chơi:
+👥 Kết quả cược:
 
 
 ${text || "Không ai cược"}

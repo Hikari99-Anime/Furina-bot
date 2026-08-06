@@ -115,7 +115,103 @@ Xem cần đang dùng
 
 \`!rod can_1\`
 
+<<<<<<< HEAD
 `),
+=======
+
+
+💵 **BÁN CÁ**
+
+\`!sell <cá> <số lượng>\`
+
+Ví dụ:
+
+\`!sell caro 5\`
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎁 **NHẬN DAILY**
+
+\`!daily\`
+
+Nhận xu mỗi ngày.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🏆 **XẾP HẠNG**
+
+\`!top money\`
+
+Top giàu.
+
+
+\`!top fish\`
+
+Top nhiều cá.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🃏 **XÌ DÁCH**
+
+\`!xidach <số tiền>\`
+
+Ví dụ:
+
+\`!xidach 1000\`
+
+Rút bài hoặc dừng, so điểm với nhà cái.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎲 **TÀI XỈU**
+
+\`!taixiu\`
+
+Mở ván cược. Bấm nút để chọn cửa rồi nhập tiền cược:
+
+🔴 TÀI · 🔵 XỈU · ⚫ CHẴN · ⚪ LẺ (1:1)
+
+🔢 CHỌN SỐ (đoán đúng tổng 3 xúc xắc, ăn cao hơn)
+
+Có thể cược nhiều cửa cùng lúc.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎣 Chúc bạn câu được cá hiếm!
+
+`
+
+)
+
+.setFooter({
+
+text:
+"Fishing Bot"
+
+})
+
+.setTimestamp();
+>>>>>>> 418111c2b25b627f983d4cbb419a284e8a087174
 
 
 
