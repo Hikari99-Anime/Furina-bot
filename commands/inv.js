@@ -11,6 +11,7 @@ const {
 const {
     rods,
     baits,
+    fishList,
     emoji
 } = require("../config");
 
@@ -28,6 +29,7 @@ async execute(message){
 
 
 const user =
+
 getUser(
 message.guild.id,
 message.author.id
@@ -38,44 +40,21 @@ message.author.id
 
 
 // ======================
-// TIỀN
-// ======================
-
-const money =
-
-`${user.money.toLocaleString()} xu`;
-
-
-
-
-
-
-
-// ======================
 // CẦN CÂU
 // ======================
-
 
 let rodText = "";
 
 
 
-for(
-const id in user.can.danhSach
-){
+for(const id in user.can.danhSach){
 
 
+const rod = rods[id];
 
-if(
-!rods[id]
-)
 
+if(!rod)
 continue;
-
-
-
-const rod =
-rods[id];
 
 
 
@@ -83,7 +62,7 @@ const active =
 
 user.can.dangDung === id
 
-? " ✅ Đang dùng"
+? " ✅"
 
 : "";
 
@@ -91,19 +70,7 @@ user.can.dangDung === id
 
 rodText +=
 
-`
-${rod.emoji} **${rod.name}**${active}
-
-🆔 ID:
-\`${id}\`
-
-🎣 Lượt:
-${user.can.danhSach[id]}
-
-⭐ Luck:
-${rod.luck}
-
-`;
+`${rod.emoji}${active} | 🎣 ${user.can.danhSach[id]} lượt | ⭐ ${rod.luck}\n`;
 
 
 
@@ -113,8 +80,7 @@ ${rod.luck}
 
 if(!rodText)
 
-rodText =
-"❌ Chưa có cần câu";
+rodText = "❌ Chưa có cần câu";
 
 
 
@@ -126,43 +92,30 @@ rodText =
 // MỒI
 // ======================
 
-
 let baitText = "";
 
 
 
-for(
-const id in user.moi
-){
+for(const id in user.moi){
 
 
 
-if(
-!baits[id]
-)
+const bait = baits[id];
 
+
+if(!bait)
 continue;
 
 
 
-if(
-user.moi[id] <= 0
-)
-
+if(user.moi[id] <= 0)
 continue;
-
-
-
-const bait =
-baits[id];
 
 
 
 baitText +=
 
-`
-${bait.emoji} ${bait.name} x${user.moi[id]}
-`;
+`${bait.emoji} x${user.moi[id]}\n`;
 
 
 
@@ -172,8 +125,7 @@ ${bait.emoji} ${bait.name} x${user.moi[id]}
 
 if(!baitText)
 
-baitText =
-"❌ Không có mồi";
+baitText = "❌ Không có mồi";
 
 
 
@@ -185,43 +137,47 @@ baitText =
 // KHO CÁ
 // ======================
 
-
 let fishText = "";
 
 
 
-for(
-const name in user.fish
-){
+for(const name in user.fish){
 
 
 
-const fish =
-user.fish[name];
+const list = user.fish[name];
 
 
 
-if(
-!Array.isArray(fish)
-)
-
+if(!Array.isArray(list))
 continue;
 
 
 
-if(
-fish.length <= 0
-)
-
+if(list.length <= 0)
 continue;
+
+
+
+const fishData =
+
+fishList.find(
+
+f => f.name === name
+
+);
+
+
+
+const fishEmoji =
+
+fishData?.emoji || emoji.fish || "🐟";
 
 
 
 fishText +=
 
-`
-${name} x${fish.length}
-`;
+`${fishEmoji} x${list.length}\n`;
 
 
 
@@ -231,8 +187,7 @@ ${name} x${fish.length}
 
 if(!fishText)
 
-fishText =
-"❌ Chưa có cá";
+fishText = "❌ Chưa có cá";
 
 
 
@@ -244,46 +199,38 @@ fishText =
 // EMBED
 // ======================
 
-
 const embed =
 
 new EmbedBuilder()
 
+
 .setColor("#00ccff")
 
+
 .setTitle(
+
 `${emoji.bag || "🎒"} INVENTORY`
 )
+
 
 
 .setDescription(
 
 `
-💰 **TIỀN**
-
-${money}
-
+${emoji.money || "💰"} **Tiền:** ${user.money.toLocaleString()} xu
 ━━━━━━━━━━━━━━
-
-🎣 **CẦN CÂU**
-
+${emoji.rod || "🎣"} **Cần câu**
 ${rodText}
-
 ━━━━━━━━━━━━━━
-
-🪱 **MỒI**
-
+${emoji.bait || "🪱"} **Mồi**
 ${baitText}
-
 ━━━━━━━━━━━━━━
-
-🐟 **KHO CÁ**
-
+${emoji.fish || "🐟"} **Kho cá**
 ${fishText}
-
 `
 
 )
+
 
 
 .setThumbnail(
@@ -293,8 +240,8 @@ message.author.displayAvatarURL()
 )
 
 
-.setTimestamp();
 
+.setTimestamp();
 
 
 
@@ -302,9 +249,7 @@ message.author.displayAvatarURL()
 
 message.reply({
 
-embeds:[
-embed
-]
+embeds:[embed]
 
 });
 

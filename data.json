@@ -30,6 +30,20 @@
         "moibac": 0,
         "moivang": 2
       }
+    },
+    "398030689905278977": {
+      "money": 5000,
+      "daily": 0,
+      "fish": {},
+      "can": {
+        "dangDung": null,
+        "danhSach": {}
+      },
+      "moi": {
+        "moithuong": 10,
+        "moibac": 0,
+        "moivang": 0
+      }
     }
   }
 }
