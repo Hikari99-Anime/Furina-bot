@@ -1,5 +1,8 @@
 const {
-    EmbedBuilder
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
 } = require("discord.js");
 
 
@@ -10,65 +13,82 @@ module.exports = {
 name:"help",
 
 
+aliases:[
+    "h"
+],
+
+
 
 async execute(message){
 
 
 
-const embed =
+const pages=[
+
+
+
+// =====================
+// PAGE 1
+// =====================
 
 new EmbedBuilder()
 
-.setColor("#00ccff")
+.setColor("#00aaff")
 
-.setTitle("🎣 HƯỚNG DẪN BOT CÂU CÁ")
+.setTitle("📖 GENERAL USAGE")
 
-.setDescription(
+.setDescription(`
 
-`
-🏪 **SHOP**
+🎣 **START**
 
-\`!shop\`
-
-Xem cần câu và mồi đang bán.
+\`!fish\`
+Bắt đầu câu cá
 
 
+💰 **DAILY**
 
-━━━━━━━━━━━━━━
-
-
-
-💰 **MUA ĐỒ**
-
-\`!buy <id>\`
-
-Ví dụ:
-
-\`!buy can_1\`
-
-\`!buy moithuong\`
+\`!daily\`
+Nhận xu mỗi 24 giờ
 
 
+👤 **PROFILE**
 
-━━━━━━━━━━━━━━
+\`!profile\`
+Xem thông tin người chơi
 
 
+🎒 **INVENTORY**
 
-🎣 **TRANG BỊ CẦN**
+\`!bag\`
+Xem túi đồ
 
-\`!rod <id>\`
 
-Ví dụ:
+🪙 **MONEY**
 
-\`!rod can_1\`
+\`!balance\`
+Xem số xu
+
+
+`),
 
 
 
-━━━━━━━━━━━━━━
 
 
+// =====================
+// PAGE 2
+// =====================
 
-🐟 **CÂU CÁ**
+
+new EmbedBuilder()
+
+.setColor("#00ff99")
+
+.setTitle("🎣 FISHING")
+
+.setDescription(`
+
+🎣 **Câu cá**
 
 \`!fish <mồi>\`
 
@@ -77,94 +97,317 @@ Ví dụ:
 \`!fish moithuong\`
 
 
+🪱 **Mồi**
 
-━━━━━━━━━━━━━━
+\`!bait\`
 
-
-
-🎒 **KHO ĐỒ**
-
-\`!inv\`
-
-Xem tiền, cần, mồi, cá.
+Xem số mồi đang có
 
 
+🎣 **Cần câu**
 
-━━━━━━━━━━━━━━
+\`!rod\`
 
-
-
-💵 **BÁN CÁ**
-
-\`!sell <cá> <số lượng>\`
-
-Ví dụ:
-
-\`!sell caro 5\`
+Xem cần đang dùng
 
 
+⚙️ **Đổi cần**
 
-━━━━━━━━━━━━━━
+\`!rod can_1\`
 
-
-
-🎁 **NHẬN DAILY**
-
-\`!daily\`
-
-Nhận xu mỗi ngày.
-
-
-
-━━━━━━━━━━━━━━
-
-
-
-🏆 **XẾP HẠNG**
-
-\`!top money\`
-
-Top giàu.
-
-
-\`!top fish\`
-
-Top nhiều cá.
-
-
-
-━━━━━━━━━━━━━━
-
-
-
-🎣 Chúc bạn câu được cá hiếm!
-
-`
-
-)
-
-.setFooter({
-
-text:
-"Fishing Bot"
-
-})
-
-.setTimestamp();
+`),
 
 
 
 
 
-message.reply({
+// =====================
+// PAGE 3
+// =====================
 
-embeds:[embed]
+
+new EmbedBuilder()
+
+.setColor("#ffaa00")
+
+.setTitle("🎒 INVENTORY")
+
+.setDescription(`
+
+🐟 **Kho cá**
+
+\`!fishbag\`
+
+
+🎁 **Kho rương**
+
+\`!chest\`
+
+
+🔑 **Kho chìa khóa**
+
+\`!key\`
+
+
+💰 **Bán cá**
+
+\`!sell\`
+
+
+`),
+
+
+
+
+
+
+
+// =====================
+// PAGE 4
+// =====================
+
+
+new EmbedBuilder()
+
+.setColor("#ff55ff")
+
+.setTitle("🛒 SHOP & GACHA")
+
+.setDescription(`
+
+🛒 **Shop**
+
+\`!shop\`
+
+
+🎣 **Mua cần**
+
+\`!buy can_1\`
+
+
+🪱 **Mua mồi**
+
+\`!buy moithuong\`
+
+
+🔑 **Shop chìa khóa**
+
+\`!shopkey\`
+
+
+🔑 **Mua chìa khóa**
+
+\`!buykey key_1\`
+
+
+🎁 **Mở rương**
+
+\`!open chest_1\`
+
+
+🎰 **Mở nhiều**
+
+\`!open chest_1 10\`
+
+`),
+
+
+
+
+
+
+
+// =====================
+// PAGE 5
+// =====================
+
+
+new EmbedBuilder()
+
+.setColor("#ff0000")
+
+.setTitle("ℹ️ INFORMATION")
+
+.setDescription(`
+
+📌 Prefix:
+
+\`!\`
+
+
+📖 Help:
+
+\`!help\`
+
+
+🐟 Fish RPG Bot
+
+
+🎰 Gacha - Chest System
+
+
+✨ Chúc bạn câu được cá hiếm!
+
+`)
+
+
+];
+
+
+
+
+
+
+
+let page=0;
+
+
+
+
+
+const row = new ActionRowBuilder()
+
+.addComponents(
+
+
+new ButtonBuilder()
+
+.setCustomId("prev")
+
+.setEmoji("⬅️")
+
+.setStyle(ButtonStyle.Secondary),
+
+
+
+
+new ButtonBuilder()
+
+.setCustomId("next")
+
+.setEmoji("➡️")
+
+.setStyle(ButtonStyle.Secondary)
+
+
+
+);
+
+
+
+
+
+
+
+
+
+const msg = await message.reply({
+
+embeds:[
+pages[page]
+],
+
+components:[
+row
+]
+
+});
+
+
+
+
+
+
+
+
+
+const collector = msg.createMessageComponentCollector({
+
+time:120000
+
+});
+
+
+
+
+
+
+
+
+collector.on("collect",async i=>{
+
+
+
+if(i.user.id !== message.author.id)
+
+return i.reply({
+
+content:"❌ Không phải help của bạn",
+
+ephemeral:true
+
+});
+
+
+
+
+
+if(i.customId==="next"){
+
+
+page++;
+
+
+if(page>=pages.length)
+
+page=0;
+
+
+}
+
+
+
+
+
+
+if(i.customId==="prev"){
+
+
+page--;
+
+
+if(page<0)
+
+page=pages.length-1;
+
+
+}
+
+
+
+
+
+
+await i.update({
+
+embeds:[
+pages[page]
+],
+
+components:[
+row
+]
+
+});
+
+
 
 });
 
 
 
 }
+
 
 
 };

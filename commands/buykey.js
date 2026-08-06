@@ -10,7 +10,8 @@ const {
 
 
 const {
-    chests
+    keys,
+    emoji
 } = require("../config");
 
 
@@ -18,7 +19,12 @@ const {
 module.exports = {
 
 
-name:"openchest",
+name:"buykey",
+
+
+aliases:[
+    "bk"
+],
 
 
 
@@ -26,36 +32,116 @@ async execute(message,args){
 
 
 
+const user = getUser(
+    message.guild.id,
+    message.author.id
+);
+
+
+
+
+
 const id = args[0];
 
 
+const amount = Math.max(
+    1,
+    Number(args[1]) || 1
+);
 
-if(!chests[id])
+
+
+
+
+
+
+if(!id){
+
 
 return message.reply(
-"❌ Không có loại rương này"
+`
+❌ Nhập loại chìa khóa
+
+Ví dụ:
+
+\`!buykey key_1\`
+
+\`!bk key_3 5\`
+
+`
 );
 
 
+}
 
 
-const user = getUser(
 
-message.guild.id,
 
-message.author.id
+
+
+
+const key = keys[id];
+
+
+
+if(!key){
+
+
+return message.reply(
+"❌ Chìa khóa không tồn tại"
+);
+
+
+}
+
+
+
+
+
+
+
+const price = key.price * amount;
+
+
+
+
+
+
+if(user.money < price){
+
+
+return message.reply(
+
+`
+❌ Không đủ xu
+
+Cần:
+${price.toLocaleString()} xu
+
+`
 
 );
 
 
+}
 
 
 
-if(!user.chest)
-
-user.chest={};
 
 
+
+
+// trừ tiền
+
+user.money -= price;
+
+
+
+
+
+
+
+// tạo kho key
 
 if(!user.keys)
 
@@ -67,86 +153,22 @@ user.keys={};
 
 
 
-if(!user.chest[id] || user.chest[id] <= 0)
+if(!user.keys[id])
 
-return message.reply(
-"❌ Bạn không có rương này"
-);
-
-
-
-
-
-const chest = chests[id];
-
-
-
-
-const key = chest.key;
-
-
-
-
-
-if(!user.keys[key] || user.keys[key] <= 0)
-
-return message.reply(
-
-`
-❌ Cần:
-
-${key}
-
-để mở rương
-`
-
-);
+user.keys[id]=0;
 
 
 
 
 
 
-// trừ rương + chìa
+// cộng key
 
-user.chest[id]--;
-
-user.keys[key]--;
+user.keys[id]+=amount;
 
 
 
 
-
-
-
-
-// phần thưởng
-
-const reward =
-
-Math.floor(
-
-Math.random() *
-
-(
-chest.reward[1]
--
-chest.reward[0]
-)
-
-)
-
-+
-
-chest.reward[0];
-
-
-
-
-
-
-
-user.money += reward;
 
 
 
@@ -158,32 +180,28 @@ save();
 
 
 
+
 const embed = new EmbedBuilder()
 
+.setColor("#00ff00")
 
-.setColor("#ffd700")
-
-
-.setTitle(
-
-`${chest.emoji} MỞ ${chest.name}`
-
-)
-
+.setTitle("🔑 MUA CHÌA KHÓA")
 
 .setDescription(
 
 `
-⭐ Cấp rương:
-${chest.star} sao
+${key.emoji} **${key.name}**
+
+📦 Số lượng:
+x${amount}
 
 
-🎁 Nhận được:
+${emoji.money} Giá:
 
-💰 **${reward.toLocaleString()} xu**
+${price.toLocaleString()} xu
 
 
-💵 Số dư:
+💵 Còn lại:
 
 ${user.money.toLocaleString()} xu
 
@@ -191,8 +209,8 @@ ${user.money.toLocaleString()} xu
 
 )
 
-
 .setTimestamp();
+
 
 
 
@@ -208,6 +226,7 @@ embeds:[embed]
 
 
 }
+
 
 
 };

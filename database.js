@@ -18,6 +18,7 @@ if(fs.existsSync(file)){
 
     try{
 
+
         data = JSON.parse(
             fs.readFileSync(file,"utf8")
         );
@@ -26,7 +27,9 @@ if(fs.existsSync(file)){
     }
     catch(err){
 
+
         data = {};
+
 
     }
 
@@ -40,7 +43,7 @@ if(fs.existsSync(file)){
 
 
 // =======================
-// SAVE
+// SAVE DATA
 // =======================
 
 function save(){
@@ -85,15 +88,20 @@ function getUser(guildID,userID){
 
 
 
+
+
     if(!data[guildID][userID]){
+
 
 
         data[guildID][userID]={
 
 
+
             // tiền
 
             money:5000,
+
 
 
             // daily
@@ -102,9 +110,12 @@ function getUser(guildID,userID){
 
 
 
-            // cá
+
+
+            // kho cá
 
             fish:{},
+
 
 
 
@@ -121,6 +132,8 @@ function getUser(guildID,userID){
 
 
             },
+
+
 
 
 
@@ -147,6 +160,8 @@ function getUser(guildID,userID){
 
 
 
+
+
             // =================
             // RƯƠNG
             // =================
@@ -157,11 +172,24 @@ function getUser(guildID,userID){
 
 
 
+
             // =================
             // CHÌA KHÓA
             // =================
 
-            keys:{}
+            keys:{},
+
+
+
+
+
+
+            // =================
+            // GACHA PITY
+            // =================
+
+            pity:{}
+
 
 
 
@@ -170,7 +198,9 @@ function getUser(guildID,userID){
 
 
 
+
         save();
+
 
 
     }
@@ -180,8 +210,13 @@ function getUser(guildID,userID){
 
 
 
+
+
     const user =
+
     data[guildID][userID];
+
+
 
 
 
@@ -197,7 +232,20 @@ function getUser(guildID,userID){
 
     if(user.money === undefined)
 
-        user.money=0;
+        user.money = 0;
+
+
+
+
+
+
+
+    if(user.daily === undefined)
+
+        user.daily = 0;
+
+
+
 
 
 
@@ -205,7 +253,8 @@ function getUser(guildID,userID){
 
     if(!user.fish)
 
-        user.fish={};
+        user.fish = {};
+
 
 
 
@@ -229,6 +278,8 @@ function getUser(guildID,userID){
 
 
     }
+
+
 
 
 
@@ -273,6 +324,7 @@ function getUser(guildID,userID){
 
 
 
+
     // =====================
     // FIX RƯƠNG
     // =====================
@@ -281,6 +333,8 @@ function getUser(guildID,userID){
     if(!user.chest)
 
         user.chest={};
+
+
 
 
 
@@ -303,9 +357,25 @@ function getUser(guildID,userID){
 
 
 
+    // =====================
+    // FIX PITY GACHA
+    // =====================
+
+
+    if(!user.pity)
+
+        user.pity={};
+
+
+
+
+
+
+
+
 
     // =========================
-    // CHUYỂN KHO CŨ
+    // CHUYỂN KHO CÁ CŨ
     // =========================
 
 
@@ -320,13 +390,17 @@ function getUser(guildID,userID){
 
 
             const old =
+
             user.khoCa[name];
+
+
 
 
 
             if(!user.fish[name])
 
                 user.fish[name]=[];
+
 
 
 
@@ -342,8 +416,13 @@ function getUser(guildID,userID){
 
 
                 const avg =
+
                 old.weight /
+
                 old.count;
+
+
+
 
 
 
@@ -357,8 +436,7 @@ function getUser(guildID,userID){
 
 
 
-                    user.fish[name]
-                    .push(
+                    user.fish[name].push(
 
                         Number(
                             avg.toFixed(2)
@@ -382,11 +460,13 @@ function getUser(guildID,userID){
 
 
 
+
         delete user.khoCa;
 
 
 
         save();
+
 
 
     }
@@ -397,10 +477,13 @@ function getUser(guildID,userID){
 
 
 
+
     return user;
 
 
+
 }
+
 
 
 

@@ -29,35 +29,26 @@ async execute(message,args){
 
 
 
-const user =
-
-getUser(
-message.guild.id,
-message.author.id
+const user = getUser(
+    message.guild.id,
+    message.author.id
 );
 
 
 
 
-
-// ======================
-// KIỂM TRA CẦN
-// ======================
 
 
 const rodID = user.can.dangDung;
 
 
 
-if(!rodID){
-
+if(!rodID)
 
 return message.reply(
-"❌ Bạn chưa có cần câu\nDùng: `!rod can_1`"
+"❌ Bạn chưa có cần câu"
 );
 
-
-}
 
 
 
@@ -66,70 +57,40 @@ const rod = rods[rodID];
 
 
 
-if(!rod){
-
+if(!rod)
 
 return message.reply(
 "❌ Cần câu không tồn tại"
 );
 
 
-}
 
 
 
-
-
-if(
-user.can.danhSach[rodID] <= 0
-){
-
-
-user.can.dangDung=null;
-
-save();
-
-
-return message.reply(
-"❌ Cần câu đã hết lượt"
-);
-
-
-}
-
-
-
-
-
-
-
-// ======================
-// KIỂM TRA MỒI
-// ======================
 
 
 const baitID = args[0];
 
 
-
-if(!baitID){
-
-
-return message.reply(
-
-`
-❌ Chọn mồi
-
-Ví dụ:
-
-!fish moithuong
-
-`
-
+const amount = Math.max(
+    1,
+    Number(args[1]) || 1
 );
 
 
-}
+
+
+
+
+
+if(!baitID)
+
+return message.reply(
+"❌ Ví dụ: `!fish moithuong 5`"
+);
+
+
+
 
 
 
@@ -138,31 +99,39 @@ const bait = baits[baitID];
 
 
 
-if(!bait){
-
+if(!bait)
 
 return message.reply(
 "❌ Mồi không tồn tại"
 );
 
 
-}
 
 
 
 
 
 if(
-(user.moi[baitID] || 0) <= 0
-){
-
+(user.moi[baitID] || 0) < amount
+)
 
 return message.reply(
-"❌ Bạn hết loại mồi này"
+"❌ Không đủ mồi"
 );
 
 
-}
+
+
+
+
+
+if(
+(user.can.danhSach[rodID] || 0) < amount
+)
+
+return message.reply(
+"❌ Không đủ lượt cần"
+);
 
 
 
@@ -170,47 +139,19 @@ return message.reply(
 
 
 
-// ======================
-// TRỪ VẬT PHẨM
-// ======================
 
 
-user.can.danhSach[rodID]--;
+// trừ vật phẩm
 
-user.moi[baitID]--;
+user.moi[baitID] -= amount;
+
+
+user.can.danhSach[rodID] -= amount;
 
 
 save();
 
 
-
-
-
-
-
-// ======================
-// LOADING
-// ======================
-
-
-const loading = new EmbedBuilder()
-
-.setColor("#0099ff")
-
-.setTitle("🎣 ĐANG CÂU CÁ")
-
-.setDescription(
-
-`
-${rod.emoji} **${rod.name}**
-
-🪱 ${bait.emoji} **${bait.name}**
-
-⏳ Đang chờ cá...
-
-`
-
-);
 
 
 
@@ -220,7 +161,26 @@ ${rod.emoji} **${rod.name}**
 const msg = await message.reply({
 
 embeds:[
-loading
+
+new EmbedBuilder()
+
+.setColor("#0099ff")
+
+.setTitle(`🎣 ĐANG CÂU x${amount}`)
+
+.setDescription(
+
+`
+${rod.emoji} ${rod.name}
+
+${bait.emoji} ${bait.name}
+
+⏳ Đang chờ cá...
+
+`
+
+)
+
 ]
 
 });
@@ -239,19 +199,29 @@ setTimeout(()=>{
 
 
 
+let fishCount = {};
+
+let chestCount = {};
+
+
+
+
+
+
+
+for(let i = 0; i < amount; i++){
+
+
+
+
 
 // ======================
-// CHỌN CÁ
+// RANDOM CÁ
 // ======================
 
 
-let chance =
+let chance = Math.random()*100;
 
-Math.random()*100;
-
-
-
-// tăng luck cần
 
 chance -= rod.luck;
 
@@ -265,9 +235,9 @@ let caught = null;
 
 
 
-for(
-const fish of fishList
-){
+
+for(const fish of fishList){
+
 
 
 total += fish.rate;
@@ -279,13 +249,16 @@ if(chance <= total){
 
 caught = fish;
 
+
 break;
 
 
 }
 
 
+
 }
+
 
 
 
@@ -303,14 +276,9 @@ caught = fishList[0];
 
 
 
-// ======================
-// CÂN NẶNG
-// ======================
+// cân nặng
 
-
-const weight =
-
-Number(
+const weight = Number(
 
 (
 
@@ -318,9 +286,7 @@ Math.random()
 
 *
 
-(
-caught.max-caught.min
-)
+(caught.max - caught.min)
 
 +
 
@@ -336,13 +302,6 @@ caught.min
 
 
 
-
-
-// ======================
-// LƯU CÁ
-// ======================
-
-
 if(!user.fish)
 
 user.fish={};
@@ -350,9 +309,11 @@ user.fish={};
 
 
 
+
 if(!user.fish[caught.name])
 
 user.fish[caught.name]=[];
+
 
 
 
@@ -366,58 +327,59 @@ user.fish[caught.name].push(weight);
 
 
 
+// đếm cá
+
+fishCount[caught.name] =
+
+(fishCount[caught.name] || 0) + 1;
+
+
+
+
+
+
+
+
+
+
 
 // ======================
-// RƠI RƯƠNG
+// RANDOM RƯƠNG
 // ======================
+
+
+const r = Math.random()*100;
+
 
 
 let chestID = null;
 
 
-const chestChance =
-
-Math.random()*100;
 
 
-
-
-
-if(chestChance <= 0.5){
-
+if(r <= 0.5)
 
 chestID="chest_5";
 
 
-}
-else if(chestChance <= 2){
-
+else if(r <= 2)
 
 chestID="chest_4";
 
 
-}
-else if(chestChance <= 6){
-
+else if(r <= 6)
 
 chestID="chest_3";
 
 
-}
-else if(chestChance <= 15){
-
+else if(r <= 15)
 
 chestID="chest_2";
 
 
-}
-else if(chestChance <= 35){
-
+else if(r <= 35)
 
 chestID="chest_1";
-
-
-}
 
 
 
@@ -436,14 +398,28 @@ user.chest={};
 
 
 
-
 user.chest[chestID] =
 
 (user.chest[chestID] || 0) + 1;
 
 
 
+
+
+// đếm rương
+
+chestCount[chestID] =
+
+(chestCount[chestID] || 0) + 1;
+
+
+
 }
+
+
+
+}
+
 
 
 
@@ -459,34 +435,22 @@ save();
 
 
 
-
-
 // ======================
-// HIỂN THỊ RƯƠNG
+// TEXT CÁ
 // ======================
 
 
-let chestText = "";
+let fishText="";
 
 
 
-if(chestID){
+for(const name in fishCount){
 
 
 
-const chest = chests[chestID];
+fishText +=
 
-
-
-chestText =
-
-`
-🎁 Nhặt được:
-
-${chest.emoji} **${chest.name}**
-⭐ ${chest.star} sao
-
-`;
+`🐟 ${name} x${fishCount[name]}\n`;
 
 
 
@@ -501,61 +465,88 @@ ${chest.emoji} **${chest.name}**
 
 
 // ======================
-// KẾT QUẢ
+// TEXT RƯƠNG
 // ======================
 
 
-const result =
+let chestText="";
 
-new EmbedBuilder()
 
+
+for(const id in chestCount){
+
+
+
+const chest = chests[id];
+
+
+
+chestText +=
+
+`${chest.emoji} ${chest.name} x${chestCount[id]}\n`;
+
+
+
+}
+
+
+
+if(!chestText)
+
+chestText="Không có";
+
+
+
+
+
+
+
+
+
+const result = new EmbedBuilder()
 
 .setColor("#00ff00")
 
-
-.setTitle("🎣 CÂU ĐƯỢC CÁ")
-
+.setTitle(`🎣 CÂU XONG x${amount}`)
 
 .setDescription(
 
 `
-${caught.emoji} **${caught.name}**
+🐟 **Cá bắt được**
+
+${fishText}
 
 
-⚖️ Cân nặng:
-
-${weight} kg
-
-
-🎣 Cần:
-
-${rod.emoji} ${rod.name}
-
-
-🪱 Mồi:
-
-${bait.emoji} ${bait.name}
-
-
+🎁 **Rương nhận được**
 
 ${chestText}
 
 
-📦 Đã lưu vào kho
+🎣 ${rod.emoji} ${rod.name}
+
+🪱 ${bait.emoji} ${bait.name}
+
+
+📦 Đã lưu kho
 
 `
 
-);
+)
+
+.setTimestamp();
+
+
+
+
 
 
 
 msg.edit({
 
-embeds:[
-result
-]
+embeds:[result]
 
 });
+
 
 
 
@@ -565,9 +556,8 @@ result
 
 
 
-
-
 }
+
 
 
 };

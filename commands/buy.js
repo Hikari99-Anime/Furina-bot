@@ -11,7 +11,8 @@ const {
 
 const {
     rods,
-    baits
+    baits,
+    emoji
 } = require("../config");
 
 
@@ -22,23 +23,31 @@ module.exports = {
 name:"buy",
 
 
+aliases:[
+    "b"
+],
+
+
 
 async execute(message,args){
 
 
 
-const user =
-getUser(
-message.guild.id,
-message.author.id
+const user = getUser(
+    message.guild.id,
+    message.author.id
 );
 
 
 
 
+const id = args[0];
 
-const id =
-args[0];
+
+const amount = Math.max(
+    1,
+    Number(args[1]) || 1
+);
 
 
 
@@ -46,24 +55,23 @@ args[0];
 
 if(!id){
 
-
 return message.reply(
-
 `
-❌ Nhập ID vật phẩm
+❌ Nhập vật phẩm
 
 Ví dụ:
 
 \`!buy can_1\`
 
-\`!buy moithuong\`
+\`!buy moithuong 5\`
 
 `
-
 );
 
-
 }
+
+
+
 
 
 
@@ -75,28 +83,26 @@ Ví dụ:
 // ======================
 
 
-if(
-rods[id]
-){
+if(rods[id]){
 
 
 
-const item =
-rods[id];
+const item = rods[id];
+
+
+const price = item.price * amount;
+
+const uses = item.uses * amount;
 
 
 
 
 
-if(
-user.money < item.price
-){
-
+if(user.money < price){
 
 return message.reply(
 "❌ Không đủ tiền"
 );
-
 
 }
 
@@ -105,16 +111,13 @@ return message.reply(
 
 
 
-
-user.money -= item.price;
-
+user.money -= price;
 
 
 
 
-if(
-!user.can
-)
+
+if(!user.can)
 
 user.can={
 
@@ -129,19 +132,22 @@ danhSach:{}
 
 
 
-if(
-!user.can.danhSach[id]
-)
+if(!user.can.danhSach[id])
 
 user.can.danhSach[id]=0;
 
 
 
+user.can.danhSach[id]+=uses;
 
 
 
-user.can.danhSach[id]
-+= item.uses;
+
+
+
+if(!user.can.dangDung)
+
+user.can.dangDung=id;
 
 
 
@@ -158,7 +164,6 @@ return message.reply({
 
 embeds:[
 
-
 new EmbedBuilder()
 
 .setColor("Green")
@@ -170,28 +175,24 @@ new EmbedBuilder()
 `
 ${item.emoji} **${item.name}**
 
-🎣 Lượt:
-+${item.uses}
-
-
-💰 Giá:
-${item.price.toLocaleString()} xu
-
-
-💵 Còn lại:
-${user.money.toLocaleString()} xu
-
+📦 Số lượng: x${amount}
+🎟️ Lượt: +${uses}
+⭐ Luck: ${item.luck}
+${emoji.money} Giá: ${price.toLocaleString()} xu
+💵 Còn lại: ${user.money.toLocaleString()} xu
 `
 
 )
+
+.setTimestamp()
 
 ]
 
 });
 
 
-
 }
+
 
 
 
@@ -205,28 +206,22 @@ ${user.money.toLocaleString()} xu
 // ======================
 
 
-if(
-baits[id]
-){
+if(baits[id]){
 
 
 
-const item =
-baits[id];
+const item = baits[id];
+
+
+const price = item.price * amount;
 
 
 
-
-
-if(
-user.money < item.price
-){
-
+if(user.money < price){
 
 return message.reply(
 "❌ Không đủ tiền"
 );
-
 
 }
 
@@ -236,17 +231,13 @@ return message.reply(
 
 
 
-user.money -= item.price;
+user.money -= price;
 
 
 
 
 
-
-
-if(
-!user.moi
-)
+if(!user.moi)
 
 user.moi={};
 
@@ -255,10 +246,7 @@ user.moi={};
 
 
 
-
-if(
-!user.moi[id]
-)
+if(!user.moi[id])
 
 user.moi[id]=0;
 
@@ -267,10 +255,9 @@ user.moi[id]=0;
 
 
 
-
 // mỗi lần mua +10 mồi
 
-user.moi[id]+=10;
+user.moi[id] += 10 * amount;
 
 
 
@@ -300,29 +287,25 @@ new EmbedBuilder()
 `
 ${item.emoji} **${item.name}**
 
-🪱 Nhận:
-x10
+📦 Số lượng: x${amount}
 
-
-💰 Giá:
-${item.price.toLocaleString()} xu
-
-
-💵 Còn lại:
-${user.money.toLocaleString()} xu
+🪱 Nhận: +${10 * amount}
+${emoji.money} Giá: ${price.toLocaleString()} xu
+💵 Còn lại: ${user.money.toLocaleString()} xu
 
 `
 
 )
 
+.setTimestamp()
+
 ]
+
 
 });
 
 
-
 }
-
 
 
 
@@ -331,12 +314,13 @@ ${user.money.toLocaleString()} xu
 
 
 return message.reply(
-"❌ Không tìm thấy vật phẩm này"
+"❌ Không tìm thấy vật phẩm"
 );
 
 
 
 }
+
 
 
 };
