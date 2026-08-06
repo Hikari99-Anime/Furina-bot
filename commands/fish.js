@@ -12,7 +12,8 @@ const {
 const {
     rods,
     baits,
-    fishList
+    fishList,
+    chests
 } = require("../config");
 
 
@@ -29,6 +30,7 @@ async execute(message,args){
 
 
 const user =
+
 getUser(
 message.guild.id,
 message.author.id
@@ -43,8 +45,7 @@ message.author.id
 // ======================
 
 
-const rodID =
-user.can.dangDung;
+const rodID = user.can.dangDung;
 
 
 
@@ -60,8 +61,8 @@ return message.reply(
 
 
 
-const rod =
-rods[rodID];
+
+const rod = rods[rodID];
 
 
 
@@ -101,13 +102,13 @@ return message.reply(
 
 
 
+
 // ======================
 // KIỂM TRA MỒI
 // ======================
 
 
-const baitID =
-args[0];
+const baitID = args[0];
 
 
 
@@ -133,8 +134,7 @@ Ví dụ:
 
 
 
-const bait =
-baits[baitID];
+const bait = baits[baitID];
 
 
 
@@ -153,7 +153,7 @@ return message.reply(
 
 
 if(
-(user.moi[baitID]||0)<=0
+(user.moi[baitID] || 0) <= 0
 ){
 
 
@@ -170,7 +170,10 @@ return message.reply(
 
 
 
-// TRỪ CẦN + MỒI
+// ======================
+// TRỪ VẬT PHẨM
+// ======================
+
 
 user.can.danhSach[rodID]--;
 
@@ -184,6 +187,10 @@ save();
 
 
 
+
+// ======================
+// LOADING
+// ======================
 
 
 const loading = new EmbedBuilder()
@@ -209,8 +216,8 @@ ${rod.emoji} **${rod.name}**
 
 
 
-const msg =
-await message.reply({
+
+const msg = await message.reply({
 
 embeds:[
 loading
@@ -225,29 +232,36 @@ loading
 
 
 
+
 setTimeout(()=>{
 
 
 
+
+
+
 // ======================
-// TÍNH TỈ LỆ
+// CHỌN CÁ
 // ======================
 
 
 let chance =
+
 Math.random()*100;
 
 
 
-// cần xịn tăng may mắn
+// tăng luck cần
 
 chance -= rod.luck;
 
 
 
-let total=0;
+let total = 0;
 
-let caught=null;
+let caught = null;
+
+
 
 
 
@@ -256,17 +270,14 @@ const fish of fishList
 ){
 
 
-
 total += fish.rate;
 
 
 
-if(
-chance <= total
-){
+if(chance <= total){
 
 
-caught=fish;
+caught = fish;
 
 break;
 
@@ -274,10 +285,7 @@ break;
 }
 
 
-
 }
-
-
 
 
 
@@ -285,7 +293,7 @@ break;
 
 if(!caught)
 
-caught=fishList[0];
+caught = fishList[0];
 
 
 
@@ -293,19 +301,29 @@ caught=fishList[0];
 
 
 
-// cân nặng
+
+
+// ======================
+// CÂN NẶNG
+// ======================
+
 
 const weight =
 
 Number(
 
 (
+
 Math.random()
+
 *
+
 (
 caught.max-caught.min
 )
+
 +
+
 caught.min
 
 ).toFixed(2)
@@ -319,7 +337,11 @@ caught.min
 
 
 
-// lưu cá
+
+// ======================
+// LƯU CÁ
+// ======================
+
 
 if(!user.fish)
 
@@ -327,9 +349,8 @@ user.fish={};
 
 
 
-if(
-!user.fish[caught.name]
-)
+
+if(!user.fish[caught.name])
 
 user.fish[caught.name]=[];
 
@@ -337,6 +358,96 @@ user.fish[caught.name]=[];
 
 
 user.fish[caught.name].push(weight);
+
+
+
+
+
+
+
+
+
+// ======================
+// RƠI RƯƠNG
+// ======================
+
+
+let chestID = null;
+
+
+const chestChance =
+
+Math.random()*100;
+
+
+
+
+
+if(chestChance <= 0.5){
+
+
+chestID="chest_5";
+
+
+}
+else if(chestChance <= 2){
+
+
+chestID="chest_4";
+
+
+}
+else if(chestChance <= 6){
+
+
+chestID="chest_3";
+
+
+}
+else if(chestChance <= 15){
+
+
+chestID="chest_2";
+
+
+}
+else if(chestChance <= 35){
+
+
+chestID="chest_1";
+
+
+}
+
+
+
+
+
+
+
+if(chestID){
+
+
+
+if(!user.chest)
+
+user.chest={};
+
+
+
+
+
+user.chest[chestID] =
+
+(user.chest[chestID] || 0) + 1;
+
+
+
+}
+
+
+
+
 
 
 
@@ -348,13 +459,62 @@ save();
 
 
 
+
+
+// ======================
+// HIỂN THỊ RƯƠNG
+// ======================
+
+
+let chestText = "";
+
+
+
+if(chestID){
+
+
+
+const chest = chests[chestID];
+
+
+
+chestText =
+
+`
+🎁 Nhặt được:
+
+${chest.emoji} **${chest.name}**
+⭐ ${chest.star} sao
+
+`;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ======================
+// KẾT QUẢ
+// ======================
+
+
 const result =
 
 new EmbedBuilder()
 
+
 .setColor("#00ff00")
 
+
 .setTitle("🎣 CÂU ĐƯỢC CÁ")
+
 
 .setDescription(
 
@@ -377,6 +537,10 @@ ${rod.emoji} ${rod.name}
 ${bait.emoji} ${bait.name}
 
 
+
+${chestText}
+
+
 📦 Đã lưu vào kho
 
 `
@@ -395,7 +559,11 @@ result
 
 
 
+
+
 },5000);
+
+
 
 
 

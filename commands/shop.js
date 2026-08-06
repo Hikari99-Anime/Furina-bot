@@ -1,155 +1,104 @@
-const {
-    EmbedBuilder
-} = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
-
-const {
-    rods,
-    baits,
-    emoji
-} = require("../config");
-
+const { rods, baits, emoji } = require("../config");
 
 
 module.exports = {
 
+    name:"shop",
 
-name:"shop",
-
-
-
-async execute(message,args,client){
+    async execute(message){
 
 
-
-let canText = "";
-
-let moiText = "";
+        let canText = "";
+        let moiText = "";
 
 
 
+        // CẦN CÂU
 
-// ======================
-// HIỂN THỊ CẦN CÂU
-// ======================
+        for(const id in rods){
 
+            const can = rods[id];
 
-for(
-const id in rods
-){
-
-
-const can = rods[id];
-
-
-canText +=
-
+            canText +=
 `
-${can.emoji} **${id} - ${can.name}**
-💰 Giá: \`${can.price.toLocaleString()} xu\`
-\`${can.price.toLocaleString()} xu\`
-🎣 Lượt: \`${can.uses}\`
-⭐ May mắn: \`${can.luck}\`
-Mua:
-\`!buyrod ${id}\`
+${can.emoji} **${can.name}**
+💰 ${can.price.toLocaleString()} xu
+🎣 ${can.uses} lượt
+⭐ Luck: ${can.luck}
+🛒 \`!buyrod ${id}\`
 
 `;
 
-}
+        }
 
 
 
 
+        // MỒI
 
-// ======================
-// HIỂN THỊ MỒI
-// ======================
+        for(const id in baits){
 
+            const bait = baits[id];
 
-for(
-const id in baits
-){
-
-
-const bait = baits[id];
-
-
-moiText +=
-
+            moiText +=
 `
-${bait.emoji} **${id} - ${bait.name}**
-💰 Giá: \`${bait.price.toLocaleString()} xu\`
-Mua:
-\`!buybait ${id}\`
+${bait.emoji} **${bait.name}**
+💰 ${bait.price.toLocaleString()} xu
+🛒 \`!buybait ${id}\`
 
 `;
 
-}
+        }
 
 
 
 
+        const embed = new EmbedBuilder()
 
+        .setColor("#ffaa00")
 
-const embed =
+        .setTitle(
+            `${emoji.shop} SHOP CÂU CÁ`
+        )
 
-new EmbedBuilder()
-
-
-.setColor("#ffaa00")
-
-
-.setTitle(
-`${emoji.shop} SHOP CÂU CÁ`
-)
-
-
-
-.setDescription(
-
+        .setDescription(
 `
+${emoji.rod} **CẦN CÂU**
 
-${emoji.rod} **🎣 CẦN CÂU**
 ${canText}
-${emoji.bait} **🪱 MỒI CÂU**
+
+━━━━━━━━━━━━━━
+
+${emoji.bait} **MỒI CÂU**
+
 ${moiText}
 
 
+📌 **Cách dùng**
 
-📌 Cách dùng:
 \`!buyrod can_1\`
+
 \`!rod can_1\`
+
 \`!buybait moivang\`
 `
+        )
 
-)
+        .setThumbnail(
+            message.client.user.displayAvatarURL()
+        )
 
-
-
-.setThumbnail(
-
-message.client.user.displayAvatarURL()
-
-)
-
-
-.setTimestamp();
+        .setTimestamp();
 
 
 
+        message.reply({
+            embeds:[embed]
+        });
 
 
-message.channel.send({
-
-embeds:[
-    embed
-]
-
-});
-
-
-
-}
-
+    }
 
 };

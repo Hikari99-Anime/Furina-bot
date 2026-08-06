@@ -8,6 +8,7 @@ let data = {};
 
 
 
+
 // =======================
 // LOAD DATA
 // =======================
@@ -17,7 +18,6 @@ if(fs.existsSync(file)){
 
     try{
 
-
         data = JSON.parse(
             fs.readFileSync(file,"utf8")
         );
@@ -26,14 +26,14 @@ if(fs.existsSync(file)){
     }
     catch(err){
 
-
         data = {};
-
 
     }
 
 
 }
+
+
 
 
 
@@ -67,6 +67,8 @@ function save(){
 
 
 
+
+
 // =======================
 // GET USER
 // =======================
@@ -89,19 +91,21 @@ function getUser(guildID,userID){
         data[guildID][userID]={
 
 
-            // tiền ban đầu
+            // tiền
 
             money:5000,
 
 
+            // daily
 
             daily:0,
 
 
 
-            // kho cá
+            // cá
 
             fish:{},
+
 
 
 
@@ -110,18 +114,15 @@ function getUser(guildID,userID){
             can:{
 
 
-                // cần đang dùng
-
                 dangDung:null,
 
-
-
-                // danh sách cần
 
                 danhSach:{}
 
 
             },
+
+
 
 
 
@@ -139,7 +140,29 @@ function getUser(guildID,userID){
                 moivang:0
 
 
-            }
+            },
+
+
+
+
+
+
+            // =================
+            // RƯƠNG
+            // =================
+
+            chest:{},
+
+
+
+
+
+            // =================
+            // CHÌA KHÓA
+            // =================
+
+            keys:{}
+
 
 
 
@@ -165,15 +188,17 @@ function getUser(guildID,userID){
 
 
 
+
     // =====================
     // FIX DATA CŨ
     // =====================
 
 
 
-    if(!user.money)
+    if(user.money === undefined)
 
         user.money=0;
+
 
 
 
@@ -181,6 +206,8 @@ function getUser(guildID,userID){
     if(!user.fish)
 
         user.fish={};
+
+
 
 
 
@@ -207,9 +234,12 @@ function getUser(guildID,userID){
 
 
 
+
     if(!user.can.danhSach)
 
         user.can.danhSach={};
+
+
 
 
 
@@ -236,6 +266,38 @@ function getUser(guildID,userID){
 
 
     }
+
+
+
+
+
+
+
+    // =====================
+    // FIX RƯƠNG
+    // =====================
+
+
+    if(!user.chest)
+
+        user.chest={};
+
+
+
+
+
+
+    // =====================
+    // FIX CHÌA KHÓA
+    // =====================
+
+
+    if(!user.keys)
+
+        user.keys={};
+
+
+
 
 
 
@@ -270,9 +332,10 @@ function getUser(guildID,userID){
 
 
 
+
+
             if(
-                old.count
-                &&
+                old.count &&
                 old.weight
             ){
 
@@ -296,13 +359,16 @@ function getUser(guildID,userID){
 
                     user.fish[name]
                     .push(
+
                         Number(
                             avg.toFixed(2)
                         )
+
                     );
 
 
                 }
+
 
 
             }
@@ -310,6 +376,7 @@ function getUser(guildID,userID){
 
 
         }
+
 
 
 
@@ -340,12 +407,16 @@ function getUser(guildID,userID){
 
 
 
+
+
 module.exports={
 
 
     getUser,
 
+
     save,
+
 
     data
 
