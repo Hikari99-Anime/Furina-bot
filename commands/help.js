@@ -157,7 +157,13 @@ Rút bài hoặc dừng, so điểm với nhà cái.
 
 \`!taixiu\`
 
-Mở ván cược Tài/Xỉu.
+Mở ván cược. Bấm nút để chọn cửa rồi nhập tiền cược:
+
+🔴 TÀI · 🔵 XỈU · ⚫ CHẴN · ⚪ LẺ (1:1)
+
+🔢 CHỌN SỐ (đoán đúng tổng 3 xúc xắc, ăn cao hơn)
+
+Có thể cược nhiều cửa cùng lúc.
 
 
 

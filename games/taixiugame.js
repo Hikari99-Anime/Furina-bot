@@ -52,7 +52,7 @@ return true;
 
 
 
-function playerBet(id){
+function hasBetType(id,type){
 
 
 if(!currentGame)
@@ -62,9 +62,29 @@ return false;
 
 return currentGame.players.some(
 
-p => p.id === id
+p => p.id === id && p.type === type
 
 );
+
+
+}
+
+
+
+
+function totalBetOf(id){
+
+
+if(!currentGame)
+return 0;
+
+
+
+return currentGame.players
+
+.filter(p => p.id === id)
+
+.reduce((sum,p) => sum + p.money, 0);
 
 
 }
@@ -100,7 +120,9 @@ getGame,
 
 addBet,
 
-playerBet,
+hasBetType,
+
+totalBetOf,
 
 closeGame
 
