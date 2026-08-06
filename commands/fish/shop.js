@@ -12,42 +12,44 @@ const {
 
 
 
+
 // ======================
-// SHOP MAIN EMBED
+// SHOP EMBED
 // ======================
+
 
 const firstEmbed = new EmbedBuilder()
 
 .setColor("#f5b942")
 
-.setTitle("╭・🛒 SHOP CÂU CÁ")
+.setTitle(
+"╭・🛒 SHOP CÂU CÁ"
+)
+
 
 .setDescription(
 `
 ╭・🌊 **Chào mừng ngư dân**
 
-Nơi nâng cấp hành trình chinh phục đại dương 🎣
+Nơi mua sắm trang bị cho hành trình chinh phục đại dương 🎣
 
 
-╭・🎣 Cần câu
+╭・🎣 **Cần câu**
 
-> Tăng sức mạnh câu cá  
-> Mở khóa những vùng biển mới
-
-
-╭・🪱 Mồi câu
-
-> Tăng tỷ lệ gặp cá hiếm  
-> Hỗ trợ săn cá huyền thoại
+> Nâng cấp cần để câu được nhiều cá hơn
 
 
-╭・🗝️ Chìa khóa
+╭・🪱 **Mồi câu**
 
-> Mở rương bí ẩn  
-> Nhận phần thưởng giá trị
+> Tăng cơ hội gặp cá hiếm
 
 
-╭・💰 Tiền tệ
+╭・🗝️ **Chìa khóa**
+
+> Mở rương nhận phần thưởng
+
+
+╭・💰 **Tiền tệ**
 
 ${emoji.money} Xu
 
@@ -59,10 +61,19 @@ ${emoji.money} Xu
 
 .setFooter({
 
-text:
-"🎣 Fish System • Adventure"
+text:"🎣 Fish System"
 
 });
+
+
+
+
+
+
+
+// ======================
+// BUTTON
+// ======================
 
 
 const row = new ActionRowBuilder()
@@ -80,6 +91,7 @@ new ButtonBuilder()
 
 
 
+
 new ButtonBuilder()
 
 .setCustomId("shop_bait")
@@ -87,6 +99,7 @@ new ButtonBuilder()
 .setLabel("🪱 Mồi câu")
 
 .setStyle(ButtonStyle.Success),
+
 
 
 
@@ -98,14 +111,67 @@ new ButtonBuilder()
 
 .setStyle(ButtonStyle.Secondary)
 
+
 );
 
 
 
+
+
+
+
+
+// ======================
+// COMMAND
+// ======================
+
+
 module.exports = {
 
-firstEmbed,
+
+name:"shop",
+
+
+
+aliases:[
+
+"cuahang",
+
+"shopca"
+
+],
+
+
+
+
+
+async execute(message){
+
+
+
+return message.reply({
+
+
+embeds:[
+
+firstEmbed
+
+],
+
+
+components:[
 
 row
+
+]
+
+
+});
+
+
+
+}
+
+
 
 };

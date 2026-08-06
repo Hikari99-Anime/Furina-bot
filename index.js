@@ -18,7 +18,10 @@ const fs = require("fs");
 
 
 
+
+
 const client = new Client({
+
 
     intents:[
 
@@ -30,13 +33,17 @@ const client = new Client({
 
     ]
 
+
 });
 
 
 
 
+
+
+
 // ======================
-// COMMAND LOADER
+// COMMAND SYSTEM
 // ======================
 
 
@@ -44,11 +51,17 @@ client.commands = new Collection();
 
 
 
+
+
 function loadCommands(folder){
 
 
+
     if(!fs.existsSync(folder))
+
         return;
+
+
 
 
 
@@ -56,55 +69,98 @@ function loadCommands(folder){
 
 
 
+
+
+
     for(const file of files){
 
 
-        const path = `${folder}/${file}`;
+
+        const filePath =
+        `${folder}/${file}`;
 
 
-
-        const stat = fs.statSync(path);
-
-
-
-        // nếu là folder con
-
-        if(stat.isDirectory()){
-
-
-            loadCommands(path);
-
-            continue;
-
-        }
-
-
-
-        // chỉ load js
-
-        if(!file.endsWith(".js"))
-
-            continue;
 
 
 
         try{
 
 
+
+            const stat =
+            fs.statSync(filePath);
+
+
+
+
+
+            // LOAD FOLDER CON
+
+            if(stat.isDirectory()){
+
+
+                loadCommands(filePath);
+
+
+                continue;
+
+
+            }
+
+
+
+
+
+
+            // CHỈ LOAD JS
+
+            if(!file.endsWith(".js"))
+
+                continue;
+
+
+
+
+
+
+
+
             delete require.cache[
-                require.resolve(`./${path}`)
+
+                require.resolve(
+                    `./${filePath}`
+                )
+
             ];
 
 
 
+
+
+
+
             const command =
-            require(`./${path}`);
+            require(`./${filePath}`);
 
 
 
-            if(!command.name)
+
+
+
+
+            // bỏ qua file không phải command
+
+            if(
+                !command.name ||
+                !command.execute
+            )
 
                 continue;
+
+
+
+
+
 
 
 
@@ -118,10 +174,18 @@ function loadCommands(folder){
 
 
 
+
+
+
+
+
+
             if(command.aliases){
 
 
+
                 for(const alias of command.aliases){
+
 
 
                     client.commands.set(
@@ -133,15 +197,27 @@ function loadCommands(folder){
                     );
 
 
+
                 }
+
 
             }
 
 
 
+
+
+
+
+
             console.log(
+
                 `✅ Loaded: ${command.name}`
+
             );
+
+
+
 
 
         }
@@ -149,21 +225,31 @@ function loadCommands(folder){
         catch(err){
 
 
+
             console.log(
-                `❌ Load lỗi: ${path}`
+
+                `❌ Load lỗi: ${filePath}`
+
             );
+
 
 
             console.error(err);
 
 
+
         }
+
 
 
     }
 
 
+
 }
+
+
+
 
 
 
@@ -176,49 +262,69 @@ loadCommands("commands");
 
 
 
+
+
 // ======================
-// BOT READY
+// READY
 // ======================
 
 
 client.once(
+
 "ready",
+
 ()=>{
+
 
 
     console.log("");
 
-    console.log(
-        "===================="
-    );
+    console.log("====================");
 
 
+
     console.log(
+
         `🤖 ${client.user.tag} ONLINE`
+
     );
 
 
+
     console.log(
+
         `📁 Commands: ${client.commands.size}`
+
     );
 
 
+
     console.log(
+
         `🎁 Chest: ${Object.keys(chests).length}`
+
     );
 
 
+
     console.log(
+
         `🔑 Key: ${Object.keys(keys).length}`
+
     );
 
 
-    console.log(
-        "===================="
-    );
+
+    console.log("====================");
 
 
-});
+
+}
+
+);
+
+
+
 
 
 
@@ -233,8 +339,11 @@ client.once(
 
 
 client.on(
+
 "messageCreate",
+
 async message=>{
+
 
 
     if(message.author.bot)
@@ -243,9 +352,15 @@ async message=>{
 
 
 
+
+
     if(!message.content.startsWith("!"))
 
         return;
+
+
+
+
 
 
 
@@ -261,11 +376,20 @@ async message=>{
 
 
 
+
+
+
+
     const cmd =
 
     args.shift()
 
     .toLowerCase();
+
+
+
+
+
 
 
 
@@ -275,13 +399,22 @@ async message=>{
 
 
 
+
+
+
+
     if(!command)
 
         return;
 
 
 
+
+
+
+
     try{
+
 
 
         await command.execute(
@@ -295,36 +428,48 @@ async message=>{
         );
 
 
+
     }
+
 
 
     catch(err){
 
 
+
         console.error(
 
-            `❌ COMMAND ERROR (${cmd})`
+            `❌ COMMAND ERROR: ${cmd}`
 
         );
+
 
 
         console.error(err);
 
 
 
-        await message.reply({
 
-            content:
+
+
+        message.reply(
+
             "❌ Có lỗi xảy ra khi chạy lệnh."
 
-        });
+        );
 
 
 
     }
 
 
-});
+
+}
+
+);
+
+
+
 
 
 
@@ -334,33 +479,54 @@ async message=>{
 
 
 // ======================
-// ERROR HANDLER
+// ERROR
 // ======================
 
 
 process.on(
+
 "unhandledRejection",
+
 err=>{
 
+
     console.error(
+
         "Unhandled Error:",
+
         err
+
     );
 
-});
+
+}
+
+);
+
+
 
 
 
 process.on(
+
 "uncaughtException",
+
 err=>{
 
+
     console.error(
+
         "Crash Error:",
+
         err
+
     );
 
-});
+
+}
+
+);
+
 
 
 
@@ -375,5 +541,7 @@ err=>{
 
 
 client.login(
+
 process.env.TOKEN
+
 );
