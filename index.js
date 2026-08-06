@@ -36,7 +36,7 @@ const client = new Client({
 
 
 // ======================
-// COMMAND SYSTEM
+// COMMAND LOADER
 // ======================
 
 
@@ -45,6 +45,11 @@ client.commands = new Collection();
 
 
 function loadCommands(folder){
+
+
+    if(!fs.existsSync(folder))
+        return;
+
 
 
     const files = fs.readdirSync(folder);
@@ -58,7 +63,13 @@ function loadCommands(folder){
 
 
 
-        if(fs.statSync(path).isDirectory()){
+        const stat = fs.statSync(path);
+
+
+
+        // nếu là folder con
+
+        if(stat.isDirectory()){
 
 
             loadCommands(path);
@@ -69,6 +80,8 @@ function loadCommands(folder){
 
 
 
+        // chỉ load js
+
         if(!file.endsWith(".js"))
 
             continue;
@@ -76,6 +89,12 @@ function loadCommands(folder){
 
 
         try{
+
+
+            delete require.cache[
+                require.resolve(`./${path}`)
+            ];
+
 
 
             const command =
@@ -90,8 +109,11 @@ function loadCommands(folder){
 
 
             client.commands.set(
+
                 command.name,
+
                 command
+
             );
 
 
@@ -103,8 +125,11 @@ function loadCommands(folder){
 
 
                     client.commands.set(
+
                         alias,
+
                         command
+
                     );
 
 
@@ -115,20 +140,17 @@ function loadCommands(folder){
 
 
             console.log(
-                "✅ Loaded:",
-                command.name
+                `✅ Loaded: ${command.name}`
             );
 
 
         }
 
-
         catch(err){
 
 
             console.log(
-                "❌ Load lỗi:",
-                path
+                `❌ Load lỗi: ${path}`
             );
 
 
@@ -152,8 +174,10 @@ loadCommands("commands");
 
 
 
+
+
 // ======================
-// READY
+// BOT READY
 // ======================
 
 
@@ -162,26 +186,41 @@ client.once(
 ()=>{
 
 
+    console.log("");
+
     console.log(
-        `🤖 ${client.user.tag} online`
+        "===================="
     );
 
 
-
     console.log(
-        "🎁 Chest:",
-        Object.keys(chests).length
+        `🤖 ${client.user.tag} ONLINE`
     );
 
 
+    console.log(
+        `📁 Commands: ${client.commands.size}`
+    );
+
 
     console.log(
-        "🔑 Key:",
-        Object.keys(keys).length
+        `🎁 Chest: ${Object.keys(chests).length}`
+    );
+
+
+    console.log(
+        `🔑 Key: ${Object.keys(keys).length}`
+    );
+
+
+    console.log(
+        "===================="
     );
 
 
 });
+
+
 
 
 
@@ -211,20 +250,27 @@ async message=>{
 
 
     const args =
+
     message.content
+
     .slice(1)
+
     .trim()
+
     .split(/\s+/);
 
 
 
     const cmd =
+
     args.shift()
+
     .toLowerCase();
 
 
 
     const command =
+
     client.commands.get(cmd);
 
 
@@ -256,19 +302,63 @@ async message=>{
 
 
         console.error(
-            "COMMAND ERROR:",
-            err
+
+            `❌ COMMAND ERROR (${cmd})`
+
         );
 
 
+        console.error(err);
 
-        message.reply(
+
+
+        await message.reply({
+
+            content:
             "❌ Có lỗi xảy ra khi chạy lệnh."
-        );
+
+        });
+
 
 
     }
 
+
+});
+
+
+
+
+
+
+
+
+// ======================
+// ERROR HANDLER
+// ======================
+
+
+process.on(
+"unhandledRejection",
+err=>{
+
+    console.error(
+        "Unhandled Error:",
+        err
+    );
+
+});
+
+
+
+process.on(
+"uncaughtException",
+err=>{
+
+    console.error(
+        "Crash Error:",
+        err
+    );
 
 });
 

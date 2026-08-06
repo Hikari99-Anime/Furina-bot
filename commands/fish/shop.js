@@ -1,3 +1,21 @@
+const {
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
+} = require("discord.js");
+
+
+const {
+    emoji
+} = require("../../config");
+
+
+
+// ======================
+// SHOP MAIN EMBED
+// ======================
+
 const firstEmbed = new EmbedBuilder()
 
 .setColor("#f5b942")
@@ -6,22 +24,30 @@ const firstEmbed = new EmbedBuilder()
 
 .setDescription(
 `
-Chào mừng bạn đến với cửa hàng 🎣
+╭・🌊 **Chào mừng ngư dân**
+
+Nơi nâng cấp hành trình chinh phục đại dương 🎣
 
 
-╰・🎣 **Cần câu**
-> Nâng cấp cần để câu được nhiều cá hơn
+╭・🎣 Cần câu
+
+> Tăng sức mạnh câu cá  
+> Mở khóa những vùng biển mới
 
 
-╰・🪱 **Mồi câu**
-> Tăng cơ hội gặp cá hiếm
+╭・🪱 Mồi câu
+
+> Tăng tỷ lệ gặp cá hiếm  
+> Hỗ trợ săn cá huyền thoại
 
 
-╰・🗝️ **Chìa khóa**
-> Mở rương nhận phần thưởng
+╭・🗝️ Chìa khóa
+
+> Mở rương bí ẩn  
+> Nhận phần thưởng giá trị
 
 
-╭・💰 TIỀN TỆ
+╭・💰 Tiền tệ
 
 ${emoji.money} Xu
 
@@ -30,6 +56,56 @@ ${emoji.money} Xu
 `
 )
 
+
 .setFooter({
-text:"🎣 Fish System"
+
+text:
+"🎣 Fish System • Adventure"
+
 });
+
+
+const row = new ActionRowBuilder()
+
+.addComponents(
+
+
+new ButtonBuilder()
+
+.setCustomId("shop_rod")
+
+.setLabel("🎣 Cần câu")
+
+.setStyle(ButtonStyle.Primary),
+
+
+
+new ButtonBuilder()
+
+.setCustomId("shop_bait")
+
+.setLabel("🪱 Mồi câu")
+
+.setStyle(ButtonStyle.Success),
+
+
+
+new ButtonBuilder()
+
+.setCustomId("shop_key")
+
+.setLabel("🗝️ Chìa khóa")
+
+.setStyle(ButtonStyle.Secondary)
+
+);
+
+
+
+module.exports = {
+
+firstEmbed,
+
+row
+
+};
