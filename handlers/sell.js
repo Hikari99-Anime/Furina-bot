@@ -15,6 +15,21 @@ const {
 
 
 
+const DIACRITICS = new RegExp("[̀-ͯ]","g");
+
+function normalize(str){
+
+    return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(DIACRITICS,"")
+    .replaceAll("đ","d")
+    .replaceAll(" ","");
+
+}
+
+
+
 module.exports = {
 
 
@@ -103,11 +118,9 @@ fishList.find(
 
 f =>
 
-f.name
-.toLowerCase()
-.replaceAll(" ","")
+normalize(f.name)
 .includes(
-fishID.toLowerCase()
+normalize(fishID)
 )
 
 );
