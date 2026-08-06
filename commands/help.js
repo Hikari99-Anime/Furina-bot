@@ -115,10 +115,6 @@ Xem cần đang dùng
 
 \`!rod can_1\`
 
-<<<<<<< HEAD
-`),
-=======
-
 
 💵 **BÁN CÁ**
 
@@ -210,8 +206,7 @@ text:
 
 })
 
-.setTimestamp();
->>>>>>> 418111c2b25b627f983d4cbb419a284e8a087174
+.setTimestamp(),
 
 
 

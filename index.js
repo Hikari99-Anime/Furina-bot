@@ -71,6 +71,11 @@ for(const file of commandFiles){
     );
 
 
+    if(command.aliases)
+        for(const alias of command.aliases)
+            client.commands.set(alias, command);
+
+
 }
 
 
@@ -217,8 +222,6 @@ async message=>{
 
 
 
-<<<<<<< HEAD
-=======
 // INTERACTION (SLASH COMMAND + TÀI XỈU BET MODAL)
 
 client.on(
@@ -414,21 +417,6 @@ err
 
 
 
-
-client.once(
-"ready",
-()=>{
-
-
-console.log(
-`✅ Bot online: ${client.user.tag}`
-);
-
-
-});
-
-
->>>>>>> 418111c2b25b627f983d4cbb419a284e8a087174
 
 
 // ======================
