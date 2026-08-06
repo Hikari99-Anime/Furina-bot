@@ -1,134 +1,144 @@
 require("dotenv").config();
 
-const {
-chests,
-keys
-}=require("./config");
-
 
 const {
-Client,
-GatewayIntentBits,
-Collection
-}=require("discord.js");
+    chests,
+    keys
+} = require("./config");
 
 
-const fs=require("fs");
+const {
+    Client,
+    GatewayIntentBits,
+    Collection
+} = require("discord.js");
+
+
+const fs = require("fs");
 
 
 
-const client=new Client({
+const client = new Client({
 
-intents:[
+    intents:[
 
-GatewayIntentBits.Guilds,
+        GatewayIntentBits.Guilds,
 
-GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessages,
 
-GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent
 
-]
+    ]
 
 });
 
 
 
 
+// ======================
+// COMMAND SYSTEM
+// ======================
 
-// LOAD COMMAND
 
-client.commands=new Collection();
+client.commands = new Collection();
 
 
 
 function loadCommands(folder){
 
 
-for(const file of fs.readdirSync(folder)){
-
-
-const path=`${folder}/${file}`;
-
-
-if(fs.statSync(path).isDirectory()){
-
-loadCommands(path);
-
-continue;
-
-}
-
-
-if(!file.endsWith(".js"))
-
-continue;
+    const files = fs.readdirSync(folder);
 
 
 
-try{
+    for(const file of files){
 
 
-const command=require(`./${path}`);
-
-
-
-if(!command.name)
-
-continue;
+        const path = `${folder}/${file}`;
 
 
 
-client.commands.set(
-command.name,
-command
-);
+        if(fs.statSync(path).isDirectory()){
+
+
+            loadCommands(path);
+
+            continue;
+
+        }
 
 
 
-if(command.aliases){
+        if(!file.endsWith(".js"))
 
-
-for(const alias of command.aliases){
-
-
-client.commands.set(
-alias,
-command
-);
-
-
-}
-
-
-}
+            continue;
 
 
 
-console.log(
-"✅ Loaded:",
-command.name
-);
+        try{
+
+
+            const command =
+            require(`./${path}`);
 
 
 
-}
+            if(!command.name)
 
-catch(err){
-
-
-console.log(
-"❌ Load lỗi:",
-path
-);
+                continue;
 
 
-console.error(err);
+
+            client.commands.set(
+                command.name,
+                command
+            );
 
 
-}
+
+            if(command.aliases){
 
 
-}
+                for(const alias of command.aliases){
+
+
+                    client.commands.set(
+                        alias,
+                        command
+                    );
+
+
+                }
+
+            }
+
+
+
+            console.log(
+                "✅ Loaded:",
+                command.name
+            );
+
+
+        }
+
+
+        catch(err){
+
+
+            console.log(
+                "❌ Load lỗi:",
+                path
+            );
+
+
+            console.error(err);
+
+
+        }
+
+
+    }
 
 
 }
@@ -142,28 +152,33 @@ loadCommands("commands");
 
 
 
-
+// ======================
 // READY
+// ======================
 
 
-client.once("ready",()=>{
+client.once(
+"ready",
+()=>{
 
 
-console.log(
-`🤖 ${client.user.tag} online`
-);
+    console.log(
+        `🤖 ${client.user.tag} online`
+    );
 
 
-console.log(
-"🎁 Chest:",
-Object.keys(chests).length
-);
+
+    console.log(
+        "🎁 Chest:",
+        Object.keys(chests).length
+    );
 
 
-console.log(
-"🔑 Key:",
-Object.keys(keys).length
-);
+
+    console.log(
+        "🔑 Key:",
+        Object.keys(keys).length
+    );
 
 
 });
@@ -173,9 +188,9 @@ Object.keys(keys).length
 
 
 
-
-
-// MESSAGE
+// ======================
+// PREFIX COMMAND
+// ======================
 
 
 client.on(
@@ -183,70 +198,76 @@ client.on(
 async message=>{
 
 
-if(message.author.bot)
+    if(message.author.bot)
 
-return;
-
-
-
-if(!message.content.startsWith("!"))
-
-return;
+        return;
 
 
 
-const args=
-message.content
-.slice(1)
-.trim()
-.split(/\s+/);
+    if(!message.content.startsWith("!"))
+
+        return;
 
 
 
-const cmd=
-args.shift()
-.toLowerCase();
+    const args =
+    message.content
+    .slice(1)
+    .trim()
+    .split(/\s+/);
 
 
 
-const command=
-client.commands.get(cmd);
+    const cmd =
+    args.shift()
+    .toLowerCase();
 
 
 
-if(!command)
-
-return;
-
+    const command =
+    client.commands.get(cmd);
 
 
-try{
+
+    if(!command)
+
+        return;
 
 
-await command.execute(
-message,
-args,
-client
-);
+
+    try{
 
 
-}
+        await command.execute(
 
-catch(err){
+            message,
 
+            args,
 
-console.error(
-"COMMAND ERROR:",
-err
-);
+            client
 
-
-message.reply(
-"❌ Lệnh bị lỗi."
-);
+        );
 
 
-}
+    }
+
+
+    catch(err){
+
+
+        console.error(
+            "COMMAND ERROR:",
+            err
+        );
+
+
+
+        message.reply(
+            "❌ Có lỗi xảy ra khi chạy lệnh."
+        );
+
+
+    }
 
 
 });
@@ -254,200 +275,13 @@ message.reply(
 
 
 
-// INTERACTION (SLASH COMMAND + TÀI XỈU BET MODAL)
 
-client.on(
-"interactionCreate",
-async interaction=>{
 
 
-try{
 
-
-if(
-interaction.isChatInputCommand() &&
-interaction.commandName === "ping"
-){
-
-return interaction.reply(
-"🏓 Pong! Bot đang online."
-);
-
-}
-
-
-
-if(
-interaction.isModalSubmit() &&
-interaction.customId.startsWith("txbet_")
-){
-
-
-const {
-addBet,
-getGame,
-hasBetType,
-totalBetOf
-} = require("./games/taixiugame");
-
-
-const {
-getUser
-} = require("./database");
-
-
-const type =
-interaction.customId.replace(
-"txbet_",
-""
-);
-
-
-const amount =
-Number(
-interaction.fields
-.getTextInputValue("money")
-);
-
-
-if(
-!Number.isInteger(amount)
-||
-amount<=0
-){
-
-return interaction.reply({
-content:
-"❌ Số tiền cược không hợp lệ",
-flags:64
-});
-
-}
-
-
-let number = null;
-
-
-if(type==="so"){
-
-
-number =
-Number(
-interaction.fields
-.getTextInputValue("sonum")
-);
-
-
-if(
-!Number.isInteger(number)
-||
-number<3
-||
-number>18
-){
-
-return interaction.reply({
-content:
-"❌ Số dự đoán phải từ 3 đến 18",
-flags:64
-});
-
-}
-
-
-}
-
-
-if(!getGame()){
-
-return interaction.reply({
-content:
-"❌ Ván tài xỉu đã kết thúc",
-flags:64
-});
-
-}
-
-
-if(
-hasBetType(interaction.user.id,type)
-){
-
-return interaction.reply({
-content:
-"❌ Bạn đã cược cửa này rồi",
-flags:64
-});
-
-}
-
-
-const user =
-getUser(
-interaction.guild.id,
-interaction.user.id
-);
-
-
-const daCuoc =
-totalBetOf(interaction.user.id);
-
-
-if(user.money < daCuoc+amount){
-
-return interaction.reply({
-content:
-"❌ Không đủ tiền",
-flags:64
-});
-
-}
-
-
-const label =
-
-type==="tai" ? "🔴 TÀI" :
-
-type==="xiu" ? "🔵 XỈU" :
-
-type==="chan" ? "⚫ CHẴN" :
-
-type==="le" ? "⚪ LẺ" :
-
-`🔢 SỐ ${number}`;
-
-
-addBet({
-id:interaction.user.id,
-type,
-number,
-money:amount
-});
-
-
-return interaction.reply({
-content:
-`✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${label}**`,
-flags:64
-});
-
-
-}
-
-
-}catch(err){
-
-console.log(
-"INTERACTION ERROR:",
-err
-);
-
-}
-
-
-});
-
-
+// ======================
+// LOGIN
+// ======================
 
 
 client.login(

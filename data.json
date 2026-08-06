@@ -70,7 +70,17 @@
       "keys": {
         "key_4": 0
       },
-      "pity": {}
+      "pity": {},
+      "stats": {
+        "catch": 0,
+        "sell": 0,
+        "kg": 0
+      },
+      "quest": {
+        "date": "",
+        "list": [],
+        "claim": false
+      }
     },
     "398030689905278977": {
       "money": 3000,
@@ -87,7 +97,17 @@
       },
       "chest": {},
       "keys": {},
-      "pity": {}
+      "pity": {},
+      "stats": {
+        "catch": 0,
+        "sell": 0,
+        "kg": 0
+      },
+      "quest": {
+        "date": "",
+        "list": [],
+        "claim": false
+      }
     }
   }
 }

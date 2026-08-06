@@ -1,20 +1,28 @@
-const emoji={
+const emoji = {
 
-fish:"",
-bait:"",
-rod:"",
+fish:"🐟",
+
+bait:"🪱",
+
+rod:"🎣",
 
 money:"<:Fcoin_Vang:1534730937298980924>",
 
-bag:"",
-shop:"",
+bag:"🎒",
 
-caro:"",
-cachep:"",
-muc:"",
-canoc:"",
-camap:"",
-thanthoai:""
+shop:"🛒",
+
+caro:"🐟",
+
+cachep:"🐠",
+
+muc:"🦑",
+
+canoc:"🐡",
+
+camap:"🦈",
+
+thanthoai:"✨"
 
 };
 
@@ -22,208 +30,384 @@ thanthoai:""
 
 function formatMoney(number){
 
+
 if(number>=1000000000)
-return (number/1000000000).toFixed(1).replace(".0","")+"B";
+
+return (number/1000000000)
+.toFixed(1)
+.replace(".0","")+"B";
+
 
 if(number>=1000000)
-return (number/1000000).toFixed(1).replace(".0","")+"M";
+
+return (number/1000000)
+.toFixed(1)
+.replace(".0","")+"M";
+
 
 if(number>=1000)
-return (number/1000).toFixed(1).replace(".0","")+"K";
+
+return (number/1000)
+.toFixed(1)
+.replace(".0","")+"K";
+
 
 return number.toString();
 
+
 }
+
+
 
 
 
 module.exports={
 
 
+
 emoji,
+
 
 formatMoney,
 
 
 
+
+// =================
+// CẦN CÂU
+// =================
+
 rods:{
 
 
 can_1:{
+
 name:"Cần Tre",
+
 emoji:"<:cancau_1:1534625089088393358>",
+
 price:10000,
+
 uses:20,
+
 luck:1,
+
 star:1
+
 },
+
 
 
 can_2:{
+
 name:"Cần Bạc",
+
 emoji:"<:cancau_2:1534635569219633212>",
+
 price:25000,
+
 uses:50,
+
 luck:3,
+
 star:2
+
 },
+
 
 
 can_3:{
+
 name:"Cần Vàng",
+
 emoji:"<:cancau_3:1534625401119445170>",
+
 price:50000,
+
 uses:100,
+
 luck:6,
+
 star:3
+
 },
+
 
 
 can_4:{
+
 name:"Cần Bạch Kim",
+
 emoji:"<:cancau_4:1534635400793165965>",
+
 price:100000,
+
 uses:200,
+
 luck:10,
+
 star:4
+
 },
+
 
 
 can_5:{
+
 name:"Cần Thần Thoại",
+
 emoji:"<:cancau_5:1534635179778511100>",
+
 price:500000,
+
 uses:500,
+
 luck:20,
+
 star:5
+
 }
+
 
 },
 
+
+
+
+
+
+// =================
+// MỒI
+// =================
 
 
 baits:{
 
 
 moithuong:{
+
 name:"Mồi thường",
+
 emoji:"🪱",
+
 price:100,
+
 rare:0
+
 },
+
 
 
 moibac:{
+
 name:"Mồi bạc",
+
 emoji:"🦐",
+
 price:200,
+
 rare:5
+
 },
+
 
 
 moivang:{
+
 name:"Mồi vàng",
+
 emoji:"✨",
+
 price:500,
+
 rare:15
+
 }
+
 
 },
 
+
+
+
+
+
+// =================
+// CÁ
+// =================
 
 
 fishList:[
 
 
 {
+
 id:"caro",
+
 name:"Cá rô",
-emoji:emoji.caro||"🐟",
+
+emoji:emoji.caro,
+
 rarity:"COMMON",
+
 color:"⚪",
+
 rate:45,
+
 min:0.2,
+
 max:5,
+
 sell:100
+
 },
 
 
+
 {
+
 id:"cachep",
+
 name:"Cá chép",
-emoji:emoji.cachep||"🐟",
+
+emoji:emoji.cachep,
+
 rarity:"UNCOMMON",
+
 color:"🟢",
+
 rate:30,
+
 min:1,
+
 max:10,
+
 sell:200
+
 },
 
 
+
 {
+
 id:"muc",
+
 name:"Mực",
-emoji:emoji.muc||"🦑",
+
+emoji:emoji.muc,
+
 rarity:"RARE",
+
 color:"🔵",
+
 rate:15,
+
 min:0.5,
+
 max:5,
+
 sell:500
+
 },
 
 
+
 {
+
 id:"canoc",
+
 name:"Cá nóc",
-emoji:emoji.canoc||"🐡",
+
+emoji:emoji.canoc,
+
 rarity:"EPIC",
+
 color:"🟣",
+
 rate:7,
+
 min:1,
+
 max:15,
+
 sell:1000
+
 },
 
 
+
 {
+
 id:"camap",
+
 name:"Cá mập",
-emoji:emoji.camap||"🦈",
+
+emoji:emoji.camap,
+
 rarity:"LEGENDARY",
+
 color:"🟡",
+
 rate:2.8,
+
 min:20,
+
 max:200,
+
 sell:5000
+
 },
 
 
+
 {
+
 id:"thanthoai",
+
 name:"Cá thần thoại",
-emoji:emoji.thanthoai||"✨",
+
+emoji:emoji.thanthoai,
+
 rarity:"MYTHICAL",
+
 color:"🔴",
+
 rate:0.2,
+
 min:300,
+
 max:1000,
+
 sell:50000
+
 }
+
 
 ],
 
+
+
+
+
+
+// =================
+// RƯƠNG
+// =================
 
 
 chests:{
 
 
 chest_1:{
+
 name:"Rương Đồng",
+
 emoji:"🟫",
+
 star:1,
+
 key:"key_1",
+
 drop:[
 {
 type:"money",
@@ -231,14 +415,21 @@ min:1000,
 max:5000
 }
 ]
+
 },
 
 
+
 chest_2:{
+
 name:"Rương Bạc",
+
 emoji:"⬜",
+
 star:2,
+
 key:"key_2",
+
 drop:[
 {
 type:"money",
@@ -246,14 +437,21 @@ min:5000,
 max:15000
 }
 ]
+
 },
 
 
+
 chest_3:{
+
 name:"Rương Vàng",
+
 emoji:"🟨",
+
 star:3,
+
 key:"key_3",
+
 drop:[
 {
 type:"money",
@@ -261,14 +459,21 @@ min:15000,
 max:50000
 }
 ]
+
 },
 
 
+
 chest_4:{
+
 name:"Rương Kim Cương",
+
 emoji:"💎",
+
 star:4,
+
 key:"key_4",
+
 drop:[
 {
 type:"money",
@@ -276,14 +481,21 @@ min:50000,
 max:200000
 }
 ]
+
 },
 
 
+
 chest_5:{
+
 name:"Rương Thần Thoại",
+
 emoji:"🌌",
+
 star:5,
+
 key:"key_5",
+
 drop:[
 {
 type:"money",
@@ -291,51 +503,166 @@ min:200000,
 max:1000000
 }
 ]
+
 }
+
 
 },
 
+
+
+
+
+
+// =================
+// CHÌA KHÓA
+// =================
 
 
 keys:{
 
 
 key_1:{
+
 name:"Chìa khóa Đồng",
+
 emoji:"🗝️",
+
 price:1000
+
 },
 
 
 key_2:{
+
 name:"Chìa khóa Bạc",
+
 emoji:"🗝️",
+
 price:5000
+
 },
 
 
 key_3:{
+
 name:"Chìa khóa Vàng",
+
 emoji:"🗝️",
+
 price:15000
+
 },
 
 
 key_4:{
+
 name:"Chìa khóa Kim Cương",
+
 emoji:"🗝️",
+
 price:50000
+
 },
 
 
 key_5:{
+
 name:"Chìa khóa Thần Thoại",
+
 emoji:"🗝️",
+
 price:200000
+
 }
 
 
+},
+
+
+
+
+
+
+// =================
+// CƯỜNG HÓA +15
+// =================
+
+
+upgrade:{
+
+
+success:[
+
+60,
+55,
+50,
+45,
+40,
+35,
+30,
+25,
+20,
+15,
+12,
+10,
+8,
+6,
+5
+
+],
+
+
+
+destroy:{
+
+
+10:1,
+
+11:2,
+
+12:3,
+
+13:5,
+
+14:8,
+
+15:12
+
+
+},
+
+
+
+luckPerLevel:2
+
+
+},
+
+
+
+
+
+
+// =================
+// DANH HIỆU
+// =================
+
+
+rodTitles:{
+
+
+10:"🌟 Bậc Thầy Ngư Dân",
+
+
+12:"🌊 Chinh Phục Đại Dương",
+
+
+15:"👑 Huyền Thoại Biển Sâu"
+
+
 }
+
 
 
 };

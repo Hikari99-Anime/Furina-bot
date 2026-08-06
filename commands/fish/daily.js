@@ -1,123 +1,181 @@
-const {EmbedBuilder}=require("discord.js");
+const {
+EmbedBuilder
+}=require("discord.js");
+
+
+const {
+emoji,
+formatMoney
+}=require("../../config");
+
 
 const {
 getUser,
 save
-}=require("../../database");
-
-
-const {
-formatMoney,
-emoji
-}=require("../../config");
+}=require("../../data");
 
 
 
 module.exports={
 
+
 name:"daily",
-aliases:["d"],
+
+aliases:[
+
+"nhan",
+"reward"
+
+],
 
 
 
 async execute(message){
 
 
-const user=getUser(
+
+const user=
+getUser(
 message.guild.id,
 message.author.id
 );
 
 
 
-const now=Date.now();
+const now=
+Date.now();
 
 
-const cooldown=24*60*60*1000;
+
+
+// tạo dữ liệu daily
+
+if(!user.daily){
+
+
+user.daily={
+
+last:0,
+
+streak:0
+
+};
+
+
+}
+
+
+
+
+const cooldown=
+24*60*60*1000;
+
+
+
+
+const timeLeft=
+cooldown-
+(now-user.daily.last);
+
+
 
 
 
 if(
-user.daily &&
-now-user.daily<cooldown
+now-user.daily.last < cooldown
 ){
-
-
-const time=
-cooldown-(now-user.daily);
 
 
 
 const hour=
 Math.floor(
-time/3600000
+timeLeft/(1000*60*60)
 );
 
 
 
-const min=
+const minute=
 Math.floor(
-(time%3600000)/60000
+(timeLeft%(1000*60*60))
+/(1000*60)
 );
 
 
 
-return message.reply(
-`⏳ Đã nhận daily\nQuay lại sau **${hour}h ${min}p**`
-);
+return message.reply({
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#ffcc66")
+
+.setTitle(
+"╭・⏳ Chưa thể nhận"
+)
+
+.setDescription(
+`
+🎁 Bạn đã nhận Daily rồi!
+
+
+⏰ Quay lại sau:
+
+${hour} giờ ${minute} phút
+
+
+╰・Đừng quên quay lại nhé
+`
+)
+
+]
+
+});
+
 
 
 }
 
 
 
-const money=10000;
 
 
-const bait=10;
+// streak
+
+if(
+now-user.daily.last
+>
+cooldown*2
+){
 
 
+user.daily.streak=0;
 
-user.money+=money;
-
-
-
-if(!user.moi)
-user.moi={};
-
-
-
-user.moi.moithuong=
-(user.moi.moithuong||0)+bait;
-
-
-
-user.daily=now;
-
-
-
-// 10% rương đồng
-
-let chestText="";
-
-
-if(Math.random()*100<=10){
-
-
-if(!user.chest)
-user.chest={};
-
-
-
-user.chest.chest_1=
-(user.chest.chest_1||0)+1;
-
-
-
-chestText=
-"\n🎁 Nhận thêm 🟫 Rương Đồng";
 
 }
+
+
+
+user.daily.streak++;
+
+
+
+
+
+const reward=
+
+5000+
+(
+user.daily.streak*1000
+);
+
+
+
+user.money+=reward;
+
+
+
+user.daily.last=now;
 
 
 
@@ -125,39 +183,55 @@ save();
 
 
 
-const embed=new EmbedBuilder()
-
-.setColor("#00ff88")
-
-.setTitle("🎁 NHẬN DAILY")
-
-.setDescription(
-
-`
-${emoji.money}
-+${formatMoney(money)} xu
-
-
-🪱 Mồi thường
-+x${bait}
-
-
-${chestText}
-
-
-⏳ Hẹn gặp lại sau 24 giờ
-
-`
-
-)
-
-.setTimestamp();
-
 
 
 message.reply({
-embeds:[embed]
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#8affb2")
+
+.setTitle(
+"╭・🎁 Nhận Daily"
+)
+
+.setDescription(
+`
+✨ Chúc mừng!
+
+
+🔥 Chuỗi ngày:
+
+${user.daily.streak} ngày
+
+
+💰 Nhận được:
+
+${formatMoney(reward)} ${emoji.money}
+
+
+💳 Số dư:
+
+${formatMoney(user.money)} ${emoji.money}
+
+
+╰・🌊 Tiếp tục hành trình
+`
+)
+
+.setFooter({
+
+text:
+"✦ Fishing Adventure"
+
+})
+
+]
+
 });
+
 
 
 }

@@ -1,29 +1,20 @@
-const {EmbedBuilder}=require("discord.js");
-
 const {
-getUser,
-save
-}=require("../../database");
+EmbedBuilder
+}=require("discord.js");
 
 
 const {
 chests,
 keys,
-fishList,
-baits,
-rods,
+emoji,
 formatMoney
 }=require("../../config");
 
 
-
-function random(min,max){
-
-return Math.floor(
-Math.random()*(max-min+1)+min
-);
-
-}
+const {
+getUser,
+save
+}=require("../../data");
 
 
 
@@ -31,7 +22,13 @@ module.exports={
 
 
 name:"open",
-aliases:["op"],
+
+aliases:[
+
+"openchest",
+"mo"
+
+],
 
 
 
@@ -39,54 +36,57 @@ async execute(message,args){
 
 
 
-const user=getUser(
+const user=
+getUser(
 message.guild.id,
 message.author.id
 );
 
 
 
-let id=args[0];
+
+
+const id=
+args[0];
 
 
 
 if(!id)
+
+return message.reply({
+
+content:
+
+`
+╰・❌ Cách dùng:
+
+\`!open chest_1\`
+
+`
+
+});
+
+
+
+
+
+const chest=
+chests[id];
+
+
+
+if(!chest)
+
 return message.reply(
-"❌ Ví dụ: `!open chest_1`"
+"╰・❌ Không tìm thấy rương"
 );
 
 
 
-let chestID=id.toLowerCase();
 
 
-
-const chest=chests[chestID];
-
-
-
-if(!chest){
-
-return message.reply(
-"❌ Không có rương này"
-);
-
-}
-
-
-
-if(
-!user.chest[chestID] ||
-user.chest[chestID]<=0
-)
-
-return message.reply(
-"❌ Bạn không có rương"
-);
-
-
-
-const keyID=chest.key;
+const keyID=
+chest.key;
 
 
 
@@ -95,169 +95,106 @@ if(
 user.keys[keyID]<=0
 )
 
-return message.reply(
-`❌ Cần ${keys[keyID].name}`
-);
+return message.reply({
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#ff8888")
+
+.setTitle(
+"╭・🔑 Thiếu chìa khóa"
+)
+
+.setDescription(
+`
+${chest.emoji} ${chest.name}
+
+
+Cần:
+
+${keys[keyID].emoji} ${keys[keyID].name}
+
+
+╰・Hãy mua thêm chìa khóa
+`
+)
+
+]
+
+});
 
 
 
-user.chest[chestID]--;
+
+
+
+// trừ key
 
 user.keys[keyID]--;
 
 
 
-let reward;
 
 
-
-const roll=Math.random()*100;
-
-
-
-// 70% tiền
-
-if(roll<=70){
-
-
-reward={
-type:"money",
-amount:
-random(
-chest.drop[0].min,
-chest.drop[0].max
-)
-};
-
-
-user.money+=reward.amount;
-
-
-}
-
-
-
-// 20% mồi
-
-else if(roll<=90){
-
-
-const bait=
-Object.keys(baits)
-[
-random(
-0,
-Object.keys(baits).length-1
+const drop=
+chest.drop[
+Math.floor(
+Math.random()*chest.drop.length
 )
 ];
 
 
-const amount=random(5,20);
-
-
-if(!user.moi[bait])
-user.moi[bait]=0;
-
-
-user.moi[bait]+=amount;
-
-
-reward={
-type:"bait",
-name:baits[bait].name,
-emoji:baits[bait].emoji,
-amount
-};
 
 
 
-}
+let rewardText="";
 
 
 
-// 9% cá
-
-else if(roll<=99){
 
 
-const fish=
-fishList[
-random(
-0,
-fishList.length-1
-)
-];
+// tiền
+
+if(
+drop.type==="money"
+){
 
 
-const kg=
-Number(
-(
+
+const money=
+Math.floor(
+
 Math.random()
+
 *
-(fish.max-fish.min)
+(drop.max-drop.min+1)
+
 +
-fish.min
-)
-.toFixed(2)
+
+drop.min
+
 );
 
 
 
-if(!user.fish[fish.name])
-user.fish[fish.name]=[];
-
-
-user.fish[fish.name].push(kg);
+user.money+=money;
 
 
 
-reward={
-type:"fish",
-name:fish.name,
-emoji:fish.emoji,
-kg,
-rarity:fish.rarity
-};
+rewardText=
+`
+💰 Nhận được:
+
+${formatMoney(money)} ${emoji.money}
+`;
 
 
 
 }
 
 
-
-// 1% cần
-
-else{
-
-
-const rod=
-Object.keys(rods)
-[
-random(
-0,
-Object.keys(rods).length-1
-)
-];
-
-
-
-if(!user.can.danhSach[rod])
-user.can.danhSach[rod]=0;
-
-
-
-user.can.danhSach[rod]+=rods[rod].uses;
-
-
-
-reward={
-type:"rod",
-name:rods[rod].name,
-emoji:rods[rod].emoji
-};
-
-
-}
 
 
 
@@ -265,74 +202,50 @@ save();
 
 
 
-let text="";
-
-
-
-if(reward.type==="money")
-
-text=
-`💰 Nhận:
-${formatMoney(reward.amount)} xu`;
-
-
-
-if(reward.type==="bait")
-
-text=
-`${reward.emoji} ${reward.name}
-x${reward.amount}`;
-
-
-
-if(reward.type==="fish")
-
-text=
-`${reward.emoji} ${reward.name}
-
-⭐ ${reward.rarity}
-
-⚖️ ${reward.kg}kg`;
-
-
-
-if(reward.type==="rod")
-
-text=
-`${reward.emoji} ${reward.name}`;
-
-
-
-
-const embed=new EmbedBuilder()
-
-.setColor("#ffcc00")
-
-.setTitle(
-`🎁 MỞ ${chest.emoji} ${chest.name}`
-)
-
-.setDescription(
-
-`
-🔑 Đã dùng:
-${keys[keyID].emoji} ${keys[keyID].name}
-
-
-✨ KẾT QUẢ GACHA
-
-${text}
-
-`
-
-)
-
-.setTimestamp();
 
 
 
 message.reply({
-embeds:[embed]
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#ffd86b")
+
+.setTitle(
+"╭・🎁 Mở rương thành công"
+)
+
+.setDescription(
+`
+${chest.emoji} ${chest.name}
+
+
+✨ Rương đã mở!
+
+
+${rewardText}
+
+
+🔑 Còn lại:
+
+${user.keys[keyID]}
+
+
+╰・🌊 Chúc bạn may mắn
+`
+)
+
+.setFooter({
+
+text:
+"✦ Fishing Adventure"
+
+})
+
+]
+
 });
 
 

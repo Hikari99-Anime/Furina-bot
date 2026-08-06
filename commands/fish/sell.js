@@ -1,81 +1,262 @@
-const {EmbedBuilder}=require("discord.js");
-const {getUser,save}=require("../../database");
-const {fishList,emoji,formatMoney}=require("../../config");
+const {
+EmbedBuilder
+}=require("discord.js");
+
+
+const {
+fishList,
+emoji,
+formatMoney
+}=require("../../config");
+
+
+const {
+getUser,
+save
+}=require("../../data");
+
+
 
 module.exports={
 
+
 name:"sell",
-aliases:["sl"],
+
+aliases:[
+
+"ban",
+"sellfish"
+
+],
+
+
 
 async execute(message,args){
 
-const user=getUser(
+
+
+const user=
+getUser(
 message.guild.id,
 message.author.id
 );
 
-const id=args[0];
-const amount=Number(args[1]);
 
-if(!id||!amount)
-return message.reply(
-"❌ Ví dụ: `!sell caro 5`"
+
+
+
+let total=0;
+
+let soldText="";
+
+
+
+
+
+// ======================
+// BÁN 1 LOẠI CÁ
+// !sell caro
+// ======================
+
+
+if(args[0]){
+
+
+
+const id=args[0].toLowerCase();
+
+
+
+const fish=
+fishList.find(
+x=>x.id===id
 );
 
-
-
-const fish=fishList.find(x=>
-x.id===id||
-x.name.toLowerCase().includes(id.toLowerCase())
-);
 
 
 if(!fish)
+
 return message.reply(
-"❌ Không tìm thấy cá"
+"╰・❌ Không tìm thấy cá"
 );
 
 
 
-const list=user.fish[fish.name];
+if(
+!user.fish[id] ||
+user.fish[id].length===0
+)
 
-
-if(!list||list.length<amount)
 return message.reply(
-"❌ Không đủ cá"
+"╰・❌ Bạn không có cá này"
 );
 
 
 
-list.sort((a,b)=>b-a);
+let weight=0;
 
 
 
-let kg=0;
+for(const w of user.fish[id])
 
-for(let i=0;i<amount;i++){
+weight+=w;
 
-kg+=list.shift();
+
+
+total=
+Math.floor(
+weight*fish.sell
+);
+
+
+
+user.fish[id]=[];
+
+
+
+
+soldText=
+`
+${fish.emoji} ${fish.name}
+
+⚖️ ${weight.toFixed(2)} KG
+
+💰 ${formatMoney(total)} ${emoji.money}
+`;
+
+
 
 }
 
 
 
-const money=Math.floor(
-kg*fish.sell
+
+
+
+
+// ======================
+// BÁN TẤT CẢ
+// !sell all
+// ======================
+
+
+else if(
+args[0]==="all"
+||
+args[0]==="allfish"
+){
+
+
+
+for(const id in user.fish){
+
+
+
+const fish=
+fishList.find(
+x=>x.id===id
 );
 
 
 
-user.money+=money;
+if(!fish)
+
+continue;
 
 
 
-if(list.length===0)
-delete user.fish[fish.name];
+let weight=0;
+
+
+
+for(const w of user.fish[id])
+
+weight+=w;
+
+
+
+if(weight<=0)
+
+continue;
+
+
+
+const money=
+Math.floor(
+weight*fish.sell
+);
+
+
+
+total+=money;
+
+
+
+soldText+=
+`
+${fish.emoji} ${fish.name}
+
+⚖️ ${weight.toFixed(2)} KG
+
+💰 ${formatMoney(money)} ${emoji.money}
+
+`;
+
+
+
+user.fish[id]=[];
+
+
+
+}
+
+
+
+}
+
+else{
+
+
+return message.reply({
+
+content:
+
+`
+╰・❌ Cách dùng:
+
+\`!sell <tên cá>\`
+
+hoặc
+
+\`!sell all\`
+`
+
+});
+
+
+
+}
+
+
+
+
+
+if(total<=0)
+
+return message.reply(
+"╰・❌ Không có cá để bán"
+);
+
+
+
+
+
+user.money+=total;
 
 
 save();
+
+
 
 
 
@@ -85,35 +266,42 @@ embeds:[
 
 new EmbedBuilder()
 
-.setColor("#ffd700")
+.setColor("#8affb2")
 
-.setTitle("💰 BÁN CÁ")
+.setTitle(
+"╭・💰 Bán cá thành công"
+)
 
 .setDescription(
-
 `
-${fish.emoji} **${fish.name}**
-
-📦 Số lượng:
-x${amount}
-
-⚖️ Tổng cân:
-${kg.toFixed(2)} kg
+${soldText}
 
 
-${emoji.money} Nhận:
-${formatMoney(money)}
+╭・💵 Nhận được
+
+${formatMoney(total)} ${emoji.money}
 
 
-💰 Số dư:
-${formatMoney(user.money)}
+╭・💰 Số dư mới
+
+${formatMoney(user.money)} ${emoji.money}
+
+
+╰・🌊 Chúc bạn câu được nhiều cá hơn
 `
-
 )
+
+.setFooter({
+
+text:
+"✦ Fishing Adventure"
+
+})
 
 ]
 
 });
+
 
 
 }
