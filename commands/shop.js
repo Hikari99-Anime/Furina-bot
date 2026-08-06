@@ -1,8 +1,17 @@
-const {EmbedBuilder}=require("discord.js");
-const {shop}=require("../config");
+const {
+    EmbedBuilder
+} = require("discord.js");
 
 
-module.exports={
+const {
+    rods,
+    baits,
+    emoji
+} = require("../config");
+
+
+
+module.exports = {
 
 
 name:"shop",
@@ -13,85 +22,104 @@ async execute(message,args,client){
 
 
 
-let canText="";
+let canText = "";
 
-let moiText="";
-
-
-
-// Cần câu
-
-for(const id in shop){
-
-
-const item=shop[id];
-
-
-if(item.uses){
-
-
-canText+=
-`\`🎣\` ${id} | ${item.name} | ${item.price} xu | ${item.uses} lượt\n`;
-
-}
-
-
-}
+let moiText = "";
 
 
 
 
-
-// Mồi
-
-for(const id in shop){
-
-
-const item=shop[id];
+// ======================
+// HIỂN THỊ CẦN CÂU
+// ======================
 
 
-if(item.amount){
+for(
+const id in rods
+){
 
 
-moiText+=
-`\`🪱\` ${id} | ${item.name} | ${item.price} xu | x${item.amount}\n`;
+const can = rods[id];
 
-}
 
+canText +=
+
+`
+${can.emoji} **${id} - ${can.name}**
+💰 Giá: \`${can.price.toLocaleString()} xu\`
+\`${can.price.toLocaleString()} xu\`
+🎣 Lượt: \`${can.uses}\`
+⭐ May mắn: \`${can.luck}\`
+Mua:
+\`!buyrod ${id}\`
+
+`;
 
 }
 
 
 
 
-const embed=new EmbedBuilder()
+
+// ======================
+// HIỂN THỊ MỒI
+// ======================
+
+
+for(
+const id in baits
+){
+
+
+const bait = baits[id];
+
+
+moiText +=
+
+`
+${bait.emoji} **${id} - ${bait.name}**
+💰 Giá: \`${bait.price.toLocaleString()} xu\`
+Mua:
+\`!buybait ${id}\`
+
+`;
+
+}
+
+
+
+
+
+
+const embed =
+
+new EmbedBuilder()
 
 
 .setColor("#ffaa00")
 
 
-.setTitle("🏪 SHOP CÂU CÁ")
+.setTitle(
+`${emoji.shop} SHOP CÂU CÁ`
+)
+
 
 
 .setDescription(
 
 `
 
-🎣 **CẦN CÂU**
-
+${emoji.rod} **🎣 CẦN CÂU**
 ${canText}
-
-🪱 **MỒI CÂU**
-
+${emoji.bait} **🪱 MỒI CÂU**
 ${moiText}
 
-━━━━━━━━━━━━━━
 
-Dùng: \`!buy <id>\`
-Ví dụ:
-\`!buy canruby\`
-\`!buy moivang\`
 
+📌 Cách dùng:
+\`!buyrod can_1\`
+\`!rod can_1\`
+\`!buybait moivang\`
 `
 
 )
@@ -110,16 +138,18 @@ message.client.user.displayAvatarURL()
 
 
 
+
 message.channel.send({
 
-embeds:[embed]
+embeds:[
+    embed
+]
 
 });
 
 
 
 }
-
 
 
 };

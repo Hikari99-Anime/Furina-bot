@@ -1,40 +1,47 @@
 const fs = require("fs");
-const path = require("path");
 
 
-const file = path.join(__dirname, "data.json");
+const file = "data.json";
 
 
 let data = {};
 
 
 
+// =======================
 // LOAD DATA
+// =======================
 
 if(fs.existsSync(file)){
 
+
     try{
+
 
         data = JSON.parse(
             fs.readFileSync(file,"utf8")
         );
 
 
-    }catch(err){
+    }
+    catch(err){
 
-        console.log(
-            "LỖI ĐỌC DATA:",
-            err
-        );
 
         data = {};
 
+
     }
+
 
 }
 
 
 
+
+
+// =======================
+// SAVE
+// =======================
 
 function save(){
 
@@ -58,37 +65,58 @@ function save(){
 
 
 
+
+
+// =======================
+// GET USER
+// =======================
+
 function getUser(guildID,userID){
 
 
-    if(!data[guildID]){
 
-        data[guildID] = {};
+    if(!data[guildID])
 
-    }
+        data[guildID]={};
+
+
 
 
 
     if(!data[guildID][userID]){
 
 
-        data[guildID][userID] = {
+        data[guildID][userID]={
 
+
+            // tiền ban đầu
 
             money:5000,
+
 
 
             daily:0,
 
 
+
+            // kho cá
+
             fish:{},
 
+
+
+            // cần câu
 
             can:{
 
 
+                // cần đang dùng
+
                 dangDung:null,
 
+
+
+                // danh sách cần
 
                 danhSach:{}
 
@@ -96,10 +124,13 @@ function getUser(guildID,userID){
             },
 
 
+
+            // mồi
+
             moi:{
 
 
-                moithuong:0,
+                moithuong:10,
 
 
                 moibac:0,
@@ -115,9 +146,14 @@ function getUser(guildID,userID){
         };
 
 
+
         save();
 
+
     }
+
+
+
 
 
 
@@ -126,52 +162,176 @@ function getUser(guildID,userID){
 
 
 
-    // FIX USER CŨ
+
+
+
+    // =====================
+    // FIX DATA CŨ
+    // =====================
+
+
+
+    if(!user.money)
+
+        user.money=0;
+
+
+
 
     if(!user.fish)
-        user.fish = {};
+
+        user.fish={};
+
+
 
 
 
     if(!user.can){
 
-        user.can = {
+
+        user.can={
+
 
             dangDung:null,
 
+
             danhSach:{}
 
+
         };
+
 
     }
 
 
 
+
+
     if(!user.can.danhSach)
-        user.can.danhSach = {};
+
+        user.can.danhSach={};
+
+
+
+
 
 
 
     if(!user.moi){
 
-        user.moi = {
 
-            moithuong:0,
+        user.moi={
+
+
+            moithuong:10,
+
 
             moibac:0,
 
+
             moivang:0
 
+
         };
+
 
     }
 
 
 
-    save();
+
+
+
+    // =========================
+    // CHUYỂN KHO CŨ
+    // =========================
+
+
+    if(user.khoCa){
+
+
+
+        for(
+            const name in user.khoCa
+        ){
+
+
+
+            const old =
+            user.khoCa[name];
+
+
+
+            if(!user.fish[name])
+
+                user.fish[name]=[];
+
+
+
+
+
+            if(
+                old.count
+                &&
+                old.weight
+            ){
+
+
+
+                const avg =
+                old.weight /
+                old.count;
+
+
+
+
+
+                for(
+                    let i=0;
+                    i<old.count;
+                    i++
+                ){
+
+
+
+                    user.fish[name]
+                    .push(
+                        Number(
+                            avg.toFixed(2)
+                        )
+                    );
+
+
+                }
+
+
+            }
+
+
+
+        }
+
+
+
+
+
+        delete user.khoCa;
+
+
+
+        save();
+
+
+    }
+
+
+
+
+
 
 
     return user;
+
 
 }
 
@@ -179,12 +339,15 @@ function getUser(guildID,userID){
 
 
 
-module.exports = {
+
+module.exports={
+
 
     getUser,
 
     save,
 
     data
+
 
 };

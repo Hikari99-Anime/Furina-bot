@@ -1,99 +1,162 @@
-const {EmbedBuilder}=require("discord.js");
+const {
+    EmbedBuilder
+} = require("discord.js");
 
 
-module.exports={
+
+module.exports = {
 
 
 name:"help",
 
 
 
-async execute(message,args,client){
+async execute(message){
 
 
 
-const embed=new EmbedBuilder()
+const embed =
 
+new EmbedBuilder()
 
-.setColor("#00bfff")
+.setColor("#00ccff")
 
-
-.setTitle("📖 HƯỚNG DẪN CÂU CÁ")
-
-
-.setThumbnail(
-
-message.author.displayAvatarURL({
-
-dynamic:true
-
-})
-
-)
-
+.setTitle("🎣 HƯỚNG DẪN BOT CÂU CÁ")
 
 .setDescription(
 
 `
+🏪 **SHOP**
 
-\`👤\` Người chơi:
+\`!shop\`
 
-${message.author}
+Xem cần câu và mồi đang bán.
 
-🎣 **CÂU CÁ**
 
-\`!cauca\` → Mở chọn loại mồi và số lần câu
-
-🛒 **SHOP**
-
-\`!shop\` → Xem vật phẩm bán
-\`!buy <id>\` → Mua đồ
-
-Ví dụ: \`!buy canruby\` | \`!buy moivang\`
-
-🎣 **CẦN CÂU**
-
-\`!trangbi <id>\` → Trang bị cần
-
-Ví dụ: \`!trangbi canruby\`
-
-🎒 **KHO ĐỒ**
-
-\`!khodo\` → Xem cá, cần, mồi, tiền
-
-💰 **BÁN CÁ**
-
-\`!sell <tên cá>\` → Bán một loại cát
-\`!sellall\` → Bán toàn bộ cá
-
-🎁 **NHẬN TIỀN**
-
-\`!daily\`
-→ Nhận 10.000 xu mỗi ngày
 
 ━━━━━━━━━━━━━━
 
-🤖 Bot:
 
-${client.user.username}
+
+💰 **MUA ĐỒ**
+
+\`!buy <id>\`
+
+Ví dụ:
+
+\`!buy can_1\`
+
+\`!buy moithuong\`
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎣 **TRANG BỊ CẦN**
+
+\`!rod <id>\`
+
+Ví dụ:
+
+\`!rod can_1\`
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🐟 **CÂU CÁ**
+
+\`!fish <mồi>\`
+
+Ví dụ:
+
+\`!fish moithuong\`
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎒 **KHO ĐỒ**
+
+\`!inv\`
+
+Xem tiền, cần, mồi, cá.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+💵 **BÁN CÁ**
+
+\`!sell <cá> <số lượng>\`
+
+Ví dụ:
+
+\`!sell caro 5\`
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎁 **NHẬN DAILY**
+
+\`!daily\`
+
+Nhận xu mỗi ngày.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🏆 **XẾP HẠNG**
+
+\`!top money\`
+
+Top giàu.
+
+
+\`!top fish\`
+
+Top nhiều cá.
+
+
+
+━━━━━━━━━━━━━━
+
+
+
+🎣 Chúc bạn câu được cá hiếm!
 
 `
 
 )
 
-
 .setFooter({
 
-text:"Fishing Bot"
+text:
+"Fishing Bot"
 
 })
-
 
 .setTimestamp();
 
 
 
-message.channel.send({
+
+
+message.reply({
 
 embeds:[embed]
 
@@ -102,7 +165,6 @@ embeds:[embed]
 
 
 }
-
 
 
 };

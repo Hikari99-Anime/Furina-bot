@@ -1,100 +1,98 @@
-const {EmbedBuilder}=require("discord.js");
-const {getUser,save}=require("../database");
+const {
+    EmbedBuilder
+} = require("discord.js");
 
 
-module.exports={
+const {
+    getUser,
+    save
+} = require("../database");
+
+
+
+module.exports = {
 
 
 name:"daily",
 
 
 
-async execute(message,args,client){
+async execute(message){
 
 
 
-const user=getUser(
+const user =
 
+getUser(
 message.guild.id,
-
 message.author.id
-
 );
 
 
 
 
-const now=Date.now();
+
+
+const now =
+Date.now();
 
 
 
-const time=24*60*60*1000;
+
+const cooldown =
+24 * 60 * 60 * 1000;
 
 
 
 
-if(user.daily && now-user.daily<time){
+
+
+if(
+user.daily &&
+now - user.daily < cooldown
+){
 
 
 
-const remain=time-(now-user.daily);
+const remain =
+
+cooldown -
+(now - user.daily);
 
 
 
-const hour=Math.floor(
-remain/(1000*60*60)
+
+const hour =
+
+Math.floor(
+remain / 3600000
 );
 
 
 
-const minute=Math.floor(
-(remain%(1000*60*60))/
-(1000*60)
+const min =
+
+Math.floor(
+(remain % 3600000)
+/60000
 );
 
 
 
-return message.channel.send({
 
 
-embeds:[
+return message.reply(
 
+`
+⏳ Bạn đã nhận daily rồi!
 
+Thử lại sau:
 
-new EmbedBuilder()
-
-
-.setColor("Red")
-
-
-.setTitle("❌ CHƯA THỂ NHẬN DAILY")
-
-
-.setDescription(
+${hour} giờ ${min} phút
 
 `
 
-\`👤\` ${message.author}
-
-
-Bạn đã nhận tiền hôm nay.
-
-
-⏰ Còn:
-
-${hour} giờ ${minute} phút
-
-`
-
-)
-
-
-]
-
-
-
-});
-
+);
 
 
 }
@@ -103,10 +101,18 @@ ${hour} giờ ${minute} phút
 
 
 
-user.money+=5000;
 
 
-user.daily=now;
+const reward = 5000;
+
+
+
+user.money += reward;
+
+
+
+user.daily = now;
+
 
 
 save();
@@ -114,61 +120,54 @@ save();
 
 
 
-const embed=new EmbedBuilder()
 
 
 
-.setColor("Green")
+const embed =
 
+new EmbedBuilder()
 
+.setColor("Gold")
 
-.setTitle("🎁 NHẬN DAILY THÀNH CÔNG")
-
-
-
-.setThumbnail(
-
-message.author.displayAvatarURL({
-
-dynamic:true
-
-})
-
-)
-
-
+.setTitle("🎁 DAILY NHẬN THƯỞNG")
 
 .setDescription(
 
 `
+💰 Nhận:
 
-\`👤\` ${message.author}
+**${reward.toLocaleString()} xu**
 
-💰 Nhận: +5.000 xu
-💵 Số dư: ${user.money} xu
 
+💵 Số dư:
+
+${user.money.toLocaleString()} xu
+
+
+⏰ Hẹn gặp lại ngày mai!
 
 `
 
 )
-
-
 
 .setTimestamp();
 
 
 
 
-message.channel.send({
 
-embeds:[embed]
+
+message.reply({
+
+embeds:[
+embed
+]
 
 });
 
 
 
 }
-
 
 
 };
