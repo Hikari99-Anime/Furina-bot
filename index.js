@@ -10,13 +10,18 @@ const {
 const {
     Client,
     GatewayIntentBits,
-    Collection
+    Collection,
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle
 } = require("discord.js");
 
 
 const fs = require("fs");
-
-
 
 
 
@@ -39,11 +44,8 @@ const client = new Client({
 
 
 
-
-
-
 // ======================
-// COMMAND SYSTEM
+// COMMAND LOADER
 // ======================
 
 
@@ -51,10 +53,7 @@ client.commands = new Collection();
 
 
 
-
-
 function loadCommands(folder){
-
 
 
     if(!fs.existsSync(folder))
@@ -63,12 +62,7 @@ function loadCommands(folder){
 
 
 
-
-
     const files = fs.readdirSync(folder);
-
-
-
 
 
 
@@ -76,43 +70,23 @@ function loadCommands(folder){
 
 
 
-        const filePath =
-        `${folder}/${file}`;
-
-
+        const path = `${folder}/${file}`;
 
 
 
         try{
 
 
-
-            const stat =
-            fs.statSync(filePath);
+            if(fs.statSync(path).isDirectory()){
 
 
-
-
-
-            // LOAD FOLDER CON
-
-            if(stat.isDirectory()){
-
-
-                loadCommands(filePath);
-
+                loadCommands(path);
 
                 continue;
-
 
             }
 
 
-
-
-
-
-            // CHỈ LOAD JS
 
             if(!file.endsWith(".js"))
 
@@ -120,47 +94,13 @@ function loadCommands(folder){
 
 
 
+            const command = require(`./${path}`);
 
 
 
-
-
-            delete require.cache[
-
-                require.resolve(
-                    `./${filePath}`
-                )
-
-            ];
-
-
-
-
-
-
-
-            const command =
-            require(`./${filePath}`);
-
-
-
-
-
-
-
-            // bỏ qua file không phải command
-
-            if(
-                !command.name ||
-                !command.execute
-            )
+            if(!command.name || !command.execute)
 
                 continue;
-
-
-
-
-
 
 
 
@@ -174,18 +114,10 @@ function loadCommands(folder){
 
 
 
-
-
-
-
-
-
             if(command.aliases){
 
 
-
                 for(const alias of command.aliases){
-
 
 
                     client.commands.set(
@@ -197,7 +129,6 @@ function loadCommands(folder){
                     );
 
 
-
                 }
 
 
@@ -205,18 +136,13 @@ function loadCommands(folder){
 
 
 
-
-
-
-
-
             console.log(
 
-                `✅ Loaded: ${command.name}`
+                "✅ Loaded:",
+
+                command.name
 
             );
-
-
 
 
 
@@ -225,36 +151,29 @@ function loadCommands(folder){
         catch(err){
 
 
-
             console.log(
 
-                `❌ Load lỗi: ${filePath}`
+                "❌ Load lỗi:",
+
+                path
 
             );
-
 
 
             console.error(err);
 
 
-
         }
 
 
-
     }
-
 
 
 }
 
 
 
-
-
-
 loadCommands("commands");
-
 
 
 
@@ -276,54 +195,45 @@ client.once(
 ()=>{
 
 
+console.log("================");
 
-    console.log("");
+console.log(
 
-    console.log("====================");
+`🤖 ${client.user.tag} ONLINE`
 
-
-
-    console.log(
-
-        `🤖 ${client.user.tag} ONLINE`
-
-    );
+);
 
 
+console.log(
 
-    console.log(
+`📁 Commands: ${client.commands.size}`
 
-        `📁 Commands: ${client.commands.size}`
-
-    );
+);
 
 
 
-    console.log(
+console.log(
 
-        `🎁 Chest: ${Object.keys(chests).length}`
+`🎁 Chest: ${Object.keys(chests).length}`
 
-    );
-
-
-
-    console.log(
-
-        `🔑 Key: ${Object.keys(keys).length}`
-
-    );
+);
 
 
 
-    console.log("====================");
+console.log(
 
+`🔑 Key: ${Object.keys(keys).length}`
+
+);
+
+
+
+console.log("================");
 
 
 }
 
 );
-
-
 
 
 
@@ -345,122 +255,82 @@ client.on(
 async message=>{
 
 
+if(message.author.bot)
 
-    if(message.author.bot)
+return;
 
-        return;
 
 
+if(!message.content.startsWith("!"))
 
+return;
 
 
-    if(!message.content.startsWith("!"))
 
-        return;
 
+const args = message.content
 
+.slice(1)
 
+.trim()
 
+.split(/\s+/);
 
 
 
-    const args =
 
-    message.content
+const cmd = args.shift().toLowerCase();
 
-    .slice(1)
 
-    .trim()
 
-    .split(/\s+/);
+const command = client.commands.get(cmd);
 
 
 
+if(!command)
 
+return;
 
 
 
-    const cmd =
+try{
 
-    args.shift()
 
-    .toLowerCase();
+await command.execute(
 
+message,
 
+args,
 
+client
 
+);
 
 
 
+}
 
-    const command =
+catch(err){
 
-    client.commands.get(cmd);
 
+console.log(
 
+"COMMAND ERROR:",
 
+err
 
+);
 
 
 
-    if(!command)
+message.reply(
 
-        return;
+"❌ Lệnh lỗi."
 
+);
 
 
-
-
-
-
-    try{
-
-
-
-        await command.execute(
-
-            message,
-
-            args,
-
-            client
-
-        );
-
-
-
-    }
-
-
-
-    catch(err){
-
-
-
-        console.error(
-
-            `❌ COMMAND ERROR: ${cmd}`
-
-        );
-
-
-
-        console.error(err);
-
-
-
-
-
-
-        message.reply(
-
-            "❌ Có lỗi xảy ra khi chạy lệnh."
-
-        );
-
-
-
-    }
+}
 
 
 
@@ -479,27 +349,392 @@ async message=>{
 
 
 // ======================
-// ERROR
+// SHOP INTERACTION
 // ======================
 
 
-process.on(
+client.on(
 
-"unhandledRejection",
+"interactionCreate",
 
-err=>{
+async interaction=>{
 
 
-    console.error(
+try{
 
-        "Unhandled Error:",
 
-        err
 
-    );
+// ======================
+// BUTTON
+// ======================
+
+
+if(interaction.isButton()){
+
+
+
+// ROD SHOP
+
+if(interaction.customId === "shop_rod"){
+
+
+
+const embed = new EmbedBuilder()
+
+
+.setColor("#60A5FA")
+
+
+.setTitle(
+
+"╭・🎣 ROD COLLECTION"
+
+)
+
+
+.setDescription(
+
+`
+🌱 **Beginner Rod**
+
+💰 5,000 Fcoin
+
+> Cần câu cơ bản
+
+
+━━━━━━━━━━━━
+
+
+🌊 **Ocean Rod**
+
+💰 20,000 Fcoin
+
+> Tăng cơ hội cá hiếm
+
+
+━━━━━━━━━━━━
+
+
+✨ **Legend Rod**
+
+💰 50,000 Fcoin
+
+> Cần câu huyền thoại
+`
+
+);
+
+
+
+const row = new ActionRowBuilder()
+
+
+.addComponents(
+
+
+new ButtonBuilder()
+
+.setCustomId("buy_canthuong")
+
+.setLabel("🌱 Beginner")
+
+.setStyle(ButtonStyle.Primary),
+
+
+
+new ButtonBuilder()
+
+.setCustomId("buy_can3")
+
+.setLabel("🌊 Ocean")
+
+.setStyle(ButtonStyle.Primary),
+
+
+
+new ButtonBuilder()
+
+.setCustomId("buy_can5")
+
+.setLabel("✨ Legend")
+
+.setStyle(ButtonStyle.Primary)
+
+
+);
+
+
+
+return interaction.reply({
+
+embeds:[embed],
+
+components:[row],
+
+ephemeral:true
+
+});
 
 
 }
+
+
+
+
+
+
+// BUY BUTTON
+
+if(interaction.customId.startsWith("buy_")){
+
+
+const item = interaction.customId.replace(
+
+"buy_",
+
+""
+
+);
+
+
+
+const modal = new ModalBuilder()
+
+
+.setCustomId(
+
+"modal_"+item
+
+)
+
+
+.setTitle(
+
+"🛒 Nhập số lượng mua"
+
+);
+
+
+
+
+const input = new TextInputBuilder()
+
+
+.setCustomId(
+
+"amount"
+
+)
+
+
+.setLabel(
+
+"Số lượng"
+
+)
+
+
+.setStyle(
+
+TextInputStyle.Short
+
+)
+
+
+.setPlaceholder(
+
+"Ví dụ: 1"
+
+)
+
+
+.setRequired(true);
+
+
+
+
+modal.addComponents(
+
+new ActionRowBuilder()
+
+.addComponents(input)
+
+);
+
+
+
+return interaction.showModal(modal);
+
+
+}
+
+
+
+
+// BAIT
+
+if(interaction.customId === "shop_bait"){
+
+
+
+const embed = new EmbedBuilder()
+
+
+.setColor("#86EFAC")
+
+
+.setTitle(
+
+"╭・🪱 BAIT MARKET"
+
+)
+
+
+.setDescription(
+
+`
+🪱 Common Bait
+
+💰 100 Fcoin
+
+
+━━━━━━━━━━━━
+
+
+✨ Silver Bait
+
+💰 500 Fcoin
+
+
+━━━━━━━━━━━━
+
+
+🌟 Golden Bait
+
+💰 1000 Fcoin
+`
+
+);
+
+
+
+return interaction.reply({
+
+embeds:[embed],
+
+ephemeral:true
+
+});
+
+
+}
+
+
+
+
+
+// KEY
+
+
+if(interaction.customId === "shop_key"){
+
+
+
+const embed = new EmbedBuilder()
+
+
+.setColor("#FACC15")
+
+
+.setTitle(
+
+"╭・🗝️ TREASURE MARKET"
+
+)
+
+
+.setDescription(
+
+`
+🗝️ Bronze Key
+
+💰 5,000 Fcoin
+
+
+━━━━━━━━━━━━
+
+
+🔷 Silver Key
+
+💰 20,000 Fcoin
+
+
+━━━━━━━━━━━━
+
+
+👑 Golden Key
+
+💰 50,000 Fcoin
+`
+
+);
+
+
+
+return interaction.reply({
+
+embeds:[embed],
+
+ephemeral:true
+
+});
+
+
+}
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ======================
+// MODAL
+// ======================
+
+
+if(interaction.isModalSubmit()){
+
+
+
+if(interaction.customId.startsWith("modal_")){
+
+
+
+const item = interaction.customId.replace(
+
+"modal_",
+
+""
+
+);
+
+
+
+const amount = Number(
+
+interaction.fields.getTextInputValue(
+
+"amount"
+
+)
 
 );
 
@@ -507,25 +742,78 @@ err=>{
 
 
 
-process.on(
-
-"uncaughtException",
-
-err=>{
+if(!Number.isInteger(amount) || amount<=0){
 
 
-    console.error(
+return interaction.reply({
 
-        "Crash Error:",
+content:
 
-        err
+"❌ Số lượng không hợp lệ",
 
-    );
+ephemeral:true
+
+});
+
+
+}
+
+
+
+
+
+return interaction.reply({
+
+content:
+
+`
+✅ Đã chọn mua
+
+🎣 Vật phẩm:
+\`${item}\`
+
+📦 Số lượng:
+\`${amount}\`
+
+💰 Đang xử lý...
+`,
+
+ephemeral:true
+
+});
+
+
+}
+
+
+
+}
+
+
+
+}
+
+catch(err){
+
+
+console.log(
+
+"INTERACTION ERROR:",
+
+err
+
+);
+
+
+}
+
 
 
 }
 
 );
+
+
 
 
 
