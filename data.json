@@ -87,11 +87,15 @@
       "rodData": {},
       "level": 1,
       "exp": 0,
-      "chests": {}
+      "chests": {},
+      "inv": {}
     },
     "398030689905278977": {
-      "money": 3000,
-      "daily": 0,
+      "money": 9000,
+      "daily": {
+        "last": 1786024130587,
+        "streak": 1
+      },
       "fish": {},
       "can": {
         "dangDung": null,
@@ -114,7 +118,10 @@
         "date": "",
         "list": [],
         "claim": false
-      }
+      },
+      "chests": {},
+      "inv": {},
+      "rodData": {}
     }
   }
 }

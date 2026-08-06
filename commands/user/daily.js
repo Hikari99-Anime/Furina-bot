@@ -12,7 +12,9 @@ const {
 const {
     getUser,
     save
-} = require("../../data");
+} = require("../../data.js");
+
+
 
 
 
@@ -33,6 +35,8 @@ aliases:[
 
 
 
+
+
 async execute(message){
 
 
@@ -48,33 +52,10 @@ const user = getUser(
 
 
 
-// =====================
-// FIX DAILY DATA CŨ
-// =====================
 
-
-// data cũ:
-// "daily":1785944117863
-
-if(typeof user.daily === "number"){
-
-
-    user.daily = {
-
-        last:0,
-
-        streak:0
-
-    };
-
-
-    save();
-
-
-}
-
-
-
+// ======================
+// FIX DAILY DATA
+// ======================
 
 
 if(!user.daily){
@@ -82,17 +63,23 @@ if(!user.daily){
 
     user.daily = {
 
-
         last:0,
 
-
         streak:0
-
 
     };
 
 
-    save();
+}
+
+
+
+
+
+if(typeof user.daily.last !== "number"){
+
+
+    user.daily.last = 0;
 
 
 }
@@ -101,164 +88,7 @@ if(!user.daily){
 
 
 
-if(typeof user.daily.last !== "number")
-
-user.daily.last = 0;
-
-
-
-if(typeof user.daily.streak !== "number")
-
-user.daily.streak = 0;
-
-
-
-
-
-
-
-const now = Date.now();
-
-
-
-const cooldown =
-
-24 * 60 * 60 * 1000;
-
-
-
-
-
-
-
-// =====================
-// KIỂM TRA COOLDOWN
-// =====================
-
-
-if(
-
-    user.daily.last > 0 &&
-
-    now - user.daily.last < cooldown
-
-){
-
-
-
-const timeLeft =
-
-cooldown -
-
-(now - user.daily.last);
-
-
-
-
-
-const hour =
-
-Math.floor(
-
-    timeLeft / 3600000
-
-);
-
-
-
-
-
-const minute =
-
-Math.floor(
-
-    (timeLeft % 3600000) / 60000
-
-);
-
-
-
-
-
-
-return message.reply({
-
-
-embeds:[
-
-
-new EmbedBuilder()
-
-
-.setColor("#ffd166")
-
-
-.setTitle(
-
-"╭・⏳ DAILY"
-
-)
-
-
-
-.setDescription(
-
-`
-🎁 Bạn đã nhận thưởng hôm nay!
-
-
-⏰ Còn lại:
-
-**${hour} giờ ${minute} phút**
-
-
-🔥 Chuỗi hiện tại:
-
-**${user.daily.streak} ngày**
-
-
-╰・🎣 Hẹn gặp lại!
-`
-
-)
-
-
-
-.setFooter({
-
-text:"✦ Fishing Adventure"
-
-})
-
-
-]
-
-
-});
-
-
-}
-
-
-
-
-
-
-
-
-
-// =====================
-// RESET CHUỖI NẾU BỎ QUÁ LÂU
-// =====================
-
-
-if(
-
-    user.daily.last > 0 &&
-
-    now - user.daily.last > cooldown * 2
-
-){
+if(typeof user.daily.streak !== "number"){
 
 
     user.daily.streak = 0;
@@ -272,22 +102,174 @@ if(
 
 
 
-// =====================
-// NHẬN THƯỞNG
-// =====================
 
-
-
-user.daily.streak =
-
-Number(user.daily.streak) + 1;
+const now = Date.now();
 
 
 
 
 
+const cooldown = 
 
-const reward =
+24 * 60 * 60 * 1000;
+
+
+
+
+
+
+
+// ======================
+// CHECK COOLDOWN
+// ======================
+
+
+const passed = 
+
+now - user.daily.last;
+
+
+
+
+
+if(
+passed < cooldown
+){
+
+
+
+const remain = 
+
+cooldown - passed;
+
+
+
+const hour = Math.floor(
+
+remain /
+
+(1000 * 60 * 60)
+
+);
+
+
+
+const minute = Math.floor(
+
+(remain % 
+
+(1000 * 60 * 60))
+
+/
+
+(1000 * 60)
+
+);
+
+
+
+
+
+return message.reply({
+
+
+embeds:[
+
+
+
+new EmbedBuilder()
+
+.setColor("#FACC15")
+
+.setTitle(
+
+"╭・⏳ DAILY REWARD"
+
+)
+
+.setDescription(
+
+`
+🎁 Bạn đã nhận thưởng hôm nay!
+
+
+⏰ Còn lại:
+
+${hour} giờ ${minute} phút
+
+
+🔥 Chuỗi hiện tại:
+
+${user.daily.streak} ngày
+
+
+╰・🎣 Hẹn gặp lại!
+`
+
+)
+
+.setFooter({
+
+text:
+
+"✦ Fishing Adventure"
+
+})
+
+
+]
+
+});
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ======================
+// RESET STREAK
+// ======================
+
+
+if(
+
+user.daily.last > 0 &&
+
+passed > cooldown * 2
+
+){
+
+
+user.daily.streak = 0;
+
+
+}
+
+
+
+
+
+
+
+// ======================
+// NHẬN DAILY
+// ======================
+
+
+user.daily.streak++;
+
+
+
+
+
+const reward = 
 
 5000 +
 
@@ -297,15 +279,7 @@ const reward =
 
 
 
-
-user.money =
-
-Number(user.money || 0)
-
-+
-
-reward;
-
+user.money += reward;
 
 
 
@@ -325,7 +299,10 @@ save();
 
 
 
+
+
 return message.reply({
+
 
 
 embeds:[
@@ -335,9 +312,7 @@ embeds:[
 new EmbedBuilder()
 
 
-
-.setColor("#8affb2")
-
+.setColor("#86EFAC")
 
 
 .setTitle(
@@ -345,7 +320,6 @@ new EmbedBuilder()
 "╭・🎁 DAILY REWARD"
 
 )
-
 
 
 .setDescription(
@@ -356,17 +330,17 @@ new EmbedBuilder()
 
 🔥 Chuỗi:
 
-**${user.daily.streak} ngày**
+${user.daily.streak} ngày
 
 
 💰 Nhận:
 
-**${formatMoney(reward)} ${emoji.money}**
+${formatMoney(reward)} ${emoji.money}
 
 
 💳 Số dư:
 
-**${formatMoney(user.money)} ${emoji.money}**
+${formatMoney(user.money)} ${emoji.money}
 
 
 ╰・🎣 Chúc bạn câu được cá hiếm!
@@ -375,12 +349,16 @@ new EmbedBuilder()
 )
 
 
-
 .setFooter({
 
-text:"✦ Fishing Adventure"
+text:
+
+"✦ Fishing Adventure"
 
 })
+
+
+.setTimestamp()
 
 
 
@@ -391,7 +369,10 @@ text:"✦ Fishing Adventure"
 
 
 
+
+
 }
+
 
 
 };

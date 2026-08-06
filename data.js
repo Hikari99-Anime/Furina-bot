@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 
-// luôn lưu cùng thư mục data.js
+// luôn lưu đúng thư mục chứa data.js
 const filePath = path.join(
     __dirname,
     "data.json"
@@ -14,44 +14,43 @@ let data = {};
 
 
 
-
-// =====================
+// ======================
 // LOAD DATA
-// =====================
+// ======================
 
 if(fs.existsSync(filePath)){
 
 
-try{
+    try{
 
 
-data = JSON.parse(
+        data = JSON.parse(
 
-fs.readFileSync(
-filePath,
-"utf8"
-)
+            fs.readFileSync(
+                filePath,
+                "utf8"
+            )
 
-);
+        );
+
+
+    }
+    catch(err){
+
+
+        console.log(
+            "⚠️ Data lỗi, tạo mới"
+        );
+
+
+        data={};
+
+
+    }
 
 
 }
 
-catch(err){
-
-
-console.log(
-"⚠️ Data lỗi, tạo mới"
-);
-
-
-data={};
-
-
-}
-
-
-}
 
 
 
@@ -59,47 +58,50 @@ data={};
 
 
 
-
-// =====================
-// SAVE
-// =====================
-
+// ======================
+// SAVE DATA
+// ======================
 
 function save(){
 
 
-try{
+    try{
 
 
-fs.writeFileSync(
+        fs.writeFileSync(
 
-filePath,
+            filePath,
 
-JSON.stringify(
-data,
-null,
-2
-)
+            JSON.stringify(
+                data,
+                null,
+                2
+            )
 
-);
+        );
 
+
+        console.log(
+            "💾 DATA SAVED"
+        );
+
+
+    }
+
+    catch(err){
+
+
+        console.log(
+            "❌ SAVE ERROR:",
+            err
+        );
+
+
+    }
 
 
 }
 
-catch(err){
-
-
-console.log(
-"❌ Lỗi lưu data:",
-err
-);
-
-
-}
-
-
-}
 
 
 
@@ -108,11 +110,9 @@ err
 
 
 
-
-// =====================
+// ======================
 // CREATE USER
-// =====================
-
+// ======================
 
 function createUser(){
 
@@ -120,140 +120,155 @@ function createUser(){
 return {
 
 
-money:5000,
+    money:5000,
 
 
-level:1,
+    level:1,
 
 
-exp:0,
+    exp:0,
 
 
 
 
-// 🎣 CẦN
+    // 🎣 CẦN
 
-can:{
+    can:{
 
 
-dangDung:null,
+        dangDung:null,
 
 
-danhSach:{}
+        danhSach:{}
 
 
-},
+    },
 
 
 
 
-// ⭐ UPGRADE CẦN
 
-rodData:{},
 
+    // 🪱 MỒI
 
+    moi:{
 
 
+        moithuong:10,
 
 
-// 🪱 MỒI
+        moibac:0,
 
-moi:{
 
+        moivang:0
 
-moithuong:10,
 
+    },
 
-moibac:0,
 
 
-moivang:0
 
 
-},
 
+    // 🐟 CÁ
 
+    fish:{},
 
 
 
-// 🐟 CÁ
 
-fish:{},
 
 
+    // 🗝️ KEY
 
+    keys:{},
 
 
 
-// 🔑 KEY
 
-keys:{},
 
 
+    // 🎁 RƯƠNG
 
+    chests:{},
 
 
-// 🎁 RƯƠNG
 
-chests:{},
 
 
 
+    // 🎒 INVENTORY
 
+    inv:{},
 
-// 📜 QUEST
 
-quest:{
 
 
-date:"",
 
 
-list:[],
+    // 🎁 DAILY
 
+    daily:{
 
-claim:false
 
+        last:0,
 
-},
 
+        streak:0
 
 
+    },
 
 
-// 🎁 DAILY
 
-daily:{
 
 
-last:0,
 
+    // 📜 QUEST
 
-streak:0
+    quest:{
 
 
-},
+        date:"",
 
 
+        list:[],
 
 
+        claim:false
 
-// 📊 STATS
 
-stats:{
+    },
 
 
-catch:0,
 
 
-sell:0,
 
 
-kg:0
+    // ⭐ CẦN DATA
 
+    rodData:{},
 
-}
 
+
+
+
+
+    // 📊 STATS
+
+    stats:{
+
+
+        catch:0,
+
+
+        sell:0,
+
+
+        kg:0
+
+
+    }
 
 
 };
@@ -269,46 +284,49 @@ kg:0
 
 
 
-// =====================
-// GET USER
-// =====================
 
+
+
+// ======================
+// GET USER
+// ======================
 
 function getUser(guildID,userID){
 
 
 
-if(!data[guildID]){
+    if(!data[guildID]){
 
 
-data[guildID]={};
+        data[guildID]={};
 
 
-}
+    }
 
 
 
 
 
 
-if(!data[guildID][userID]){
+    if(!data[guildID][userID]){
 
 
-data[guildID][userID]=createUser();
+        data[guildID][userID] =
+        createUser();
 
 
-save();
+        save();
 
 
-}
+    }
 
 
 
 
 
 
-const user =
-data[guildID][userID];
+    const user =
+    data[guildID][userID];
 
 
 
@@ -317,290 +335,203 @@ data[guildID][userID];
 
 
 
+    // ======================
+    // FIX DATA
+    // ======================
 
-// =====================
-// FIX MONEY
-// =====================
 
 
-if(typeof user.money !== "number"){
+    if(typeof user.money !== "number")
 
+        user.money=5000;
 
-user.money=5000;
 
 
-}
 
+    if(!user.can)
 
+        user.can={
 
+            dangDung:null,
 
+            danhSach:{}
 
+        };
 
 
 
-// =====================
-// FIX DAILY
-// =====================
 
 
+    if(!user.moi)
 
-// data cũ:
-// "daily":1785944117863
+        user.moi={
 
+            moithuong:10,
 
-if(typeof user.daily === "number"){
+            moibac:0,
 
+            moivang:0
 
-user.daily={
+        };
 
 
-last:0,
 
 
-streak:0
 
+    if(!user.fish)
 
-};
+        user.fish={};
 
 
-}
 
 
 
+    if(!user.keys)
 
+        user.keys={};
 
 
-if(!user.daily){
 
 
-user.daily={
 
+    if(!user.chests)
 
-last:0,
+        user.chests={};
 
 
-streak:0
 
 
-};
 
+    if(!user.inv)
 
-}
+        user.inv={};
 
 
 
 
 
+    if(!user.rodData)
 
-if(typeof user.daily.last !== "number"){
+        user.rodData={};
 
 
-user.daily.last=0;
 
 
-}
 
+    if(!user.stats)
 
+        user.stats={
 
+            catch:0,
 
+            sell:0,
 
+            kg:0
 
-if(typeof user.daily.streak !== "number"){
+        };
 
 
-user.daily.streak=0;
 
 
-}
 
 
 
 
 
+    // ======================
+    // DAILY FIX
+    // ======================
 
 
 
+    // data cũ:
+    // "daily":1785944117863
 
-// =====================
-// FIX CẦN
-// =====================
+    if(typeof user.daily === "number"){
 
 
-if(!user.can){
+        user.daily={
 
 
-user.can={
+            last:user.daily,
 
 
-dangDung:null,
+            streak:0
 
 
-danhSach:{}
+        };
 
 
-};
+    }
 
 
-}
 
 
 
 
+    if(!user.daily){
 
 
-// =====================
-// FIX ROD DATA
-// =====================
+        user.daily={
 
 
-if(!user.rodData){
+            last:0,
 
 
-user.rodData={};
+            streak:0
 
 
-}
+        };
 
 
+    }
 
 
 
 
-// =====================
-// FIX MỒI
-// =====================
 
 
-if(!user.moi){
+    if(typeof user.daily.last !== "number")
 
+        user.daily.last=0;
 
-user.moi={
 
 
-moithuong:10,
 
 
-moibac:0,
+    if(typeof user.daily.streak !== "number")
 
+        user.daily.streak=0;
 
-moivang:0
 
 
-};
 
 
-}
 
 
+    if(!user.quest)
 
 
+        user.quest={
 
 
-// =====================
-// FIX FISH
-// =====================
+            date:"",
 
 
-if(!user.fish){
+            list:[],
 
 
-user.fish={};
+            claim:false
 
 
-}
+        };
 
 
 
 
 
 
-// =====================
-// FIX KEY
-// =====================
-
-
-if(!user.keys){
-
-
-user.keys={};
-
-
-}
-
-
-
-
-
-
-// =====================
-// FIX CHEST
-// =====================
-
-
-if(!user.chests){
-
-
-user.chests={};
-
-
-}
-
-
-
-
-
-
-// =====================
-// FIX QUEST
-// =====================
-
-
-if(!user.quest){
-
-
-user.quest={
-
-
-date:"",
-
-
-list:[],
-
-
-claim:false
-
-
-};
-
-
-}
-
-
-
-
-
-
-// =====================
-// FIX STATS
-// =====================
-
-
-if(!user.stats){
-
-
-user.stats={
-
-
-catch:0,
-
-
-sell:0,
-
-
-kg:0
-
-
-};
+    return user;
 
 
 }
@@ -611,32 +542,21 @@ kg:0
 
 
 
-save();
 
 
-
-return user;
-
-
-}
-
-
-
-
-
-
+// ======================
+// EXPORT
+// ======================
 
 
 module.exports={
 
 
-getUser,
+    getUser,
 
+    save,
 
-save,
-
-
-data
+    data
 
 
 };
