@@ -190,7 +190,8 @@ interaction.customId.startsWith("txbet_")
 const {
 addBet,
 getGame,
-playerBet
+hasBetType,
+totalBetOf
 } = require("./games/taixiugame");
 
 
@@ -199,7 +200,7 @@ getUser
 } = require("./database");
 
 
-const choice =
+const type =
 interaction.customId.replace(
 "txbet_",
 ""
@@ -228,6 +229,39 @@ flags:64
 }
 
 
+let number = null;
+
+
+if(type==="so"){
+
+
+number =
+Number(
+interaction.fields
+.getTextInputValue("sonum")
+);
+
+
+if(
+!Number.isInteger(number)
+||
+number<3
+||
+number>18
+){
+
+return interaction.reply({
+content:
+"❌ Số dự đoán phải từ 3 đến 18",
+flags:64
+});
+
+}
+
+
+}
+
+
 if(!getGame()){
 
 return interaction.reply({
@@ -240,12 +274,12 @@ flags:64
 
 
 if(
-playerBet(interaction.user.id)
+hasBetType(interaction.user.id,type)
 ){
 
 return interaction.reply({
 content:
-"❌ Bạn đã đặt cược ván này rồi",
+"❌ Bạn đã cược cửa này rồi",
 flags:64
 });
 
@@ -259,7 +293,11 @@ interaction.user.id
 );
 
 
-if(user.money<amount){
+const daCuoc =
+totalBetOf(interaction.user.id);
+
+
+if(user.money < daCuoc+amount){
 
 return interaction.reply({
 content:
@@ -270,16 +308,30 @@ flags:64
 }
 
 
+const label =
+
+type==="tai" ? "🔴 TÀI" :
+
+type==="xiu" ? "🔵 XỈU" :
+
+type==="chan" ? "⚫ CHẴN" :
+
+type==="le" ? "⚪ LẺ" :
+
+`🔢 SỐ ${number}`;
+
+
 addBet({
 id:interaction.user.id,
-choice,
+type,
+number,
 money:amount
 });
 
 
 return interaction.reply({
 content:
-`✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${choice==="tai"?"🔴 TÀI":"🔵 XỈU"}**`,
+`✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${label}**`,
 flags:64
 });
 
