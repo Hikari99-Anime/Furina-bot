@@ -1,0 +1,49 @@
+{
+  "1529543616735740037": {
+    "755423975584039002": {
+      "money": 45000,
+      "daily": 0,
+      "fish": {},
+      "khoCa": {},
+      "can": {
+        "dangDung": null,
+        "danhSach": {}
+      },
+      "moi": {
+        "moithuong": 0,
+        "moibac": 0,
+        "moivang": 20
+      }
+    },
+    "743028655097380895": {
+      "money": 8000,
+      "daily": 1785944117863,
+      "fish": {},
+      "can": {
+        "dangDung": "canthuong",
+        "danhSach": {
+          "canthuong": 20
+        }
+      },
+      "moi": {
+        "moithuong": 0,
+        "moibac": 0,
+        "moivang": 2
+      }
+    },
+    "398030689905278977": {
+      "money": 5000,
+      "daily": 0,
+      "fish": {},
+      "can": {
+        "dangDung": null,
+        "danhSach": {}
+      },
+      "moi": {
+        "moithuong": 10,
+        "moibac": 0,
+        "moivang": 0
+      }
+    }
+  }
+}
