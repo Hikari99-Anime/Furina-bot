@@ -54,12 +54,93 @@ let soldText="";
 
 
 // ======================
+// BÁN TẤT CẢ
+// !sell all
+// ======================
+
+
+if(
+args[0]==="all"
+||
+args[0]==="allfish"
+){
+
+
+for(const id in user.fish){
+
+
+
+const fish=
+fishList.find(
+x=>x.id===id
+);
+
+
+
+if(!fish)
+
+continue;
+
+
+
+let weight=0;
+
+
+
+for(const w of user.fish[id])
+
+weight+=w;
+
+
+
+if(weight<=0)
+
+continue;
+
+
+
+const money=
+Math.floor(
+weight*fish.sell
+);
+
+
+
+total+=money;
+
+
+
+soldText+=
+`
+${fish.emoji} ${fish.name}
+
+⚖️ ${weight.toFixed(2)} KG
+
+💰 ${formatMoney(money)} ${emoji.money}
+
+`;
+
+
+
+user.fish[id]=[];
+
+
+
+}
+
+
+}
+
+
+
+
+// ======================
 // BÁN 1 LOẠI CÁ
 // !sell caro
 // ======================
 
 
-if(args[0]){
+else if(args[0]){
 
 
 
@@ -128,91 +209,6 @@ ${fish.emoji} ${fish.name}
 
 }
 
-
-
-
-
-
-
-// ======================
-// BÁN TẤT CẢ
-// !sell all
-// ======================
-
-
-else if(
-args[0]==="all"
-||
-args[0]==="allfish"
-){
-
-
-
-for(const id in user.fish){
-
-
-
-const fish=
-fishList.find(
-x=>x.id===id
-);
-
-
-
-if(!fish)
-
-continue;
-
-
-
-let weight=0;
-
-
-
-for(const w of user.fish[id])
-
-weight+=w;
-
-
-
-if(weight<=0)
-
-continue;
-
-
-
-const money=
-Math.floor(
-weight*fish.sell
-);
-
-
-
-total+=money;
-
-
-
-soldText+=
-`
-${fish.emoji} ${fish.name}
-
-⚖️ ${weight.toFixed(2)} KG
-
-💰 ${formatMoney(money)} ${emoji.money}
-
-`;
-
-
-
-user.fish[id]=[];
-
-
-
-}
-
-
-
-}
 
 else{
 

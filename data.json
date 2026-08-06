@@ -91,20 +91,33 @@
       "inv": {}
     },
     "398030689905278977": {
-      "money": 9000,
+      "money": 7500000,
       "daily": {
         "last": 1786024130587,
         "streak": 1
       },
-      "fish": {},
+      "fish": {
+        "caro": [
+          4.96
+        ],
+        "camap": [],
+        "muc": [],
+        "canoc": [],
+        "cachep": [
+          5.12
+        ]
+      },
       "can": {
-        "dangDung": null,
-        "danhSach": {}
+        "dangDung": "can_5",
+        "danhSach": {
+          "can_3": 1,
+          "can_5": 1
+        }
       },
       "moi": {
-        "moithuong": 10,
+        "moithuong": 9,
         "moibac": 0,
-        "moivang": 0
+        "moivang": 93
       },
       "chest": {},
       "keys": {},
@@ -121,7 +134,22 @@
       },
       "chests": {},
       "inv": {},
-      "rodData": {}
+      "rodData": {
+        "can_3": {
+          "level": 0,
+          "luck": 6,
+          "uses": 89,
+          "maxUses": 100,
+          "destroyed": false
+        },
+        "can_5": {
+          "level": 3,
+          "luck": 26,
+          "uses": 493,
+          "maxUses": 500,
+          "destroyed": false
+        }
+      }
     }
   }
 }

@@ -6,7 +6,9 @@ EmbedBuilder
 const {
 baits,
 keys,
-emoji
+fishList,
+emoji,
+formatMoney
 }=require("../../config");
 
 
@@ -71,6 +73,55 @@ key+=
 
 
 
+let fishText="";
+
+let fishValue=0;
+
+
+
+for(const fish of fishList){
+
+
+const list=
+user.fish[fish.id];
+
+
+if(!list || list.length===0)
+
+continue;
+
+
+let weight=0;
+
+
+for(const w of list)
+
+weight+=w;
+
+
+const value=
+Math.floor(weight*fish.sell);
+
+
+fishValue+=value;
+
+
+fishText+=
+`${fish.emoji} ${fish.name} x${list.length} ┆ ${weight.toFixed(2)}KG ┆ ${formatMoney(value)} ${emoji.money}\n`;
+
+
+}
+
+
+
+if(!fishText)
+
+fishText=
+"Chưa có cá nào\n";
+
+
+
+
 const embed=
 new EmbedBuilder()
 
@@ -82,6 +133,11 @@ new EmbedBuilder()
 
 .setDescription(
 `
+╭・🐟 CÁ (bán được ${formatMoney(fishValue)} ${emoji.money})
+
+${fishText}
+
+
 ╭・🪱 MỒI
 
 ${bait}
