@@ -31,9 +31,16 @@ async execute(message,args){
 
 
 
-// đổi ID admin của bạn
+const OWNER_ID=
+process.env.OWNER_ID;
 
-const OWNER_ID="YOUR_ID";
+
+
+if(!OWNER_ID)
+
+return message.reply(
+"╰・❌ Chưa cấu hình OWNER_ID trong .env"
+);
 
 
 

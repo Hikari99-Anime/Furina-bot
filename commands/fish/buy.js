@@ -19,12 +19,223 @@ save
 
 
 
+// mua vật phẩm, dùng chung cho lệnh !buy và shop UI (button/modal)
+
+function purchase(user,id,amount){
+
+
+if(!Number.isInteger(amount) || amount<=0)
+
+return {
+ok:false,
+reason:"╰・❌ Số lượng không hợp lệ"
+};
+
+
+
+let item;
+
+let type;
+
+
+if(rods[id]){
+
+item=rods[id];
+
+type="rod";
+
+}
+
+else if(baits[id]){
+
+item=baits[id];
+
+type="bait";
+
+}
+
+else if(keys[id]){
+
+item=keys[id];
+
+type="key";
+
+}
+
+else{
+
+return {
+ok:false,
+reason:"╰・❌ Không tìm thấy vật phẩm"
+};
+
+}
+
+
+
+if(type==="rod"){
+
+
+if(amount!==1)
+
+return {
+ok:false,
+reason:"╰・❌ Cần câu chỉ mua được 1 cái mỗi lần"
+};
+
+
+if(user.can && user.can.danhSach[id])
+
+return {
+ok:false,
+reason:"╰・❌ Bạn đã sở hữu cần này rồi"
+};
+
+
+}
+
+
+
+const price=
+item.price * amount;
+
+
+
+if(user.money < price)
+
+return {
+ok:false,
+reason:
+`╰・❌ Bạn cần ${formatMoney(price)} ${emoji.money} để mua`,
+price
+};
+
+
+
+user.money-=price;
+
+
+
+
+if(type==="rod"){
+
+
+if(!user.can)
+
+user.can={
+
+dangDung:null,
+
+danhSach:{}
+
+};
+
+
+
+if(!user.rodData)
+
+user.rodData={};
+
+
+
+user.can.danhSach[id]=1;
+
+
+
+user.rodData[id]={
+
+level:0,
+
+luck:item.luck,
+
+uses:item.uses,
+
+maxUses:item.uses,
+
+destroyed:false
+
+};
+
+
+
+if(!user.can.dangDung)
+
+user.can.dangDung=id;
+
+
+}
+
+
+
+if(type==="bait"){
+
+
+if(!user.moi)
+
+user.moi={};
+
+
+
+user.moi[id]=
+
+(user.moi[id] || 0)
+
++
+
+amount;
+
+
+}
+
+
+
+if(type==="key"){
+
+
+if(!user.keys)
+
+user.keys={};
+
+
+
+user.keys[id]=
+
+(user.keys[id] || 0)
+
++
+
+amount;
+
+
+}
+
+
+
+save();
+
+
+
+return {
+ok:true,
+item,
+type,
+price
+};
+
+
+}
+
+
+
 module.exports={
 
 
 name:"buy",
 
 aliases:["b"],
+
+
+purchase,
 
 
 
@@ -59,254 +270,20 @@ content:
 
 
 
-if(amount<=0)
+const result=
+purchase(user,id,amount);
+
+
+
+if(!result.ok)
 
 return message.reply(
-"╰・❌ Số lượng không hợp lệ"
+result.reason
 );
 
 
 
-let item;
-
-let type;
-
-
-
-// tìm vật phẩm
-
-if(rods[id]){
-
-
-item=rods[id];
-
-type="rod";
-
-
-}
-
-else if(baits[id]){
-
-
-item=baits[id];
-
-type="bait";
-
-
-}
-
-else if(keys[id]){
-
-
-item=keys[id];
-
-type="key";
-
-
-}
-
-
-else{
-
-
-return message.reply(
-"╰・❌ Không tìm thấy vật phẩm"
-);
-
-
-}
-
-
-
-
-const price=
-item.price * amount;
-
-
-
-if(user.money < price){
-
-
-return message.reply({
-
-embeds:[
-
-new EmbedBuilder()
-
-.setColor("#ff8b8b")
-
-.setTitle(
-"╭・💰 Không đủ xu"
-)
-
-.setDescription(
-`
-Bạn cần:
-
-${formatMoney(price)} ${emoji.money}
-
-
-╰・Hãy kiếm thêm xu nhé
-`
-)
-
-]
-
-});
-
-
-}
-
-
-
-// trừ tiền
-
-user.money-=price;
-
-
-
-
-// =================
-// 🎣 CẦN CÂU
-// =================
-
-
-if(type==="rod"){
-
-
-
-if(!user.can)
-
-user.can={
-
-dangDung:null,
-
-danhSach:{}
-
-};
-
-
-
-if(!user.rodData)
-
-user.rodData={};
-
-
-
-
-user.can.danhSach[id]=1;
-
-
-
-
-// tạo dữ liệu cần
-
-if(!user.rodData[id]){
-
-
-user.rodData[id]={
-
-
-level:0,
-
-
-luck:item.luck,
-
-
-uses:item.uses,
-
-
-maxUses:item.uses,
-
-
-destroyed:false
-
-
-
-};
-
-
-}
-
-
-
-
-// tự trang bị nếu chưa có
-
-if(!user.can.dangDung)
-
-user.can.dangDung=id;
-
-
-
-}
-
-
-
-
-// =================
-// 🪱 MỒI
-// =================
-
-
-if(type==="bait"){
-
-
-
-if(!user.moi)
-
-user.moi={};
-
-
-
-user.moi[id]=
-
-(user.moi[id] || 0)
-
-+
-
-amount;
-
-
-}
-
-
-
-
-
-// =================
-// 🗝️ CHÌA KHÓA
-// =================
-
-
-if(type==="key"){
-
-
-
-if(!user.keys)
-
-user.keys={};
-
-
-
-user.keys[id]=
-
-(user.keys[id] || 0)
-
-+
-
-amount;
-
-
-}
-
-
-
-
-
-save();
-
-
+const {item,price}=result;
 
 
 

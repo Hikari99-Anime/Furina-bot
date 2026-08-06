@@ -25,6 +25,8 @@ name:"open",
 
 aliases:[
 
+"chest",
+"ruong",
 "openchest",
 "mo"
 
@@ -55,14 +57,36 @@ if(!id)
 
 return message.reply({
 
-content:
+embeds:[
 
+new EmbedBuilder()
+
+.setColor("#ffaa00")
+
+.setTitle(
+"╭・🎁 RƯƠNG BÁU"
+)
+
+.setDescription(
 `
-╰・❌ Cách dùng:
+${Object.keys(chests)
+.map(x=>{
 
-\`!open chest_1\`
+const c=chests[x];
 
+return `${c.emoji} ${c.name} ┆ ⭐${c.star}`;
+
+})
+.join("\n\n")}
+
+
+Dùng:
+
+\`!open <tên rương>\`
 `
+)
+
+]
 
 });
 

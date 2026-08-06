@@ -411,8 +411,8 @@ key:"key_1",
 drop:[
 {
 type:"money",
-min:1000,
-max:5000
+min:400,
+max:1400
 }
 ]
 
@@ -433,8 +433,8 @@ key:"key_2",
 drop:[
 {
 type:"money",
-min:5000,
-max:15000
+min:2000,
+max:7000
 }
 ]
 
@@ -455,8 +455,8 @@ key:"key_3",
 drop:[
 {
 type:"money",
-min:15000,
-max:50000
+min:6000,
+max:21000
 }
 ]
 
@@ -477,8 +477,8 @@ key:"key_4",
 drop:[
 {
 type:"money",
-min:50000,
-max:200000
+min:20000,
+max:70000
 }
 ]
 
@@ -499,8 +499,8 @@ key:"key_5",
 drop:[
 {
 type:"money",
-min:200000,
-max:1000000
+min:80000,
+max:280000
 }
 ]
 
