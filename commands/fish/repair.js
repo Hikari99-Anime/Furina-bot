@@ -102,17 +102,11 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${base.emoji} ${base.name}
+`${base.emoji} ${base.name}
 
+🎯 Độ bền: ${rod.uses}/${rod.maxUses}
 
-🎯 Độ bền:
-
-${rod.uses}/${rod.maxUses}
-
-
-╰・Chưa cần sửa chữa
-`
+╰・Chưa cần sửa chữa`
 )
 
 ]
@@ -177,9 +171,7 @@ return message.reply({
 
 content:
 
-`
-╰・❌ Cần ${formatMoney(price)} ${emoji.money} để sửa
-`
+`╰・❌ Cần ${formatMoney(price)} ${emoji.money} để sửa`
 
 });
 
@@ -223,27 +215,13 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${base.emoji} ${base.name}
+`${base.emoji} ${base.name}
 
+🎯 Độ bền: ${rod.uses}/${rod.maxUses}
+💸 Chi phí: ${formatMoney(price)} ${emoji.money}
+💰 Số dư: ${formatMoney(user.money)} ${emoji.money}
 
-🎯 Độ bền:
-
-${rod.uses}/${rod.maxUses}
-
-
-💸 Chi phí:
-
-${formatMoney(price)} ${emoji.money}
-
-
-💰 Số dư:
-
-${formatMoney(user.money)} ${emoji.money}
-
-
-╰・🎣 Cần đã sẵn sàng
-`
+╰・🎣 Cần đã sẵn sàng`
 )
 
 .setFooter({

@@ -78,20 +78,13 @@ let title="";
 if(rodTitles[rod.level])
 
 title=
-`\n${rodTitles[rod.level]}`;
+` · ${rodTitles[rod.level]}`;
 
 
 
 rodText=
-`
-${base.emoji} ${base.name}
-
-⭐ +${rod.level}${title}
-
-🍀 Luck ${rod.luck}
-
-🎯 ${rod.uses}/${rod.maxUses}
-`;
+`${base.emoji} ${base.name} · ⭐+${rod.level}${title}
+🍀 Luck ${rod.luck} · 🎯 ${rod.uses}/${rod.maxUses}`;
 
 
 
@@ -142,51 +135,16 @@ message.author.displayAvatarURL()
 )
 
 .setDescription(
-`
-╭・💰 Tài sản
+`╭・💰 **Tài sản:** ${formatMoney(user.money)} ${emoji.money}
 
-
-${formatMoney(user.money)} ${emoji.money}
-
-
-
-╭・🎣 Cần đang dùng
-
-
+╭・🎣 **Cần đang dùng**
 ${rodText}
 
+╭・🐟 **Cá đã bắt:** ${totalFish}
 
+╭・🎒 **Túi mồi:** 🪱 ${user.moi.moithuong || 0} · 🦐 ${user.moi.moibac || 0} · ✨ ${user.moi.moivang || 0}
 
-╭・🐟 Thành tích
-
-
-🐟 Cá đã bắt:
-
-${totalFish}
-
-
-
-╭・🎒 Túi mồi
-
-
-🪱 Mồi thường:
-
-${user.moi.moithuong || 0}
-
-
-🦐 Mồi bạc:
-
-${user.moi.moibac || 0}
-
-
-✨ Mồi vàng:
-
-${user.moi.moivang || 0}
-
-
-
-╰・🌊 Fishing Adventure
-`
+╰・🌊 Fishing Adventure`
 )
 
 .setFooter({

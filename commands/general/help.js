@@ -16,7 +16,8 @@ module.exports = {
 `Chào mừng đến với hệ thống câu cá!
 
 🎣 **Câu cá**
-\`!fish\` • \`!rod\` • \`!upgrade\` • \`!repair\`
+\`!fish [số lần]\` • \`!rod\` • \`!upgrade\` • \`!repair\`
+Ví dụ: \`!fish 10\` (câu 10 lần, tốn 10 độ bền, cần càng vip câu càng nhanh)
 
 🛒 **Cửa hàng**
 \`!shop\` • \`!buy\`

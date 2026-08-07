@@ -154,11 +154,7 @@ return message.reply({
 
 content:
 
-`
-╰・❌ Chưa hoàn thành
-
-🎣 ${user.quest.progress}/${user.quest.target}
-`
+`╰・❌ Chưa hoàn thành: ${user.quest.progress}/${user.quest.target}`
 
 });
 
@@ -194,17 +190,11 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-✨ Hoàn thành nhiệm vụ!
+`✨ Hoàn thành nhiệm vụ!
 
+💰 Nhận: ${formatMoney(user.quest.reward)} ${emoji.money}
 
-💰 Nhận:
-
-${formatMoney(user.quest.reward)} ${emoji.money}
-
-
-╰・🌊 Hẹn gặp lại ngày mai
-`
+╰・🌊 Hẹn gặp lại ngày mai`
 )
 
 ]
@@ -233,38 +223,12 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-🎣 Câu cá:
+`🎣 Câu cá: ${user.quest.progress}/${user.quest.target}
+🎁 Phần thưởng: ${formatMoney(user.quest.reward)} ${emoji.money}
 
+${user.quest.done ? "✅ Đã nhận" : "⏳ Chưa nhận"}
 
-🐟 ${user.quest.progress}/${user.quest.target}
-
-
-🎁 Phần thưởng:
-
-
-💰 ${formatMoney(user.quest.reward)} ${emoji.money}
-
-
-${
-
-user.quest.done
-
-?
-
-"✅ Đã nhận"
-
-:
-
-"⏳ Chưa nhận"
-
-}
-
-
-╰・Dùng:
-
-\`!quest claim\`
-`
+╰・Dùng: \`!quest claim\``
 )
 
 ]

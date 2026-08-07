@@ -298,24 +298,11 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${item.emoji} ${item.name}
+`${item.emoji} ${item.name}
 
-
-╭・📦 Số lượng
-
-x${amount}
-
-
-╭・💸 Đã trả
-
-${formatMoney(price)} ${emoji.money}
-
-
-╰・💰 Số dư
-
-${formatMoney(user.money)} ${emoji.money}
-`
+╭・📦 Số lượng: x${amount}
+╭・💸 Đã trả: ${formatMoney(price)} ${emoji.money}
+╰・💰 Số dư: ${formatMoney(user.money)} ${emoji.money}`
 )
 
 .setFooter({

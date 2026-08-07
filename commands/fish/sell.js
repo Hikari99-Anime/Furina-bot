@@ -111,13 +111,7 @@ total+=money;
 
 
 soldText+=
-`
-${fish.emoji} ${fish.name}
-
-⚖️ ${weight.toFixed(2)} KG
-
-💰 ${formatMoney(money)} ${emoji.money}
-
+`${fish.emoji} ${fish.name} · ⚖️ ${weight.toFixed(2)} KG · 💰 ${formatMoney(money)} ${emoji.money}
 `;
 
 
@@ -197,13 +191,7 @@ user.fish[id]=[];
 
 
 soldText=
-`
-${fish.emoji} ${fish.name}
-
-⚖️ ${weight.toFixed(2)} KG
-
-💰 ${formatMoney(total)} ${emoji.money}
-`;
+`${fish.emoji} ${fish.name} · ⚖️ ${weight.toFixed(2)} KG · 💰 ${formatMoney(total)} ${emoji.money}`;
 
 
 
@@ -217,15 +205,7 @@ return message.reply({
 
 content:
 
-`
-╰・❌ Cách dùng:
-
-\`!sell <tên cá>\`
-
-hoặc
-
-\`!sell all\`
-`
+`╰・❌ Cách dùng: \`!sell <tên cá>\` hoặc \`!sell all\``
 
 });
 
@@ -269,22 +249,11 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${soldText}
+`${soldText}
+╭・💵 Nhận được: ${formatMoney(total)} ${emoji.money}
+╭・💰 Số dư mới: ${formatMoney(user.money)} ${emoji.money}
 
-
-╭・💵 Nhận được
-
-${formatMoney(total)} ${emoji.money}
-
-
-╭・💰 Số dư mới
-
-${formatMoney(user.money)} ${emoji.money}
-
-
-╰・🌊 Chúc bạn câu được nhiều cá hơn
-`
+╰・🌊 Chúc bạn câu được nhiều cá hơn`
 )
 
 .setFooter({

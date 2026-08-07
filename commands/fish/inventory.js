@@ -132,24 +132,13 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-╭・🐟 CÁ (bán được ${formatMoney(fishValue)} ${emoji.money})
-
+`╭・🐟 CÁ (bán được ${formatMoney(fishValue)} ${emoji.money})
 ${fishText}
-
-
 ╭・🪱 MỒI
-
 ${bait}
-
-
 ╭・🗝️ CHÌA KHÓA
-
 ${key}
-
-
-╰・🎣 Fish System
-`
+╰・🎣 Fish System`
 )
 
 .setFooter({

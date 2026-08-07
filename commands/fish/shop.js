@@ -39,35 +39,17 @@ const embed = new EmbedBuilder()
 )
 
 .setDescription(
-`
-> Chào mừng ngư dân đến với đại dương ✨
+`> Chào mừng ngư dân đến với đại dương ✨
 
-
-╭・🎣 **Cần câu**
-╰・Tăng sức mạnh câu cá
-
-
-╭・🪱 **Mồi câu**
-╰・Tăng cơ hội cá hiếm
-
-
-╭・🗝️ **Chìa khóa**
-╰・Mở rương kho báu
-
+╭・🎣 **Cần câu** · Tăng sức mạnh câu cá
+╭・🪱 **Mồi câu** · Tăng cơ hội cá hiếm
+╭・🗝️ **Chìa khóa** · Mở rương kho báu
 
 ━━━━━━━━━━━━
-
 📖 **Cách mua**
+1️⃣ Chọn danh mục → 2️⃣ Chọn vật phẩm → 3️⃣ Nhập số lượng → 4️⃣ Xác nhận mua
 
-1️⃣ Chọn danh mục
-2️⃣ Chọn vật phẩm
-3️⃣ Nhập số lượng
-4️⃣ Xác nhận mua
-
-
-💰 Tiền:
-${emoji.money} Fcoin
-`
+💰 Tiền: ${emoji.money} Fcoin`
 )
 
 .setFooter({

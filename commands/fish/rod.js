@@ -113,15 +113,7 @@ user.can.dangDung===id
 
 
 text+=
-`
-${base.emoji} ${base.name}${active}
-
-　⭐ +${rod.level}${title}
-
-　🍀 Luck ${rod.luck}
-
-　🎯 ${rod.uses}/${rod.maxUses}
-
+`${base.emoji} **${base.name}**${active} · ⭐+${rod.level}${title} · 🍀 Luck ${rod.luck} · 🎯 ${rod.uses}/${rod.maxUses}
 `;
 
 
@@ -178,29 +170,9 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-╭・🌊 Danh sách
-
+`╭・🌊 Danh sách
 ${text}
-
-
-╰・🟢 Đang dùng
-
-${
-
-rods[user.can.dangDung]
-
-?
-
-rods[user.can.dangDung].name
-
-:
-
-"Chưa có"
-
-}
-
-`
+╰・🟢 Đang dùng: ${rods[user.can.dangDung] ? rods[user.can.dangDung].name : "Chưa có"}`
 )
 
 .setFooter({
@@ -300,30 +272,14 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${rods[id].emoji} ${rods[id].name}
-
+`${rods[id].emoji} ${rods[id].name}
 
 ╭・✨ Thông số
+⭐ Cường hóa: +${rod.level}
+🍀 Luck: ${rod.luck}
+🎯 Độ bền: ${rod.uses}/${rod.maxUses}
 
-
-⭐ Cường hóa
-
-+${rod.level}
-
-
-🍀 Luck
-
-${rod.luck}
-
-
-🎯 Độ bền
-
-${rod.uses}/${rod.maxUses}
-
-
-╰・🌊 Sẵn sàng câu cá
-`
+╰・🌊 Sẵn sàng câu cá`
 )
 
 .setFooter({

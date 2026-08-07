@@ -189,22 +189,12 @@ new EmbedBuilder()
 
 .setDescription(
 
-`
-🎁 Bạn đã nhận thưởng hôm nay!
+`🎁 Bạn đã nhận thưởng hôm nay!
 
+⏰ Còn lại: ${hour} giờ ${minute} phút
+🔥 Chuỗi hiện tại: ${user.daily.streak} ngày
 
-⏰ Còn lại:
-
-${hour} giờ ${minute} phút
-
-
-🔥 Chuỗi hiện tại:
-
-${user.daily.streak} ngày
-
-
-╰・🎣 Hẹn gặp lại!
-`
+╰・🎣 Hẹn gặp lại!`
 
 )
 
@@ -324,27 +314,13 @@ new EmbedBuilder()
 
 .setDescription(
 
-`
-✨ Nhận thưởng thành công!
+`✨ Nhận thưởng thành công!
 
+🔥 Chuỗi: ${user.daily.streak} ngày
+💰 Nhận: ${formatMoney(reward)} ${emoji.money}
+💳 Số dư: ${formatMoney(user.money)} ${emoji.money}
 
-🔥 Chuỗi:
-
-${user.daily.streak} ngày
-
-
-💰 Nhận:
-
-${formatMoney(reward)} ${emoji.money}
-
-
-💳 Số dư:
-
-${formatMoney(user.money)} ${emoji.money}
-
-
-╰・🎣 Chúc bạn câu được cá hiếm!
-`
+╰・🎣 Chúc bạn câu được cá hiếm!`
 
 )
 

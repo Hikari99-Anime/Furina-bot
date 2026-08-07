@@ -68,22 +68,14 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${Object.keys(chests)
+`${Object.keys(chests)
 .map(x=>{
-
 const c=chests[x];
-
 return `${c.emoji} ${c.name} ┆ ⭐${c.star}`;
-
 })
-.join("\n\n")}
+.join("\n")}
 
-
-Dùng:
-
-\`!open <tên rương>\`
-`
+Dùng: \`!open <tên rương>\``
 )
 
 ]
@@ -132,17 +124,11 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${chest.emoji} ${chest.name}
+`${chest.emoji} ${chest.name}
 
+Cần: ${keys[keyID].emoji} ${keys[keyID].name}
 
-Cần:
-
-${keys[keyID].emoji} ${keys[keyID].name}
-
-
-╰・Hãy mua thêm chìa khóa
-`
+╰・Hãy mua thêm chìa khóa`
 )
 
 ]
@@ -208,11 +194,7 @@ user.money+=money;
 
 
 rewardText=
-`
-💰 Nhận được:
-
-${formatMoney(money)} ${emoji.money}
-`;
+`💰 Nhận được: ${formatMoney(money)} ${emoji.money}`;
 
 
 
@@ -242,23 +224,14 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${chest.emoji} ${chest.name}
-
+`${chest.emoji} ${chest.name}
 
 ✨ Rương đã mở!
 
-
 ${rewardText}
+🔑 Còn lại: ${user.keys[keyID]}
 
-
-🔑 Còn lại:
-
-${user.keys[keyID]}
-
-
-╰・🌊 Chúc bạn may mắn
-`
+╰・🌊 Chúc bạn may mắn`
 )
 
 .setFooter({

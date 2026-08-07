@@ -2,6 +2,9 @@ const fs = require("fs");
 const path = require("path");
 
 
+const { rods } = require("./config");
+
+
 // luôn lưu đúng thư mục chứa data.js
 const filePath = path.join(
     __dirname,
@@ -413,6 +416,50 @@ function getUser(guildID,userID){
     if(!user.rodData)
 
         user.rodData={};
+
+
+
+
+    // cần đang trang bị nhưng thiếu rodData
+    // (dữ liệu cũ trước khi có rodData)
+
+    if(
+        user.can.dangDung
+        &&
+        !user.rodData[user.can.dangDung]
+    ){
+
+        const base=
+        rods[user.can.dangDung];
+
+
+        if(base){
+
+            user.rodData[user.can.dangDung]={
+
+                level:0,
+
+                luck:base.luck,
+
+                uses:base.uses,
+
+                maxUses:base.uses,
+
+                destroyed:false
+
+            };
+
+        }
+        else{
+
+            user.can.dangDung=null;
+
+        }
+
+
+        save();
+
+    }
 
 
 

@@ -112,13 +112,9 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${base.emoji} ${base.name}
+`${base.emoji} ${base.name} · ⭐ +${rod.level}
 
-⭐ +${rod.level}
-
-╰・Cần đã đạt cấp cao nhất
-`
+╰・Cần đã đạt cấp cao nhất`
 )
 
 ]
@@ -180,13 +176,8 @@ title=
 
 
 resultText=
-`
-✅ Cường hóa thành công!
-
-⭐ +${rod.level}${title}
-
-🍀 Luck ${rod.luck}
-`;
+`✅ Cường hóa thành công!
+⭐ +${rod.level}${title} · 🍀 Luck ${rod.luck}`;
 
 
 }
@@ -215,11 +206,8 @@ color="#ff5555";
 
 
 resultText=
-`
-💥 Cường hóa thất bại, cần đã bị phá hủy!
-
-╰・Hãy sửa chữa để dùng lại
-`;
+`💥 Cường hóa thất bại, cần đã bị phá hủy!
+╰・Hãy sửa chữa để dùng lại`;
 
 
 }
@@ -231,13 +219,9 @@ color="#ffcc66";
 
 
 resultText=
-`
-❌ Cường hóa thất bại
-
+`❌ Cường hóa thất bại
 ⭐ Vẫn +${rod.level}
-
-╰・Xu đã bị mất, thử lại nhé
-`;
+╰・Xu đã bị mất, thử lại nhé`;
 
 
 }
@@ -264,24 +248,14 @@ new EmbedBuilder()
 )
 
 .setDescription(
-`
-${base.emoji} ${base.name}
+`${base.emoji} ${base.name}
 
-
-╭・🎲 Tỉ lệ thành công
-
-${successRate}%
-
-
-╭・💸 Chi phí
-
-${formatMoney(price)} ${emoji.money}
-
+╭・🎲 Tỉ lệ thành công: ${successRate}%
+╭・💸 Chi phí: ${formatMoney(price)} ${emoji.money}
 
 ${resultText}
 
-╰・💰 Số dư: ${formatMoney(user.money)} ${emoji.money}
-`
+╰・💰 Số dư: ${formatMoney(user.money)} ${emoji.money}`
 )
 
 .setFooter({
