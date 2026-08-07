@@ -9,7 +9,8 @@ baits,
 keys,
 insurance,
 emoji,
-formatMoney
+formatMoney,
+prefix
 }=require("../../config");
 
 
@@ -284,7 +285,6 @@ async execute(message,args){
 
 const user=
 getUser(
-message.guild.id,
 message.author.id
 );
 
@@ -303,7 +303,7 @@ if(!id)
 return message.reply({
 
 content:
-"╰・❌ Dùng: !buy <id> <số lượng>"
+`╰・❌ Dùng: ${prefix}buy <id> <số lượng>`
 
 });
 

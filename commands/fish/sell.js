@@ -6,7 +6,8 @@ EmbedBuilder
 const {
 fishList,
 emoji,
-formatMoney
+formatMoney,
+prefix
 }=require("../../config");
 
 
@@ -37,7 +38,6 @@ async execute(message,args){
 
 const user=
 getUser(
-message.guild.id,
 message.author.id
 );
 
@@ -205,7 +205,7 @@ return message.reply({
 
 content:
 
-`╰・❌ Cách dùng: \`!sell <tên cá>\` hoặc \`!sell all\``
+`╰・❌ Cách dùng: \`${prefix}sell <tên cá>\` hoặc \`${prefix}sell all\``
 
 });
 

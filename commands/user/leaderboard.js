@@ -34,36 +34,28 @@ let users=[];
 
 
 
-for(const guild in data){
-
-
-
-for(const id in data[guild]){
+for(const id in data){
 
 
 users.push({
 
 id:id,
 
-money:data[guild][id].money || 0,
+money:data[id].money || 0,
 
 fish:Object.values(
 
-data[guild][id].khoCa || {}
+data[id].fish || {}
 
 ).reduce(
 
-(a,b)=>a+b.count,
+(a,b)=>a+b.length,
 
 0
 
 )
 
 });
-
-
-}
-
 
 
 }

@@ -43,8 +43,6 @@ async execute(message){
 
 const user = getUser(
 
-    message.guild.id,
-
     message.author.id
 
 );

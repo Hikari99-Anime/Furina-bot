@@ -38,14 +38,11 @@ let list=[];
 
 
 
-for(const guild in data){
-
-
-for(const id in data[guild]){
+for(const id in data){
 
 
 const user=
-data[guild][id];
+data[id];
 
 
 let value=0;
@@ -99,8 +96,6 @@ value
 
 });
 
-
-}
 
 }
 
