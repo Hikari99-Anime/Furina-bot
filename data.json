@@ -1,154 +1,107 @@
 {
   "1529543616735740037": {
-    "755423975584039002": {
-      "money": 45000,
-      "daily": 0,
-      "fish": {},
-      "khoCa": {},
+    "398030689905278977": {
+      "money": 23634537,
+      "level": 1,
+      "exp": 0,
       "can": {
-        "dangDung": null,
-        "danhSach": {}
-      },
-      "moi": {
-        "moithuong": 0,
-        "moibac": 0,
-        "moivang": 20
-      }
-    },
-    "743028655097380895": {
-      "money": 5000,
-      "daily": {
-        "last": 1785944117863,
-        "streak": 0
-      },
-      "fish": {
-        "Cá rô": [
-          4.39,
-          2.86,
-          2.78,
-          4.74,
-          1.32,
-          2.01,
-          3.15,
-          3.65,
-          0.75,
-          2.53,
-          3.91,
-          4.2,
-          1.41
-        ],
-        "Mực": [
-          0.54,
-          2.96,
-          2.01,
-          4.82
-        ],
-        "Cá chép": [
-          5.95,
-          4.63,
-          7.38,
-          2.17,
-          6.87
-        ]
-      },
-      "can": {
-        "dangDung": "can_5",
+        "dangDung": "can_3",
         "danhSach": {
-          "canthuong": 20,
-          "can_1": 20,
-          "can_3": 100,
-          "can_5": 478
+          "can_3": 1
         }
       },
       "moi": {
         "moithuong": 0,
         "moibac": 0,
-        "moivang": 480
+        "moivang": 95
       },
-      "chest": {
-        "chest_2": 2,
-        "chest_1": 4,
-        "chest_4": 0
+      "fish": {
+        "caro": [
+          4.31
+        ],
+        "thanthoai": [],
+        "cachep": [
+          4.04,
+          5.8
+        ],
+        "muc": [
+          0.67,
+          2.21
+        ],
+        "canoc": []
       },
-      "keys": {
-        "key_4": 0
-      },
-      "pity": {},
-      "stats": {
-        "catch": 0,
-        "sell": 0,
-        "kg": 0
+      "keys": {},
+      "chests": {},
+      "inv": {},
+      "daily": {
+        "last": 0,
+        "streak": 0
       },
       "quest": {
         "date": "",
         "list": [],
         "claim": false
       },
-      "rodData": {},
+      "rodData": {
+        "can_3": {
+          "level": 0,
+          "luck": 6,
+          "uses": 85,
+          "maxUses": 100,
+          "destroyed": false
+        }
+      },
+      "stats": {
+        "catch": 0,
+        "sell": 0,
+        "kg": 0
+      }
+    },
+    "743028655097380895": {
+      "money": 1000,
       "level": 1,
       "exp": 0,
-      "chests": {},
-      "inv": {}
-    },
-    "398030689905278977": {
-      "money": 7500000,
-      "daily": {
-        "last": 1786024130587,
-        "streak": 1
-      },
-      "fish": {
-        "caro": [
-          4.96
-        ],
-        "camap": [],
-        "muc": [],
-        "canoc": [],
-        "cachep": [
-          5.12
-        ]
-      },
       "can": {
-        "dangDung": "can_5",
+        "dangDung": "can_1",
         "danhSach": {
-          "can_3": 1,
-          "can_5": 1
+          "can_1": 1
         }
       },
       "moi": {
         "moithuong": 9,
         "moibac": 0,
-        "moivang": 93
+        "moivang": 0
       },
-      "chest": {},
+      "fish": {
+        "cachep": [
+          7.97
+        ]
+      },
       "keys": {},
-      "pity": {},
-      "stats": {
-        "catch": 0,
-        "sell": 0,
-        "kg": 0
+      "chests": {},
+      "inv": {},
+      "daily": {
+        "last": 1786079645079,
+        "streak": 1
       },
       "quest": {
         "date": "",
         "list": [],
         "claim": false
       },
-      "chests": {},
-      "inv": {},
       "rodData": {
-        "can_3": {
+        "can_1": {
           "level": 0,
-          "luck": 6,
-          "uses": 89,
-          "maxUses": 100,
-          "destroyed": false
-        },
-        "can_5": {
-          "level": 3,
-          "luck": 26,
-          "uses": 493,
-          "maxUses": 500,
+          "luck": 1,
+          "uses": 19,
+          "maxUses": 20,
           "destroyed": false
         }
+      },
+      "stats": {
+        "catch": 0,
+        "sell": 0,
+        "kg": 0
       }
     }
   }
