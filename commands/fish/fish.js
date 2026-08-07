@@ -2,7 +2,6 @@ const {
 EmbedBuilder
 }=require("discord.js");
 
-
 const {
 fishList,
 rods,
@@ -10,13 +9,10 @@ baits,
 fishingZones
 }=require("../../config");
 
-
 const {
 getUser,
 save
 }=require("../../data");
-
-
 
 
 // ======================
@@ -27,34 +23,23 @@ function getCurrentZone(){
 
 const now = new Date();
 
-
-// Chủ nhật mở núi lửa
-
 if(now.getDay() === 0){
 
 return fishingZones.volcano;
 
 }
 
-
-// Đổi vùng mỗi 6 tiếng
-
 const zones = [
 
 fishingZones.tropical,
-
 fishingZones.cold,
-
 fishingZones.swamp,
-
 fishingZones.deep
 
 ];
 
-
 const index =
 Math.floor(now.getHours()/6);
-
 
 return zones[index % zones.length];
 
@@ -62,23 +47,16 @@ return zones[index % zones.length];
 
 
 
-
-
-
 module.exports={
 
-
 name:"fish",
-
 
 aliases:[
 
 "f",
-
 "cau"
 
 ],
-
 
 
 
@@ -94,21 +72,17 @@ message.author.id
 
 
 
-
-
 // ======================
 // SỐ LẦN CÂU
 // ======================
 
 const MAX_AMOUNT = 50;
 
-
 let amount = 1;
 
 
 
 if(args && args[0] !== undefined){
-
 
 amount = Number(args[0]);
 
@@ -132,11 +106,7 @@ return message.reply(
 `╰・❌ Tối đa ${MAX_AMOUNT} lần/lượt`
 );
 
-
 }
-
-
-
 
 
 
@@ -149,12 +119,9 @@ getCurrentZone();
 
 
 
-
-
 // ======================
 // KIỂM TRA CẦN
 // ======================
-
 
 const rodID =
 user.can.dangDung;
@@ -172,7 +139,6 @@ return message.reply(
 const baseRod =
 rods[rodID];
 
-
 const rod =
 user.rodData[rodID];
 
@@ -183,8 +149,6 @@ if(!rod)
 return message.reply(
 "╰・❌ Dữ liệu cần bị lỗi"
 );
-
-
 
 
 
@@ -218,8 +182,6 @@ new EmbedBuilder()
 
 
 
-
-
 if(rod.uses < amount)
 
 return message.reply({
@@ -250,25 +212,18 @@ new EmbedBuilder()
 
 
 
-
-
-
-
 // ======================
 // KIỂM TRA MỒI
 // ======================
-
 
 const totalBait =
 
 (user.moi.moithuong || 0)
 
-+
-
+-
 (user.moi.moibac || 0)
 
-+
-
+-
 (user.moi.moivang || 0);
 
 
@@ -283,13 +238,9 @@ return message.reply(
 
 
 
-
-
-
 // ======================
 // THỜI GIAN
 // ======================
-
 
 const perCatchMs =
 
@@ -322,13 +273,9 @@ const etaSec =
 
 
 
-
-
-
 // ======================
-// EMBED ĐANG CÂU
+// EMBED ĐANG CÂU (GỘP ẢNH)
 // ======================
-
 
 const msg =
 
@@ -336,34 +283,30 @@ await message.reply({
 
 embeds:[
 
-
 new EmbedBuilder()
 
 .setColor("#7ddcff")
 
-.setImage(
-zone.image
-),
-
-
-
-new EmbedBuilder()
-
-.setColor("#7ddcff")
+.setImage(zone.image)
 
 .setDescription(
 
 `｡･:*˚:✧* ***Fishing Adventure*** *✧:˚*:･｡
 
+
 🌍 Khu vực: ${zone.name}
 
 📖 ${zone.description}
 
+
 🎣 **Đang thả câu...**
 
-₊ Cần sử dụng: {baseRod.emoji} ${baseRod.name}
-⋆ Số lần câu:${amount} lần
+₊ Cần sử dụng: ${baseRod.emoji} ${baseRod.name}
+
+⋆ Số lần câu: ${amount} lần
+
 ⋆ Thời gian: ${etaSec} giây ⏳
+
 ⋆｡° Chờ cá cắn câu... ✨`
 
 )
@@ -374,16 +317,17 @@ new EmbedBuilder()
 
 
 
-
 await new Promise(
 
 r=>setTimeout(r,totalMs)
 
 );
+
+
+
 // ======================
 // CÂU NHIỀU LẦN
 // ======================
-
 
 const luckBonus =
 (rod.level || 0) * 0.5;
@@ -406,15 +350,8 @@ moivang:0
 
 
 
-
-
 for(let i = 0; i < amount; i++){
 
-
-
-// ======================
-// CHỌN MỒI
-// ======================
 
 
 let baitID = "moithuong";
@@ -425,12 +362,9 @@ if(user.moi.moivang > 0)
 
 baitID = "moivang";
 
-
 else if(user.moi.moibac > 0)
 
 baitID = "moibac";
-
-
 
 
 
@@ -440,13 +374,6 @@ baitUsed[baitID]++;
 
 rod.uses--;
 
-
-
-
-
-// ======================
-// LẤY CÁ THEO VÙNG
-// ======================
 
 
 const zoneFish =
@@ -467,13 +394,6 @@ continue;
 
 
 
-
-
-// ======================
-// RANDOM CÁ
-// ======================
-
-
 let totalRate = 0;
 
 
@@ -483,7 +403,6 @@ for(const fish of zoneFish){
 totalRate += fish.rate + luckBonus;
 
 }
-
 
 
 
@@ -499,9 +418,7 @@ let catchFish;
 
 for(const fish of zoneFish){
 
-
 random -= fish.rate + luckBonus;
-
 
 
 if(random <= 0){
@@ -512,9 +429,7 @@ break;
 
 }
 
-
 }
-
 
 
 
@@ -524,13 +439,9 @@ catchFish = zoneFish[0];
 
 
 
-
-
-
 // ======================
 // CÂN NẶNG
 // ======================
-
 
 const weight =
 
@@ -556,15 +467,6 @@ catchFish.min
 
 
 
-
-
-
-
-// ======================
-// LƯU CÁ
-// ======================
-
-
 if(!user.fish[catchFish.id])
 
 user.fish[catchFish.id] = [];
@@ -575,16 +477,7 @@ user.fish[catchFish.id].push(weight);
 
 
 
-
-
-
-// ======================
-// GOM KẾT QUẢ
-// ======================
-
-
 if(!caughtSummary[catchFish.id])
-
 
 caughtSummary[catchFish.id]={
 
@@ -598,25 +491,16 @@ weight:0
 
 
 
-
 caughtSummary[catchFish.id].count++;
-
 
 caughtSummary[catchFish.id].weight += weight;
 
 
-
 }
-
-
-
-
-
-
+ 
 // ======================
 // HẾT ĐỘ BỀN
 // ======================
-
 
 if(rod.uses <= 0)
 
@@ -628,13 +512,9 @@ save();
 
 
 
-
-
-
 // ======================
 // HIỂN THỊ KẾT QUẢ
 // ======================
-
 
 const summaryList =
 
@@ -645,9 +525,6 @@ Object.values(caughtSummary)
 b.count - a.count
 
 );
-
-
-
 
 
 
@@ -669,9 +546,6 @@ summaryList
 
 
 
-
-
-
 const totalWeight =
 
 summaryList.reduce(
@@ -683,10 +557,6 @@ sum + s.weight,
 0
 
 );
-
-
-
-
 
 
 
@@ -710,48 +580,19 @@ Object.keys(baitUsed)
 
 
 
-
-
-
-
 // ======================
-// EDIT KẾT QUẢ
+// EDIT KẾT QUẢ (GỘP ẢNH)
 // ======================
-
 
 msg.edit({
 
 embeds:[
 
-
-
-// ======================
-// ẢNH VÙNG
-// ======================
-
-
-new EmbedBuilder()
-
-.setColor("#7ddcff")
-
-.setImage(
-
-zone.image
-
-),
-
-
-
-
-
-// ======================
-// THÔNG TIN
-// ======================
-
-
 new EmbedBuilder()
 
 .setColor("#A0E7E5")
+
+.setImage(zone.image)
 
 .setTitle(
 
@@ -759,29 +600,47 @@ new EmbedBuilder()
 
 )
 
-
-
 .setDescription(
 
 `｡･:*˚:✧* ***Fishing Adventure*** *✧:˚*:･｡
 
 
 🌍 Khu vực: ${zone.name}
+
+
 🐚 Chiến lợi phẩm:
 
 ${catchText}
 
-⋆｡˚⚖️ Tổng cân nặng: ${totalWeight.toFixed(2)} KG
 
-⋆｡Cần sử dụng: ${baseRod.emoji} ${baseRod.name} [+${rod.level}] [🍀${rod.luck}]
-₊｡Mồi đã dùng: ${baitText}
-⋆｡Độ bền: ${rod.uses}/${rod.maxUses}
+⋆｡˚⚖️ Tổng cân nặng:
+
+${totalWeight.toFixed(2)} KG
+
+
+🎣 Cần sử dụng:
+
+${baseRod.emoji} ${baseRod.name}
+
+⭐ Cấp: ${rod.level || 0}
+
+🍀 May mắn: ${rod.luck || 0}
+
+
+🪱 Mồi đã dùng:
+
+${baitText}
+
+
+🛠️ Độ bền:
+
+${rod.uses}/${rod.maxUses}
+
+
 
 ⋆｡˚ ✨ *Chúc bạn câu được cá hiếm* ✨ ˚｡⋆`
 
 )
-
-
 
 .setFooter({
 
@@ -791,11 +650,7 @@ text:
 
 })
 
-
-
 .setTimestamp()
-
-
 
 ]
 
