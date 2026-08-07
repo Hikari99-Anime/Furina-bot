@@ -18,9 +18,12 @@ module.exports = {
 🎣 **Câu cá**
 \`!fish [số lần]\` • \`!rod\` • \`!upgrade\` • \`!repair\`
 Ví dụ: \`!fish 10\` (câu 10 lần, tốn 10 độ bền, cần càng vip câu càng nhanh)
+Sửa cần (\`!repair\`) càng ít độ bền càng đắt, gãy hẳn thì rất đắt
+Cường hóa (\`!upgrade\`) từ +5 thất bại có thể bị giảm cấp, từ +10 thất bại còn có thể gãy cần luôn — dùng vé bảo hiểm để tránh
 
 🛒 **Cửa hàng**
 \`!shop\` • \`!buy\`
+Có bán cả vé bảo hiểm (bảo vệ cần khi cường hóa thất bại)
 
 🎒 **Kho đồ**
 \`!bag\` • \`!sell\`

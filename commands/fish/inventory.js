@@ -6,6 +6,7 @@ EmbedBuilder
 const {
 baits,
 keys,
+insurance,
 fishList,
 emoji,
 formatMoney
@@ -67,6 +68,19 @@ const x=keys[id];
 
 key+=
 `${x.emoji} ${x.name} x${user.keys[id]||0}\n`;
+
+}
+
+
+
+for(const id in insurance){
+
+
+const x=insurance[id];
+
+
+key+=
+`${x.emoji} ${x.name} x${user.insurance||0}\n`;
 
 }
 
@@ -136,7 +150,7 @@ new EmbedBuilder()
 ${fishText}
 ╭・🪱 MỒI
 ${bait}
-╭・🗝️ CHÌA KHÓA
+╭・🎟️ CHÌA KHÓA & BẢO HIỂM
 ${key}
 ╰・🎣 Fish System`
 )

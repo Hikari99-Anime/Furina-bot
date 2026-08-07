@@ -198,6 +198,11 @@ return {
 
 
 
+    // 🎫 VÉ BẢO HIỂM
+
+    insurance:0,
+
+
 
 
     // 🎒 INVENTORY
@@ -400,6 +405,13 @@ function getUser(guildID,userID){
     if(!user.chests)
 
         user.chests={};
+
+
+
+
+    if(typeof user.insurance !== "number")
+
+        user.insurance=0;
 
 
 

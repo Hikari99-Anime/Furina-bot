@@ -4,6 +4,7 @@ require("dotenv").config();
 const {
     chests,
     keys,
+    insurance,
     rods,
     baits,
     emoji,
@@ -639,6 +640,14 @@ const keyIds=
 Object.keys(keys);
 
 
+const insuranceIds=
+Object.keys(insurance);
+
+
+const allIds=
+[...keyIds, ...insuranceIds];
+
+
 
 const embed = new EmbedBuilder()
 
@@ -648,7 +657,7 @@ const embed = new EmbedBuilder()
 
 .setTitle(
 
-"╭・🗝️ TREASURE MARKET"
+"╭・🎟️ TREASURE & INSURANCE MARKET"
 
 )
 
@@ -661,30 +670,62 @@ const k=keys[kid];
 
 return `${k.emoji} **${k.name}**\n💰 ${formatMoney(k.price)} ${emoji.money}`;
 
-}).join("\n\n━━━━━━━━━━━━\n\n")
+}).concat(
+
+insuranceIds.map(iid=>{
+
+const it=insurance[iid];
+
+return `${it.emoji} **${it.name}**\n💰 ${formatMoney(it.price)} ${emoji.money}`;
+
+})
+
+).join("\n\n━━━━━━━━━━━━\n\n")
 
 );
 
 
 
-const row = new ActionRowBuilder()
+const rows=[];
 
+
+for(let i=0;i<allIds.length;i+=5){
+
+
+const chunk=
+allIds.slice(i,i+5);
+
+
+rows.push(
+
+new ActionRowBuilder()
 
 .addComponents(
 
-keyIds.map(kid=>
+chunk.map(id=>{
 
-new ButtonBuilder()
+const item=
+keys[id] || insurance[id];
 
-.setCustomId("buy_"+kid)
 
-.setLabel(keys[kid].name)
+return new ButtonBuilder()
 
-.setStyle(ButtonStyle.Secondary)
+.setCustomId("buy_"+id)
+
+.setLabel(item.name)
+
+.setStyle(
+keys[id] ? ButtonStyle.Secondary : ButtonStyle.Success
+);
+
+})
 
 )
 
 );
+
+
+}
 
 
 
@@ -692,7 +733,7 @@ return interaction.reply({
 
 embeds:[embed],
 
-components:[row],
+components:rows,
 
 ephemeral:true
 

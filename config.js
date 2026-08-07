@@ -614,27 +614,31 @@ success:[
 
 
 
-destroy:{
-
-
-10:1,
-
-11:2,
-
-12:3,
-
-13:5,
-
-14:8,
-
-15:12
+luckPerLevel:2
 
 
 },
 
 
 
-luckPerLevel:2
+
+// =================
+// VÉ BẢO HIỂM
+// =================
+
+
+insurance:{
+
+
+baohiem:{
+
+name:"Vé bảo hiểm",
+
+emoji:"🎫",
+
+price:30000
+
+}
 
 
 },

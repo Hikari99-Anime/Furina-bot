@@ -406,6 +406,12 @@ caughtSummary[catchFish.id].weight+=weight;
 
 
 
+if(rod.uses<=0)
+
+rod.destroyed=true;
+
+
+
 save();
 
 

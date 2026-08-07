@@ -7,6 +7,7 @@ const {
 rods,
 baits,
 keys,
+insurance,
 emoji,
 formatMoney
 }=require("../../config");
@@ -62,6 +63,14 @@ type="key";
 
 }
 
+else if(insurance[id]){
+
+item=insurance[id];
+
+type="insurance";
+
+}
+
 else{
 
 return {
@@ -84,7 +93,21 @@ reason:"╰・❌ Cần câu chỉ mua được 1 cái mỗi lần"
 };
 
 
-if(user.can && user.can.danhSach[id])
+const daSoHuu=
+
+user.can && user.can.danhSach[id];
+
+
+const daGay=
+
+daSoHuu &&
+user.rodData &&
+user.rodData[id] &&
+user.rodData[id].destroyed;
+
+
+
+if(daSoHuu && !daGay)
 
 return {
 ok:false,
@@ -201,6 +224,22 @@ user.keys={};
 user.keys[id]=
 
 (user.keys[id] || 0)
+
++
+
+amount;
+
+
+}
+
+
+
+if(type==="insurance"){
+
+
+user.insurance=
+
+(user.insurance || 0)
 
 +
 

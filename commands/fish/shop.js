@@ -43,7 +43,7 @@ const embed = new EmbedBuilder()
 
 ╭・🎣 **Cần câu** · Tăng sức mạnh câu cá
 ╭・🪱 **Mồi câu** · Tăng cơ hội cá hiếm
-╭・🗝️ **Chìa khóa** · Mở rương kho báu
+╭・🎟️ **Chìa khóa & Bảo hiểm** · Mở rương, bảo vệ cần khi cường hóa
 
 ━━━━━━━━━━━━
 📖 **Cách mua**
@@ -89,7 +89,7 @@ new ButtonBuilder()
 
 .setCustomId("shop_key")
 
-.setLabel("🗝️ Chìa khóa")
+.setLabel("🎟️ Chìa khóa & Bảo hiểm")
 
 .setStyle(ButtonStyle.Secondary)
 

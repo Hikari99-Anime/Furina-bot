@@ -120,6 +120,18 @@ new EmbedBuilder()
 
 
 // giá sửa
+// độ bền càng ít (hao càng nhiều) thì sửa càng đắt,
+// nhưng gãy hẳn vẫn phải RẺ HƠN mua cần mới
+// (nếu không thà mua mới còn hơn)
+
+const DESTROYED_RATIO=0.7;
+
+
+const destroyedPrice=
+Math.floor(
+base.price * DESTROYED_RATIO
+);
+
 
 let price;
 
@@ -129,7 +141,7 @@ if(rod.destroyed){
 
 
 price=
-base.price*2;
+destroyedPrice;
 
 
 }
@@ -138,13 +150,16 @@ else{
 
 
 const lost=
-
 rod.maxUses-rod.uses;
+
+
+const ratio=
+lost/rod.maxUses;
 
 
 price=
 Math.floor(
-lost*base.price/base.uses
+destroyedPrice * ratio * ratio
 );
 
 
