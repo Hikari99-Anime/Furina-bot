@@ -38,7 +38,6 @@ async execute(message,args){
 
 const user=
 getUser(
-message.guild.id,
 message.author.id
 );
 
@@ -206,7 +205,7 @@ return message.reply({
 
 content:
 
-`╰・❌ Cách dùng: \`!${prefix}sell <tên cá>\` hoặc \`!${prefix}sell all\``
+`╰・❌ Cách dùng: \`${prefix}sell <tên cá>\` hoặc \`${prefix}sell all\``
 
 });
 

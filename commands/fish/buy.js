@@ -285,7 +285,6 @@ async execute(message,args){
 
 const user=
 getUser(
-message.guild.id,
 message.author.id
 );
 
@@ -304,7 +303,7 @@ if(!id)
 return message.reply({
 
 content:
-`╰・❌ Dùng: !${prefix}buy <id> <số lượng>`
+`╰・❌ Dùng: ${prefix}buy <id> <số lượng>`
 
 });
 

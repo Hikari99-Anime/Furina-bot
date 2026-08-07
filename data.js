@@ -299,27 +299,14 @@ return {
 // GET USER
 // ======================
 
-function getUser(guildID,userID){
+function getUser(userID){
 
 
 
-    if(!data[guildID]){
+    if(!data[userID]){
 
 
-        data[guildID]={};
-
-
-    }
-
-
-
-
-
-
-    if(!data[guildID][userID]){
-
-
-        data[guildID][userID] =
+        data[userID] =
         createUser();
 
 
@@ -334,7 +321,7 @@ function getUser(guildID,userID){
 
 
     const user =
-    data[guildID][userID];
+    data[userID];
 
 
 

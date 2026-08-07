@@ -41,7 +41,6 @@ async execute(message,args){
 
 const user=
 getUser(
-message.guild.id,
 message.author.id
 );
 
@@ -76,7 +75,7 @@ return `${c.emoji} ${c.name} ┆ ⭐${c.star}`;
 })
 .join("\n")}
 
-Dùng: \`!${prefix}open <tên rương>\``
+Dùng: \`${prefix}open <tên rương>\``
 )
 
 ]

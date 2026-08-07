@@ -487,6 +487,8 @@ const isChan = total%2===0;
 
 let text="";
 
+const resultsByUser = new Map();
+
 
 
 for(const p of game.players){
@@ -494,8 +496,6 @@ for(const p of game.players){
 
 const user =
 getUser(
-
-message.guild.id,
 
 p.id
 
@@ -533,6 +533,20 @@ payout = SO_PAYOUT[p.number] || 1;
 
 
 
+if(!resultsByUser.has(p.id))
+
+resultsByUser.set(p.id,{
+
+lines:[],
+
+net:0
+
+});
+
+
+const entry = resultsByUser.get(p.id);
+
+
 if(win){
 
 
@@ -541,9 +555,11 @@ const thang = p.money*payout;
 
 user.money += thang;
 
+entry.net += thang;
 
-text +=
-`✅ <@${p.id}> [${nhanCua(p)}] +${thang.toLocaleString()} xu\n`;
+entry.lines.push(
+`[${nhanCua(p)}] +${thang.toLocaleString()} xu`
+);
 
 
 
@@ -552,13 +568,39 @@ text +=
 
 user.money -= p.money;
 
+entry.net -= p.money;
 
-text +=
-`❌ <@${p.id}> [${nhanCua(p)}] -${p.money.toLocaleString()} xu\n`;
+entry.lines.push(
+`[${nhanCua(p)}] -${p.money.toLocaleString()} xu`
+);
 
 
 
 }
+
+
+}
+
+
+
+for(const [id,entry] of resultsByUser){
+
+
+const ketQua =
+
+entry.net > 0
+?
+`✅ Lời ${entry.net.toLocaleString()} xu`
+:
+entry.net < 0
+?
+`❌ Lỗ ${Math.abs(entry.net).toLocaleString()} xu`
+:
+"➖ Huề vốn";
+
+
+text +=
+`<@${id}> ${entry.lines.join(" ")} ${ketQua}\n`;
 
 
 }
@@ -568,10 +610,16 @@ text +=
 save();
 
 
+const mentions =
+[...resultsByUser.keys()]
+.map(id => `<@${id}>`)
+.join(" ");
 
 
 
 msg.edit({
+
+content: mentions || undefined,
 
 embeds:[
 

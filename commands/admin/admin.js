@@ -72,15 +72,15 @@ content:
 `
 ╰・🛠️ Admin
 
-\`!${prefix}admin addmoney @user 10000\`
+\`${prefix}admin addmoney @user 10000\`
 
-\`!${prefix}admin addbait @user moivang 10\`
+\`${prefix}admin addbait @user moivang 10\`
 
-\`!${prefix}admin addkey @user key_5 1\`
+\`${prefix}admin addkey @user key_5 1\`
 
-\`!${prefix}admin addfish @user camap 5\`
+\`${prefix}admin addfish @user camap 5\`
 
-\`!${prefix}admin reset @user\`
+\`${prefix}admin reset @user\`
 `
 
 });
@@ -99,7 +99,6 @@ return message.reply(
 
 const user=
 getUser(
-message.guild.id,
 target.id
 );
 
@@ -414,7 +413,7 @@ keys:{}
 
 
 require("../../data")
-.data[message.guild.id][target.id]=fresh;
+.data[target.id]=fresh;
 
 
 

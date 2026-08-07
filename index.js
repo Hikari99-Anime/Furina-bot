@@ -13,7 +13,7 @@ const {
 } = require("./config");
 
 
-const PREFIX = "!" + prefix;
+const PREFIX = prefix;
 
 
 const {
@@ -796,7 +796,6 @@ interaction.fields.getTextInputValue(
 
 const user=
 getUser(
-interaction.guild.id,
 interaction.user.id
 );
 
@@ -1011,7 +1010,6 @@ flags:64
 
 const user =
 getUser(
-interaction.guild.id,
 interaction.user.id
 );
 

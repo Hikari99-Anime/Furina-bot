@@ -35,7 +35,7 @@ module.exports = {
         if (!target || !amount) {
 
             return message.reply(
-                `╰・❌ Cách dùng: \`!${prefix}givemoney @user <số tiền>\``
+                `╰・❌ Cách dùng: \`${prefix}givemoney @user <số tiền>\``
             );
 
         }
@@ -65,7 +65,6 @@ module.exports = {
         }
 
         const sender = getUser(
-            message.guild.id,
             message.author.id
         );
 
@@ -78,7 +77,6 @@ module.exports = {
         }
 
         const receiver = getUser(
-            message.guild.id,
             target.id
         );
 

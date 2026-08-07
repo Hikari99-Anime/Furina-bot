@@ -37,7 +37,6 @@ async execute(message,args){
 
 const user=
 getUser(
-message.guild.id,
 message.author.id
 );
 
@@ -229,7 +228,7 @@ new EmbedBuilder()
 
 ${user.quest.done ? "✅ Đã nhận" : "⏳ Chưa nhận"}
 
-╰・Dùng: \`!${prefix}quest claim\``
+╰・Dùng: \`${prefix}quest claim\``
 )
 
 ]

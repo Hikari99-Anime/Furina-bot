@@ -29,7 +29,6 @@ return message.reply(
 
 
 const user=getUser(
-message.guild.id,
 target.id
 );
 
