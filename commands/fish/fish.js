@@ -7,7 +7,7 @@ const {
 fishList,
 rods,
 baits,
-emoji
+fishingZones
 }=require("../../config");
 
 
@@ -18,17 +18,67 @@ save
 
 
 
+
+// ======================
+// LẤY VÙNG HIỆN TẠI
+// ======================
+
+function getCurrentZone(){
+
+const now = new Date();
+
+
+// Chủ nhật mở núi lửa
+
+if(now.getDay() === 0){
+
+return fishingZones.volcano;
+
+}
+
+
+// Đổi vùng mỗi 6 tiếng
+
+const zones = [
+
+fishingZones.tropical,
+
+fishingZones.cold,
+
+fishingZones.swamp,
+
+fishingZones.deep
+
+];
+
+
+const index =
+Math.floor(now.getHours()/6);
+
+
+return zones[index % zones.length];
+
+}
+
+
+
+
+
+
 module.exports={
 
 
 name:"fish",
 
+
 aliases:[
 
 "f",
+
 "cau"
 
 ],
+
 
 
 
@@ -36,7 +86,7 @@ async execute(message,args){
 
 
 
-const user=
+const user =
 getUser(
 message.guild.id,
 message.author.id
@@ -45,26 +95,29 @@ message.author.id
 
 
 
+
 // ======================
 // SỐ LẦN CÂU
 // ======================
 
+const MAX_AMOUNT = 50;
 
-const MAX_AMOUNT=50;
 
+let amount = 1;
 
-let amount=1;
 
 
 if(args && args[0] !== undefined){
 
 
-amount=Number(args[0]);
+amount = Number(args[0]);
+
 
 
 if(
-!Number.isInteger(amount) ||
-amount<=0
+!Number.isInteger(amount)
+||
+amount <= 0
 )
 
 return message.reply(
@@ -72,7 +125,8 @@ return message.reply(
 );
 
 
-if(amount>MAX_AMOUNT)
+
+if(amount > MAX_AMOUNT)
 
 return message.reply(
 `╰・❌ Tối đa ${MAX_AMOUNT} lần/lượt`
@@ -84,32 +138,42 @@ return message.reply(
 
 
 
+
+
+// ======================
+// LẤY VÙNG
+// ======================
+
+const zone =
+getCurrentZone();
+
+
+
+
+
 // ======================
 // KIỂM TRA CẦN
 // ======================
 
 
-const rodID=
+const rodID =
 user.can.dangDung;
 
 
 
 if(!rodID)
 
-return message.reply({
-
-content:
+return message.reply(
 "╰・❌ Bạn chưa trang bị cần câu"
-
-});
-
+);
 
 
-const baseRod=
+
+const baseRod =
 rods[rodID];
 
 
-const rod=
+const rod =
 user.rodData[rodID];
 
 
@@ -119,6 +183,8 @@ if(!rod)
 return message.reply(
 "╰・❌ Dữ liệu cần bị lỗi"
 );
+
+
 
 
 
@@ -137,11 +203,13 @@ new EmbedBuilder()
 )
 
 .setDescription(
+
 `${baseRod.emoji} ${baseRod.name}
 
 ☠️ Không thể câu cá
 
-╰・Hãy sửa hoặc mua cần mới`
+╰・Hãy mua cần mới`
+
 )
 
 ]
@@ -151,7 +219,8 @@ new EmbedBuilder()
 
 
 
-if(rod.uses<amount)
+
+if(rod.uses < amount)
 
 return message.reply({
 
@@ -166,16 +235,21 @@ new EmbedBuilder()
 )
 
 .setDescription(
+
 `${baseRod.emoji} ${baseRod.name}
 
-🎯 Còn ${rod.uses}/${rod.maxUses}, cần ${amount}
+🎯 Còn ${rod.uses}/${rod.maxUses}
 
-╰・Hãy sửa chữa cần hoặc câu ít lại`
+╰・Cần ${amount} độ bền`
+
 )
 
 ]
 
 });
+
+
+
 
 
 
@@ -185,78 +259,113 @@ new EmbedBuilder()
 // ======================
 
 
-const totalBait=
+const totalBait =
 
-(user.moi.moithuong||0)+
-(user.moi.moibac||0)+
-(user.moi.moivang||0);
+(user.moi.moithuong || 0)
+
++
+
+(user.moi.moibac || 0)
+
++
+
+(user.moi.moivang || 0);
 
 
 
-if(totalBait<amount)
+if(totalBait < amount)
 
 return message.reply(
 
-`╰・❌ Không đủ mồi (còn ${totalBait}, cần ${amount})`
+`╰・❌ Không đủ mồi (còn ${totalBait})`
 
 );
 
 
 
 
+
+
 // ======================
-// THỜI GIAN CÂU
-// càng nhiều lần càng lâu, cần càng vip càng nhanh
+// THỜI GIAN
 // ======================
 
 
-const perCatchMs=
+const perCatchMs =
 
 Math.max(
+
 200,
-1200 - baseRod.star*150
+
+1200 - baseRod.star * 150
+
 );
 
 
-const totalMs=
+
+const totalMs =
 
 Math.min(
-amount*perCatchMs,
+
+amount * perCatchMs,
+
 30000
+
 );
 
 
 
-const etaSec=
-(totalMs/1000).toFixed(1);
+const etaSec =
+
+(totalMs/1000)
+.toFixed(1);
+
+
 
 
 
 
 // ======================
-// ANIMATION
+// EMBED ĐANG CÂU
 // ======================
 
 
-const msg=
+const msg =
+
 await message.reply({
 
 embeds:[
+
 
 new EmbedBuilder()
 
 .setColor("#7ddcff")
 
-.setTitle(
-"╭・🌊 Đang câu cá..."
-)
+.setImage(
+zone.image
+),
+
+
+
+new EmbedBuilder()
+
+.setColor("#7ddcff")
 
 .setDescription(
-`🎣 Đang thả câu ${amount} lần với ${baseRod.name}
 
-⏳ Khoảng ${etaSec} giây
+`｡･:*˚:✧* ***Fishing Adventure*** *✧:˚*:･｡
 
-╰・Chờ cá cắn câu...`
+🌍 Khu vực: ${zone.name}
+
+📖 ${zone.description}
+
+🎣 **Đang thả câu...**
+
+₊ Cần sử dụng: {baseRod.emoji} ${baseRod.name}
+⋆ Số lần câu:${amount} lần
+⋆ Thời gian: ${etaSec} giây ⏳
+⋆｡° Chờ cá cắn câu... ✨`
+
 )
 
 ]
@@ -265,47 +374,63 @@ new EmbedBuilder()
 
 
 
+
 await new Promise(
 
 r=>setTimeout(r,totalMs)
 
 );
-
-
-
-
 // ======================
 // CÂU NHIỀU LẦN
 // ======================
 
 
-const luckBonus=
-rod.level * 0.5;
+const luckBonus =
+(rod.level || 0) * 0.5;
 
 
-const caughtSummary={};
 
-const baitUsed={
+const caughtSummary = {};
+
+
+
+const baitUsed = {
+
 moithuong:0,
+
 moibac:0,
+
 moivang:0
+
 };
 
 
 
-for(let i=0;i<amount;i++){
 
 
-let baitID="moithuong";
+for(let i = 0; i < amount; i++){
 
 
-if(user.moi.moivang>0)
 
-baitID="moivang";
+// ======================
+// CHỌN MỒI
+// ======================
 
-else if(user.moi.moibac>0)
 
-baitID="moibac";
+let baitID = "moithuong";
+
+
+
+if(user.moi.moivang > 0)
+
+baitID = "moivang";
+
+
+else if(user.moi.moibac > 0)
+
+baitID = "moibac";
+
+
 
 
 
@@ -313,60 +438,118 @@ user.moi[baitID]--;
 
 baitUsed[baitID]++;
 
-
 rod.uses--;
 
 
 
 
-let total=0;
+
+// ======================
+// LẤY CÁ THEO VÙNG
+// ======================
 
 
-for(const fish of fishList)
+const zoneFish =
 
-total+=fish.rate+luckBonus;
+fishList.filter(f =>
+
+zone.fish.includes(f.id)
+
+);
 
 
 
-let random=
-Math.random()*total;
+if(zoneFish.length === 0){
+
+continue;
+
+}
+
+
+
+
+
+// ======================
+// RANDOM CÁ
+// ======================
+
+
+let totalRate = 0;
+
+
+
+for(const fish of zoneFish){
+
+totalRate += fish.rate + luckBonus;
+
+}
+
+
+
+
+let random =
+
+Math.random() * totalRate;
+
 
 
 let catchFish;
 
 
-for(const fish of fishList){
 
-random-=fish.rate+luckBonus;
+for(const fish of zoneFish){
 
-if(random<=0){
 
-catchFish=fish;
+random -= fish.rate + luckBonus;
+
+
+
+if(random <= 0){
+
+catchFish = fish;
 
 break;
 
 }
 
+
 }
+
+
 
 
 if(!catchFish)
 
-catchFish=fishList[0];
+catchFish = zoneFish[0];
 
 
 
 
-const weight=
+
+
+// ======================
+// CÂN NẶNG
+// ======================
+
+
+const weight =
 
 Number(
 
 (
-Math.random()*
-(catchFish.max-catchFish.min)
+
+Math.random()
+
+*
+
+(catchFish.max - catchFish.min)
+
 +
+
 catchFish.min
+
 )
+
 .toFixed(2)
 
 );
@@ -374,9 +557,18 @@ catchFish.min
 
 
 
+
+
+
+// ======================
+// LƯU CÁ
+// ======================
+
+
 if(!user.fish[catchFish.id])
 
-user.fish[catchFish.id]=[];
+user.fish[catchFish.id] = [];
+
 
 
 user.fish[catchFish.id].push(weight);
@@ -384,7 +576,15 @@ user.fish[catchFish.id].push(weight);
 
 
 
+
+
+// ======================
+// GOM KẾT QUẢ
+// ======================
+
+
 if(!caughtSummary[catchFish.id])
+
 
 caughtSummary[catchFish.id]={
 
@@ -397,18 +597,30 @@ weight:0
 };
 
 
+
+
 caughtSummary[catchFish.id].count++;
 
-caughtSummary[catchFish.id].weight+=weight;
+
+caughtSummary[catchFish.id].weight += weight;
+
 
 
 }
 
 
 
-if(rod.uses<=0)
 
-rod.destroyed=true;
+
+
+// ======================
+// HẾT ĐỘ BỀN
+// ======================
+
+
+if(rod.uses <= 0)
+
+rod.destroyed = true;
 
 
 
@@ -417,36 +629,56 @@ save();
 
 
 
+
+
 // ======================
-// KẾT QUẢ
+// HIỂN THỊ KẾT QUẢ
 // ======================
 
 
-const summaryList=
+const summaryList =
+
 Object.values(caughtSummary)
 
-.sort((a,b)=>b.count-a.count);
+.sort((a,b)=>
+
+b.count - a.count
+
+);
 
 
 
-const catchText=
+
+
+
+const catchText =
+
 summaryList
 
-.map(s=>
+.map(s =>
 
-`${s.fish.emoji} ${s.fish.name} x${s.count} · ⚖️ ${s.weight.toFixed(2)} KG`
+`${s.fish.emoji} **${s.fish.name}** x${s.count} · ⚖️ ${s.weight.toFixed(2)} KG`
 
 )
 
-.join("\n") || "Không câu được gì";
+.join("\n")
+
+||
+
+"Không câu được gì";
 
 
 
-const totalWeight=
+
+
+
+const totalWeight =
 
 summaryList.reduce(
 
-(sum,s)=>sum+s.weight,
+(sum,s)=>
+
+sum + s.weight,
 
 0
 
@@ -454,46 +686,116 @@ summaryList.reduce(
 
 
 
-const baitText=
+
+
+
+
+const baitText =
 
 Object.keys(baitUsed)
 
-.filter(id=>baitUsed[id]>0)
+.filter(id => baitUsed[id] > 0)
 
-.map(id=>`${baits[id].emoji} x${baitUsed[id]}`)
+.map(id =>
 
-.join(" · ") || "-";
+`${baits[id].emoji} x${baitUsed[id]}`
 
+)
+
+.join(" · ")
+
+||
+
+"-";
+
+
+
+
+
+
+
+// ======================
+// EDIT KẾT QUẢ
+// ======================
 
 
 msg.edit({
 
 embeds:[
 
+
+
+// ======================
+// ẢNH VÙNG
+// ======================
+
+
 new EmbedBuilder()
 
-.setColor("#8affb2")
+.setColor("#7ddcff")
+
+.setImage(
+
+zone.image
+
+),
+
+
+
+
+
+// ======================
+// THÔNG TIN
+// ======================
+
+
+new EmbedBuilder()
+
+.setColor("#A0E7E5")
 
 .setTitle(
-"╭・🎣 Câu cá thành công"
+
+"✧₊˚ 🎣 Câu Cá Thành Công ˚₊✧"
+
 )
+
+
 
 .setDescription(
-`${catchText}
 
-╭・⚖️ Tổng cân nặng: ${totalWeight.toFixed(2)} KG
-╭・🎣 Cần sử dụng: ${baseRod.name} · ⭐+${rod.level} · 🍀 Luck ${rod.luck}
-╭・🪱 Mồi đã dùng: ${baitText}
-╭・🎯 Độ bền: ${rod.uses}/${rod.maxUses}
+`｡･:*˚:✧* ***Fishing Adventure*** *✧:˚*:･｡
 
-╰・🌊 Chúc bạn may mắn`
+
+🌍 Khu vực: ${zone.name}
+🐚 Chiến lợi phẩm:
+
+${catchText}
+
+⋆｡˚⚖️ Tổng cân nặng: ${totalWeight.toFixed(2)} KG
+
+⋆｡Cần sử dụng: ${baseRod.emoji} ${baseRod.name} [+${rod.level}] [🍀${rod.luck}]
+₊｡Mồi đã dùng: ${baitText}
+⋆｡Độ bền: ${rod.uses}/${rod.maxUses}
+
+⋆｡˚ ✨ *Chúc bạn câu được cá hiếm* ✨ ˚｡⋆`
+
 )
+
+
 
 .setFooter({
 
-text:"✦ Fishing Adventure"
+text:
+
+"୨୧ ✦ Fishing Adventure • Ocean Diary ✦ ୨୧"
 
 })
+
+
+
+.setTimestamp()
+
+
 
 ]
 
