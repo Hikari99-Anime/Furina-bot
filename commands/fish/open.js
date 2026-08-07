@@ -7,7 +7,8 @@ const {
 chests,
 keys,
 emoji,
-formatMoney
+formatMoney,
+prefix
 }=require("../../config");
 
 
@@ -75,7 +76,7 @@ return `${c.emoji} ${c.name} ┆ ⭐${c.star}`;
 })
 .join("\n")}
 
-Dùng: \`!open <tên rương>\``
+Dùng: \`!${prefix}open <tên rương>\``
 )
 
 ]

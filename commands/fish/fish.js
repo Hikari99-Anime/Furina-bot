@@ -6,7 +6,8 @@ const {
     fishList,
     rods,
     baits,
-    fishingZones
+    fishingZones,
+    prefix
 } = require("../../config");
 
 const {
@@ -92,7 +93,7 @@ module.exports = {
             )
 
             return message.reply(
-                "╰・❌ Số lần câu không hợp lệ. Ví dụ: `!fish 10`"
+                `╰・❌ Số lần câu không hợp lệ. Ví dụ: \`!${prefix}fish 10\``
             );
 
 

@@ -518,5 +518,75 @@
         "kg": 0
       }
     }
+  },
+  "1457421638881509622": {
+    "398030689905278977": {
+      "money": 11000,
+      "level": 1,
+      "exp": 0,
+      "can": {
+        "dangDung": null,
+        "danhSach": {}
+      },
+      "moi": {
+        "moithuong": 10,
+        "moibac": 0,
+        "moivang": 0
+      },
+      "fish": {},
+      "keys": {},
+      "chests": {},
+      "insurance": 0,
+      "inv": {},
+      "daily": {
+        "last": 1786120962912,
+        "streak": 1
+      },
+      "quest": {
+        "date": "",
+        "list": [],
+        "claim": false
+      },
+      "rodData": {},
+      "stats": {
+        "catch": 0,
+        "sell": 0,
+        "kg": 0
+      }
+    },
+    "743028655097380895": {
+      "money": 11000,
+      "level": 1,
+      "exp": 0,
+      "can": {
+        "dangDung": null,
+        "danhSach": {}
+      },
+      "moi": {
+        "moithuong": 10,
+        "moibac": 0,
+        "moivang": 0
+      },
+      "fish": {},
+      "keys": {},
+      "chests": {},
+      "insurance": 0,
+      "inv": {},
+      "daily": {
+        "last": 1786121406897,
+        "streak": 1
+      },
+      "quest": {
+        "date": "",
+        "list": [],
+        "claim": false
+      },
+      "rodData": {},
+      "stats": {
+        "catch": 0,
+        "sell": 0,
+        "kg": 0
+      }
+    }
   }
 }

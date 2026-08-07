@@ -9,7 +9,8 @@ formatMoney,
 baits,
 keys,
 fishList,
-rods
+rods,
+prefix
 }=require("../../config");
 
 
@@ -71,15 +72,15 @@ content:
 `
 ╰・🛠️ Admin
 
-\`!admin addmoney @user 10000\`
+\`!${prefix}admin addmoney @user 10000\`
 
-\`!admin addbait @user moivang 10\`
+\`!${prefix}admin addbait @user moivang 10\`
 
-\`!admin addkey @user key_5 1\`
+\`!${prefix}admin addkey @user key_5 1\`
 
-\`!admin addfish @user camap 5\`
+\`!${prefix}admin addfish @user camap 5\`
 
-\`!admin reset @user\`
+\`!${prefix}admin reset @user\`
 `
 
 });

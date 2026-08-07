@@ -5,7 +5,8 @@ EmbedBuilder
 
 const {
 emoji,
-formatMoney
+formatMoney,
+prefix
 }=require("../../config");
 
 
@@ -228,7 +229,7 @@ new EmbedBuilder()
 
 ${user.quest.done ? "✅ Đã nhận" : "⏳ Chưa nhận"}
 
-╰・Dùng: \`!quest claim\``
+╰・Dùng: \`!${prefix}quest claim\``
 )
 
 ]

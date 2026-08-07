@@ -12,6 +12,11 @@ ButtonStyle
 
 
 const {
+prefix
+}=require("../config");
+
+
+const {
 
 getUser,
 
@@ -157,7 +162,7 @@ bet<=0
 ){
 
 return message.reply(
-"❌ Ví dụ: `!xidach 1000`"
+`❌ Ví dụ: \`!${prefix}xidach 1000\``
 );
 
 }

@@ -1,3 +1,7 @@
+// đổi prefix ở đây, ví dụ "f" => !fdaily, "" => !daily
+const prefix = "f";
+
+
 const emoji = {
 
 fish:"🐟",
@@ -85,6 +89,8 @@ return number.toString();
 module.exports={
 
 
+
+prefix,
 
 
 

@@ -9,7 +9,8 @@ baits,
 keys,
 insurance,
 emoji,
-formatMoney
+formatMoney,
+prefix
 }=require("../../config");
 
 
@@ -303,7 +304,7 @@ if(!id)
 return message.reply({
 
 content:
-"╰・❌ Dùng: !buy <id> <số lượng>"
+`╰・❌ Dùng: !${prefix}buy <id> <số lượng>`
 
 });
 

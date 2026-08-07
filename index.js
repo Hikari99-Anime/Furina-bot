@@ -8,8 +8,12 @@ const {
     rods,
     baits,
     emoji,
-    formatMoney
+    formatMoney,
+    prefix
 } = require("./config");
+
+
+const PREFIX = "!" + prefix;
 
 
 const {
@@ -276,7 +280,7 @@ return;
 
 
 
-if(!message.content.startsWith("!"))
+if(!message.content.toLowerCase().startsWith(PREFIX))
 
 return;
 
@@ -285,7 +289,7 @@ return;
 
 const args = message.content
 
-.slice(1)
+.slice(PREFIX.length)
 
 .trim()
 
