@@ -9,7 +9,7 @@ const {
     rods,
     emoji,
     formatMoney
-} = require("../../Config/config");
+} = require("../../config");
 
 const {
     getUser,

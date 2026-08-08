@@ -31,18 +31,69 @@ enWords.filter(w => w.length >= 3 && w.length <= 8);
 
 const games = new Map();
 
-const roundCount = { vi:0, en:0 };
+// mỗi ngôn ngữ có 10 "ô" — 1 ô = 1 round. Ô của round hiện tại được
+// xoá sạch khi bắt đầu round đó, nên 1 từ chỉ bị chặn trong đúng
+// 10 round gần nhất, sau đó tự động được dùng lại.
+const roundSlot = { vi:0, en:0 };
+
+const usedHistory = {
+
+    vi: Array.from({length:MAX_ROUND},() => new Set()),
+
+    en: Array.from({length:MAX_ROUND},() => new Set())
+
+};
+
+
+
+
+function isUsedRecently(lang,entry){
+
+    return usedHistory[lang].some(slot => slot.has(entry));
+
+}
+
+
+
+
+function roundsUntilFree(lang,entry){
+
+    const idx =
+    usedHistory[lang].findIndex(slot => slot.has(entry));
+
+    if(idx === -1)
+        return 0;
+
+    return ((idx - roundSlot[lang] - 1 + MAX_ROUND) % MAX_ROUND) + 1;
+
+}
+
+
+
+
+function markUsed(lang,entry){
+
+    usedHistory[lang][roundSlot[lang]].add(entry);
+
+}
 
 
 
 
 function pickStarter(lang){
 
-    return lang === "vi"
-    ?
-    viPhrases[Math.floor(Math.random() * viPhrases.length)]
-    :
-    enStarters[Math.floor(Math.random() * enStarters.length)];
+    const pool = lang === "vi" ? viPhrases : enStarters;
+
+    for(let i=0;i<10;i++){
+
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+
+        if(!isUsedRecently(lang,pick))
+            return pick;
+
+    }
+
+    return pool[Math.floor(Math.random() * pool.length)];
 
 }
 
@@ -60,7 +111,7 @@ function getGame(channelId){
 
 function getRoundCount(lang){
 
-    return roundCount[lang];
+    return roundSlot[lang];
 
 }
 
@@ -71,11 +122,11 @@ function startRound(game,starter){
 
     game.current = starter;
 
-    game.used = new Set([starter]);
-
     game.chainLength = 1;
 
     game.lastUser = null;
+
+    markUsed(game.lang,starter);
 
 }
 
@@ -93,6 +144,8 @@ function createGame(lang,channel,starter){
         scores: new Map()
 
     };
+
+    usedHistory[lang][roundSlot[lang]] = new Set();
 
     startRound(game,starter);
 
@@ -114,7 +167,10 @@ function stopGame(channelId){
 
     games.delete(channelId);
 
-    roundCount[game.lang] = 0;
+    roundSlot[game.lang] = 0;
+
+    usedHistory[game.lang] =
+    Array.from({length:MAX_ROUND},() => new Set());
 
     return true;
 
@@ -147,13 +203,13 @@ function validateEntry(raw,game,authorId){
         const required = lastSyllableOf(game.current,"en");
 
         if(word[0] !== required)
-            return { ok:false, close:false };
+            return { ok:false, close:true, reason:`╰・❌ Từ của bạn phải bắt đầu bằng chữ **${required}**` };
 
         if(game.lastUser === authorId)
             return { ok:false, close:true, reason:"╰・❌ Phải để người khác nối rồi mới được nối tiếp" };
 
-        if(game.used.has(word))
-            return { ok:false, close:true, reason:"╰・❌ Từ này đã được dùng rồi" };
+        if(isUsedRecently("en",word))
+            return { ok:false, close:true, reason:`╰・❌ Từ này đã được sử dụng trong 10 ván gần đây. Bạn có thể dùng lại sau ${roundsUntilFree("en",word)} ván nữa.` };
 
         if(!enWordSet.has(word))
             return { ok:false, close:true, reason:"╰・❌ Không có trong từ điển" };
@@ -173,13 +229,13 @@ function validateEntry(raw,game,authorId){
     const required = lastSyllableOf(game.current,"vi");
 
     if(parts[0] !== required)
-        return { ok:false, close:false };
+        return { ok:false, close:true, reason:`╰・❌ Từ của bạn phải bắt đầu bằng chữ **${required}**` };
 
     if(game.lastUser === authorId)
         return { ok:false, close:true, reason:"╰・❌ Phải để người khác nối rồi mới được nối tiếp" };
 
-    if(game.used.has(phrase))
-        return { ok:false, close:true, reason:"╰・❌ Cụm này đã được dùng rồi" };
+    if(isUsedRecently("vi",phrase))
+        return { ok:false, close:true, reason:`╰・❌ Cụm này đã được sử dụng trong 10 ván gần đây. Bạn có thể dùng lại sau ${roundsUntilFree("vi",phrase)} ván nữa.` };
 
     if(!viPhraseSet.has(phrase))
         return { ok:false, close:true, reason:"╰・❌ Không có trong từ điển" };
@@ -230,7 +286,7 @@ async function handleMessage(message){
 
     game.current = result.value;
 
-    game.used.add(result.value);
+    markUsed(game.lang,result.value);
 
     game.chainLength++;
 
@@ -243,7 +299,11 @@ async function handleMessage(message){
 
 
     const isDeadEnd =
-    !hasContinuation(game.current,game.lang,game.used);
+    !hasContinuation(
+        game.current,
+        game.lang,
+        word => isUsedRecently(game.lang,word)
+    );
 
 
     const user = getUser(message.author.id);
@@ -266,15 +326,15 @@ async function handleMessage(message){
 
     save();
 
-    roundCount[game.lang]++;
-
-    if(roundCount[game.lang] >= MAX_ROUND)
-        roundCount[game.lang] = 0;
-
 
     const finishedChainLength = game.chainLength;
 
     const finishedEntry = game.current;
+
+
+    roundSlot[game.lang] = (roundSlot[game.lang] + 1) % MAX_ROUND;
+
+    usedHistory[game.lang][roundSlot[game.lang]] = new Set();
 
 
     const nextStarter = pickStarter(game.lang);
@@ -304,7 +364,7 @@ async function handleMessage(message){
 
 💰 Thưởng: +${REWARD_DEADEND.toLocaleString()} xu
 🔗 Chuỗi vừa xong: ${finishedChainLength} từ
-📊 Round: ${roundCount[game.lang]}/${MAX_ROUND}
+📊 Round: ${roundSlot[game.lang]}/${MAX_ROUND} (từ dùng quá 10 round trước sẽ được dùng lại)
 
 🆕 Từ bắt đầu round mới: **${nextStarter}**`
 

@@ -5,7 +5,7 @@ const {
 const {
     emoji,
     formatMoney
-} = require("../../Config/config.js");
+} = require("../../config.js");
 
 const {
     getUser,

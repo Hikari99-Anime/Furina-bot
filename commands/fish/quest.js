@@ -4,113 +4,36 @@ const {
 
 const {
     fishList,
-    baits,
-    keys,
     emoji,
     formatMoney
-} = require("../../config/index.js");
+} = require("../../config");
 
 const {
     getUser,
     save
-} = require("../../data.js");
+} = require("../../data");
 
-// ======================================================
+// ==========================================
 // CẤU HÌNH
-// ======================================================
+// ==========================================
 
-const MAX_QUEST = 5;
+const MAX_QUEST_PER_DAY = 5;
 
-// ======================================================
-// NGÀY VIỆT NAM
-// ======================================================
-
-function getToday() {
-
-    return new Intl.DateTimeFormat(
-        "en-CA",
-        {
-            timeZone: "Asia/Ho_Chi_Minh"
-        }
-    ).format(new Date());
-
-}
-
-// ======================================================
+// ==========================================
 // RANDOM
-// ======================================================
+// ==========================================
 
 function random(min, max) {
-
     return Math.floor(
         Math.random() * (max - min + 1)
     ) + min;
-
 }
 
-// ======================================================
-// KIỂM TRA CÁ THẬT
-// ======================================================
-
-function isRealFish(fish) {
-
-    /*
-     * Nếu không có isFish
-     * => mặc định là cá.
-     *
-     * Nếu:
-     * isFish: false
-     * => ủng / rác / item
-     */
-
-    return (
-        fish &&
-        fish.isFish !== false
-    );
-
-}
-
-// ======================================================
-// LẤY DANH SÁCH CÁ THẬT
-// ======================================================
-
-function getRealFishList() {
-
-    return fishList.filter(
-        fish =>
-            isRealFish(fish)
-    );
-
-}
-
-// ======================================================
-// RANDOM CÁ THẬT
-// ======================================================
-
-function randomFish() {
-
-    const list =
-        getRealFishList();
-
-    if (!list.length) {
-        return null;
-    }
-
-    return list[
-        random(
-            0,
-            list.length - 1
-        )
-    ];
-
-}
-
-// ======================================================
-// TẠO ID
-// ======================================================
+// ==========================================
+// TẠO ID QUEST
+// ==========================================
 
 function questId(type) {
-
     return (
         `${type}_` +
         Date.now() +
@@ -119,51 +42,56 @@ function questId(type) {
             .toString(36)
             .slice(2)
     );
-
 }
 
-// ======================================================
-// TẠO QUEST
-// ======================================================
+// ==========================================
+// KIỂM TRA CÁ THẬT
+// ==========================================
 
-function createQuest() {
+function isRealFish(fish) {
+    return fish && fish.isFish !== false;
+}
 
-    const types = [
-        "fish",
-        "kg",
-        "money",
-        "bait",
-        "key"
+// ==========================================
+// RANDOM CÁ THẬT
+// ==========================================
+
+function randomFish() {
+
+    const availableFish =
+        fishList.filter(
+            fish =>
+                isRealFish(fish)
+        );
+
+    if (!availableFish.length) {
+        return null;
+    }
+
+    return availableFish[
+        random(
+            0,
+            availableFish.length - 1
+        )
     ];
+}
 
-    const type =
-        types[
-            random(
-                0,
-                types.length - 1
-            )
-        ];
+// ==========================================
+// TẠO QUEST
+// ==========================================
 
-    // ==================================================
-    // BẮT CÁ
-    // ==================================================
+function generateQuest() {
 
-    if (type === "fish") {
+    const type = random(1, 10);
 
-        const fish =
-            randomFish();
+    // ======================================
+    // 1. BẮT CÁ - DỄ
+    // ======================================
 
-        /*
-         * Không có cá thật
-         * thì thử tạo quest khác.
-         */
-
-        if (!fish) {
-            return createQuest();
-        }
+    if (type === 1) {
 
         const target =
-            random(3, 15);
+            random(10, 20);
 
         return {
 
@@ -173,29 +101,65 @@ function createQuest() {
             type:
                 "fish",
 
-            fishId:
-                fish.id,
+            target,
+
+            reward:
+                random(2500, 4500),
+
+            title:
+                "🎣 Ngư dân chăm chỉ",
+
+            description:
+                `Bắt ${target} con cá`,
+
+            emoji:
+                "🐟"
+
+        };
+    }
+
+    // ======================================
+    // 2. BẮT NHIỀU CÁ
+    // ======================================
+
+    if (type === 2) {
+
+        const target =
+            random(30, 60);
+
+        return {
+
+            id:
+                questId("fish"),
+
+            type:
+                "fish",
 
             target,
 
             reward:
-                random(1500, 5000),
+                random(6500, 10000),
 
-            completed:
-                false
+            title:
+                "🌊 Càn quét đại dương",
+
+            description:
+                `Bắt ${target} con cá`,
+
+            emoji:
+                "🐟"
 
         };
-
     }
 
-    // ==================================================
-    // TỔNG KG
-    // ==================================================
+    // ======================================
+    // 3. KG
+    // ======================================
 
-    if (type === "kg") {
+    if (type === 3) {
 
         const target =
-            random(5, 30);
+            random(40, 100);
 
         return {
 
@@ -208,23 +172,188 @@ function createQuest() {
             target,
 
             reward:
-                random(2500, 7000),
+                random(6500, 12000),
 
-            completed:
-                false
+            title:
+                "⚖️ Thợ săn khổng lồ",
+
+            description:
+                `Câu đủ ${target} KG cá`,
+
+            emoji:
+                "⚖️"
 
         };
-
     }
 
-    // ==================================================
-    // TIỀN
-    // ==================================================
+    // ======================================
+    // 4. CÁ CỤ THỂ
+    // ======================================
 
-    if (type === "money") {
+    if (type === 4) {
+
+        const fish =
+            randomFish();
+
+        if (!fish) {
+            return generateQuest();
+        }
 
         const target =
-            random(5000, 30000);
+            random(2, 5);
+
+        return {
+
+            id:
+                questId("specific"),
+
+            type:
+                "specific",
+
+            fishId:
+                fish.id,
+
+            target,
+
+            reward:
+                random(4000, 8000),
+
+            title:
+                `${fish.emoji || "🐟"} Thợ săn ${fish.name}`,
+
+            description:
+                `Bắt ${target} ${fish.name}`,
+
+            emoji:
+                fish.emoji || "🐟"
+
+        };
+    }
+
+    // ======================================
+    // 5. RARE / EPIC
+    // ======================================
+
+    if (type === 5) {
+
+        const rareFish =
+            fishList.filter(
+                fish =>
+                    isRealFish(fish) &&
+                    (
+                        fish.rarity === "RARE" ||
+                        fish.rarity === "EPIC"
+                    )
+            );
+
+        if (!rareFish.length) {
+            return generateQuest();
+        }
+
+        const fish =
+            rareFish[
+                random(
+                    0,
+                    rareFish.length - 1
+                )
+            ];
+
+        const target =
+            random(1, 2);
+
+        return {
+
+            id:
+                questId("rare"),
+
+            type:
+                "specific",
+
+            fishId:
+                fish.id,
+
+            target,
+
+            reward:
+                random(10000, 18000),
+
+            title:
+                "💎 Săn cá quý",
+
+            description:
+                `Bắt ${target} ${fish.name}`,
+
+            emoji:
+                fish.emoji || "💎"
+
+        };
+    }
+
+    // ======================================
+    // 6. LEGENDARY / MYTHICAL
+    // ======================================
+
+    if (type === 6) {
+
+        const legendaryFish =
+            fishList.filter(
+                fish =>
+                    isRealFish(fish) &&
+                    (
+                        fish.rarity === "LEGENDARY" ||
+                        fish.rarity === "MYTHICAL"
+                    )
+            );
+
+        if (!legendaryFish.length) {
+            return generateQuest();
+        }
+
+        const fish =
+            legendaryFish[
+                random(
+                    0,
+                    legendaryFish.length - 1
+                )
+            ];
+
+        return {
+
+            id:
+                questId("legendary"),
+
+            type:
+                "specific",
+
+            fishId:
+                fish.id,
+
+            target:
+                1,
+
+            reward:
+                random(22000, 35000),
+
+            title:
+                "👑 Săn cá huyền thoại",
+
+            description:
+                `Bắt 1 ${fish.name}`,
+
+            emoji:
+                fish.emoji || "👑"
+
+        };
+    }
+
+    // ======================================
+    // 7. TIỀN
+    // ======================================
+
+    if (type === 7) {
+
+        const target =
+            random(15000, 40000);
 
         return {
 
@@ -237,260 +366,131 @@ function createQuest() {
             target,
 
             reward:
-                random(2000, 8000),
+                random(3000, 7000),
 
-            completed:
-                false
+            title:
+                "💰 Tích lũy tài sản",
+
+            description:
+                `Có ít nhất ${formatMoney(target)} xu`,
+
+            emoji:
+                emoji.money
 
         };
-
     }
 
-    // ==================================================
-    // MỒI
-    // ==================================================
+    // ======================================
+    // 8. CẦN +5
+    // ======================================
 
-    if (type === "bait") {
-
-        const ids =
-            Object.keys(
-                baits || {}
-            );
-
-        /*
-         * Không có mồi trong config
-         * thì tạo loại quest khác.
-         */
-
-        if (!ids.length) {
-            return createQuest();
-        }
-
-        const baitId =
-            ids[
-                random(
-                    0,
-                    ids.length - 1
-                )
-            ];
-
-        const target =
-            random(5, 30);
+    if (type === 8) {
 
         return {
 
             id:
-                questId("bait"),
+                questId("rod"),
 
             type:
-                "bait",
+                "rod",
 
-            baitId,
-
-            target,
+            target:
+                5,
 
             reward:
-                random(1500, 5000),
+                10000,
 
-            completed:
-                false
+            title:
+                "🎣 Tân binh cường hóa",
+
+            description:
+                "Có một cần câu đạt +5",
+
+            emoji:
+                "🎣"
 
         };
-
     }
 
-    // ==================================================
-    // CHÌA KHÓA
-    // ==================================================
+    // ======================================
+    // 9. CẦN +10
+    // ======================================
 
-    const ids =
-        Object.keys(
-            keys || {}
-        );
+    if (type === 9) {
 
-    /*
-     * Không có key trong config
-     * thì tạo quest khác.
-     */
+        return {
 
-    if (!ids.length) {
-        return createQuest();
+            id:
+                questId("rod"),
+
+            type:
+                "rod",
+
+            target:
+                10,
+
+            reward:
+                25000,
+
+            title:
+                "⭐ Bậc thầy cường hóa",
+
+            description:
+                "Có một cần câu đạt +10",
+
+            emoji:
+                "⭐"
+
+        };
     }
 
-    const keyId =
-        ids[
-            random(
-                0,
-                ids.length - 1
-            )
-        ];
+    // ======================================
+    // 10. CÁ + KG
+    // ======================================
 
     const target =
-        random(1, 5);
+        random(10, 20);
+
+    const kgTarget =
+        Number(
+            (target * 1.5)
+                .toFixed(1)
+        );
 
     return {
 
         id:
-            questId("key"),
+            questId("mixed"),
 
         type:
-            "key",
-
-        keyId,
+            "mixed",
 
         target,
 
         reward:
-            random(2500, 7000),
+            random(8000, 15000),
 
-        completed:
-            false
+        title:
+            "🌊 Chuyến câu hoàn hảo",
+
+        description:
+            `Bắt ${target} con cá và đạt ít nhất ${kgTarget} KG`,
+
+        kgTarget,
+
+        emoji:
+            "🌊"
 
     };
-
 }
 
-// ======================================================
-// TẠO 5 QUEST KHÔNG TRÙNG
-// ======================================================
-
-function generateQuests() {
-
-    const quests = [];
-
-    let attempts = 0;
-
-    while (
-        quests.length < MAX_QUEST &&
-        attempts < 100
-    ) {
-
-        attempts++;
-
-        const quest =
-            createQuest();
-
-        if (!quest) {
-            continue;
-        }
-
-        /*
-         * Không trùng cùng:
-         *
-         * fishId
-         * baitId
-         * keyId
-         *
-         * Và không trùng loại
-         * đối với money / kg.
-         */
-
-        const duplicate =
-            quests.some(
-                existing => {
-
-                    if (
-                        existing.type !==
-                        quest.type
-                    ) {
-
-                        return false;
-
-                    }
-
-                    if (
-                        quest.type ===
-                        "fish"
-                    ) {
-
-                        return (
-                            String(
-                                existing.fishId
-                            ) ===
-                            String(
-                                quest.fishId
-                            )
-                        );
-
-                    }
-
-                    if (
-                        quest.type ===
-                        "bait"
-                    ) {
-
-                        return (
-                            String(
-                                existing.baitId
-                            ) ===
-                            String(
-                                quest.baitId
-                            )
-                        );
-
-                    }
-
-                    if (
-                        quest.type ===
-                        "key"
-                    ) {
-
-                        return (
-                            String(
-                                existing.keyId
-                            ) ===
-                            String(
-                                quest.keyId
-                            )
-                        );
-
-                    }
-
-                    /*
-                     * kg / money:
-                     * không cho trùng loại.
-                     */
-
-                    return true;
-
-                }
-            );
-
-        if (!duplicate) {
-
-            quests.push(
-                quest
-            );
-
-        }
-
-    }
-
-    return quests;
-
-}
-
-// ======================================================
-// TÌM FISH CONFIG
-// ======================================================
-
-function getFishInfo(fishId) {
-
-    return fishList.find(
-        fish =>
-            String(fish.id) ===
-            String(fishId)
-    );
-
-}
-
-// ======================================================
-// TÍNH SỐ CÁ THẬT
-// ======================================================
+// ==========================================
+// ĐẾM CÁ THẬT
+// ==========================================
 
 function getFishCount(user) {
 
-    let total = 0;
+    let count = 0;
 
     const userFish =
         user.fish || {};
@@ -500,59 +500,41 @@ function getFishCount(user) {
     ) {
 
         const fishInfo =
-            getFishInfo(fishId);
-
-        /*
-         * Không có config
-         * => bỏ qua.
-         */
+            fishList.find(
+                fish =>
+                    String(fish.id) ===
+                    String(fishId)
+            );
 
         if (!fishInfo) {
             continue;
         }
 
-        /*
-         * Ủng / rác / item
-         * => không tính cá.
-         */
-
-        if (
-            !isRealFish(
-                fishInfo
-            )
-        ) {
-
+        if (!isRealFish(fishInfo)) {
             continue;
-
         }
 
-        const list =
+        const fishes =
             userFish[fishId];
 
-        if (
-            !Array.isArray(list)
-        ) {
-
+        if (!Array.isArray(fishes)) {
             continue;
-
         }
 
-        total +=
-            list.length;
-
+        count +=
+            fishes.length;
     }
 
-    return total;
-
+    return count;
 }
 
-// ======================================================
+// ==========================================
 // TÍNH KG CÁ THẬT
-// ======================================================
+// ==========================================
 
 function getFishKg(user) {
 
-    let total = 0;
+    let kg = 0;
 
     const userFish =
         user.fish || {};
@@ -562,141 +544,112 @@ function getFishKg(user) {
     ) {
 
         const fishInfo =
-            getFishInfo(fishId);
-
-        /*
-         * Không có fish config
-         * => bỏ qua.
-         */
+            fishList.find(
+                fish =>
+                    String(fish.id) ===
+                    String(fishId)
+            );
 
         if (!fishInfo) {
             continue;
         }
 
-        /*
-         * Ủng / item
-         * => tuyệt đối không tính KG.
-         */
-
-        if (
-            !isRealFish(
-                fishInfo
-            )
-        ) {
-
+        if (!isRealFish(fishInfo)) {
             continue;
-
         }
 
-        const list =
+        const fishes =
             userFish[fishId];
 
-        if (
-            !Array.isArray(list)
-        ) {
-
+        if (!Array.isArray(fishes)) {
             continue;
-
         }
 
-        for (
-            const weight of list
-        ) {
+        kg +=
+            fishes.reduce(
+                (total, value) => {
 
-            const number =
-                Number(weight);
+                    const number =
+                        Number(value);
 
-            if (
-                Number.isFinite(number)
-            ) {
+                    if (
+                        Number.isFinite(number)
+                    ) {
+                        return total + number;
+                    }
 
-                total +=
-                    number;
+                    return total;
 
-            }
-
-        }
-
+                },
+                0
+            );
     }
 
     return Number(
-        total.toFixed(2)
+        kg.toFixed(2)
     );
-
 }
 
-// ======================================================
+// ==========================================
 // TÍNH TIẾN ĐỘ
-// ======================================================
+// ==========================================
 
-function getProgress(
-    quest,
-    user
-) {
+function getProgress(user, quest) {
 
-    // ==================================================
+    // ======================================
     // CÁ
-    // ==================================================
+    // ======================================
 
     if (
         quest.type === "fish"
     ) {
 
-        const fishInfo =
-            getFishInfo(
-                quest.fishId
-            );
-
-        /*
-         * Quest cũ trỏ vào item
-         * hoặc fish không tồn tại
-         * => không hoàn thành.
-         */
-
-        if (
-            !isRealFish(
-                fishInfo
-            )
-        ) {
-
-            return 0;
-
-        }
-
-        const list =
-            user.fish?.[
-                quest.fishId
-            ];
-
-        if (
-            !Array.isArray(list)
-        ) {
-
-            return 0;
-
-        }
-
-        return list.length;
-
+        return getFishCount(user);
     }
 
-    // ==================================================
+    // ======================================
     // KG
-    // ==================================================
+    // ======================================
 
     if (
         quest.type === "kg"
     ) {
 
-        return getFishKg(
-            user
-        );
-
+        return getFishKg(user);
     }
 
-    // ==================================================
+    // ======================================
+    // CÁ CỤ THỂ
+    // ======================================
+
+    if (
+        quest.type === "specific"
+    ) {
+
+        const fishInfo =
+            fishList.find(
+                fish =>
+                    String(fish.id) ===
+                    String(quest.fishId)
+            );
+
+        if (!isRealFish(fishInfo)) {
+            return 0;
+        }
+
+        const fishes =
+            user.fish?.[quest.fishId];
+
+        if (!Array.isArray(fishes)) {
+            return 0;
+        }
+
+        return fishes.length;
+    }
+
+    // ======================================
     // TIỀN
-    // ==================================================
+    // ======================================
 
     if (
         quest.type === "money"
@@ -705,474 +658,422 @@ function getProgress(
         return Number(
             user.money || 0
         );
-
     }
 
-    // ==================================================
-    // MỒI
-    // ==================================================
+    // ======================================
+    // CẦN CÂU
+    // ======================================
 
     if (
-        quest.type === "bait"
+        quest.type === "rod"
     ) {
 
-        return Number(
-            user.moi?.[
-                quest.baitId
-            ] || 0
-        );
+        let maxLevel = 0;
 
-    }
+        const rodData =
+            user.rodData || {};
 
-    // ==================================================
-    // CHÌA KHÓA
-    // ==================================================
+        for (
+            const id in rodData
+        ) {
 
-    if (
-        quest.type === "key"
-    ) {
+            const level =
+                Number(
+                    rodData[id]?.level || 0
+                );
 
-        return Number(
-            user.keys?.[
-                quest.keyId
-            ] || 0
-        );
+            maxLevel =
+                Math.max(
+                    maxLevel,
+                    level
+                );
+        }
 
+        return maxLevel;
     }
 
     return 0;
-
 }
 
-// ======================================================
-// TÊN QUEST
-// ======================================================
+// ==========================================
+// MIXED
+// ==========================================
 
-function getQuestName(
+function getMixedProgress(user) {
+
+    return {
+
+        fish:
+            getFishCount(user),
+
+        kg:
+            getFishKg(user)
+
+    };
+}
+
+// ==========================================
+// CHECK HOÀN THÀNH
+// ==========================================
+
+function isCompleted(user, quest) {
+
+    // ======================================
+    // MIXED
+    // ======================================
+
+    if (
+        quest.type === "mixed"
+    ) {
+
+        const progress =
+            getMixedProgress(user);
+
+        return (
+            progress.fish >=
+                quest.target &&
+
+            progress.kg >=
+                quest.kgTarget
+        );
+    }
+
+    return (
+        getProgress(
+            user,
+            quest
+        ) >=
+        quest.target
+    );
+}
+
+// ==========================================
+// TẠO 5 QUEST
+// ==========================================
+
+function createDailyQuests() {
+
+    const quests = [];
+
+    const used =
+        new Set();
+
+    let attempts = 0;
+
+    while (
+        quests.length <
+            MAX_QUEST_PER_DAY &&
+        attempts <
+            100
+    ) {
+
+        attempts++;
+
+        const quest =
+            generateQuest();
+
+        if (!quest) {
+            continue;
+        }
+
+        const key =
+            quest.type === "specific"
+
+                ? `specific_${quest.fishId}`
+
+                : quest.type;
+
+        if (
+            used.has(key)
+        ) {
+            continue;
+        }
+
+        used.add(key);
+
+        quests.push(
+            quest
+        );
+    }
+
+    return quests;
+}
+
+// ==========================================
+// RESET MỖI NGÀY
+// ==========================================
+
+function checkDaily(user) {
+
+    if (!user.quest) {
+
+        user.quest = {
+
+            date:
+                "",
+
+            quests:
+                [],
+
+            completed:
+                0
+
+        };
+    }
+
+    const today =
+        new Date()
+            .toISOString()
+            .slice(0, 10);
+
+    if (
+        user.quest.date !==
+        today
+    ) {
+
+        user.quest = {
+
+            date:
+                today,
+
+            quests:
+                createDailyQuests(),
+
+            completed:
+                0
+
+        };
+
+        save();
+    }
+}
+
+// ==========================================
+// HIỂN THỊ TIẾN ĐỘ
+// ==========================================
+
+function formatProgress(
+    user,
     quest
 ) {
 
-    // ==================================================
-    // CÁ
-    // ==================================================
-
-    if (
-        quest.type === "fish"
-    ) {
-
-        const fish =
-            getFishInfo(
-                quest.fishId
-            );
-
-        return (
-            `${fish?.emoji || "🐟"} ` +
-            `Có ${quest.target} ` +
-            `${fish?.name || "cá"}`
-        );
-
-    }
-
-    // ==================================================
+    // ======================================
     // KG
-    // ==================================================
+    // ======================================
 
     if (
         quest.type === "kg"
     ) {
 
-        return (
-            `⚖️ Có ${quest.target} KG cá`
-        );
+        const progress =
+            getProgress(
+                user,
+                quest
+            );
 
+        return (
+            `${Math.min(
+                progress,
+                quest.target
+            ).toFixed(2)}` +
+            `/${quest.target} KG`
+        );
     }
 
-    // ==================================================
-    // TIỀN
-    // ==================================================
+    // ======================================
+    // MONEY
+    // ======================================
 
     if (
         quest.type === "money"
     ) {
 
-        return (
-            `💰 Có ` +
-            `${formatMoney(
-                quest.target
-            )} ` +
-            `${emoji.money}`
-        );
-
-    }
-
-    // ==================================================
-    // MỒI
-    // ==================================================
-
-    if (
-        quest.type === "bait"
-    ) {
-
-        const bait =
-            baits?.[
-                quest.baitId
-            ];
-
-        return (
-            `${bait?.emoji || "🪱"} ` +
-            `Có ${quest.target} ` +
-            `${bait?.name || "mồi"}`
-        );
-
-    }
-
-    // ==================================================
-    // CHÌA KHÓA
-    // ==================================================
-
-    if (
-        quest.type === "key"
-    ) {
-
-        const key =
-            keys?.[
-                quest.keyId
-            ];
-
-        return (
-            `${key?.emoji || "🔑"} ` +
-            `Có ${quest.target} ` +
-            `${key?.name || "chìa khóa"}`
-        );
-
-    }
-
-    return "🎯 Nhiệm vụ";
-
-}
-
-// ======================================================
-// KIỂM TRA + NHẬN THƯỞNG
-// ======================================================
-
-function processQuests(user) {
-
-    let rewardTotal = 0;
-
-    let completedNow = 0;
-
-    const rewardText = [];
-
-    for (
-        const quest of
-        user.quest.quests
-    ) {
-
-        /*
-         * Đã nhận thưởng rồi
-         * => không nhận lần nữa.
-         */
-
-        if (
-            quest.completed
-        ) {
-
-            continue;
-
-        }
-
         const progress =
             getProgress(
-                quest,
-                user
+                user,
+                quest
             );
 
-        if (
-            progress >=
-            quest.target
-        ) {
-
-            quest.completed =
-                true;
-
-            /*
-             * Tránh user.money undefined.
-             */
-
-            user.money =
-                Number(
-                    user.money || 0
-                );
-
-            user.money +=
-                Number(
-                    quest.reward || 0
-                );
-
-            rewardTotal +=
-                Number(
-                    quest.reward || 0
-                );
-
-            completedNow++;
-
-            rewardText.push(
-
-                `✅ ${getQuestName(quest)} ` +
-                `· +${formatMoney(
-                    quest.reward
-                )} ${emoji.money}`
-
-            );
-
-        }
-
+        return (
+            `${formatMoney(
+                Math.min(
+                    progress,
+                    quest.target
+                )
+            )}` +
+            `/${formatMoney(
+                quest.target
+            )}`
+        );
     }
 
-    return {
-        rewardTotal,
-        completedNow,
-        rewardText
-    };
+    // ======================================
+    // MIXED
+    // ======================================
 
+    if (
+        quest.type === "mixed"
+    ) {
+
+        const progress =
+            getMixedProgress(user);
+
+        const fishProgress =
+            Math.min(
+                progress.fish,
+                quest.target
+            );
+
+        const kgProgress =
+            Math.min(
+                progress.kg,
+                quest.kgTarget
+            );
+
+        return (
+            `${fishProgress}` +
+            `/${quest.target} cá` +
+            ` • ` +
+            `${kgProgress.toFixed(2)}` +
+            `/${quest.kgTarget} KG`
+        );
+    }
+
+    // ======================================
+    // CÁ / SPECIFIC / ROD
+    // ======================================
+
+    const progress =
+        getProgress(
+            user,
+            quest
+        );
+
+    return (
+        `${Math.min(
+            progress,
+            quest.target
+        )}` +
+        `/${quest.target}`
+    );
 }
 
-// ======================================================
+// ==========================================
 // COMMAND
-// ======================================================
+// ==========================================
 
 module.exports = {
 
-    name: "quest",
+    name:
+        "quest",
 
     aliases: [
-        "q",
         "nv",
-        "nhiemvu"
+        "nhiemvu",
+        "dailyquest"
     ],
 
     async execute(message) {
-
-        // ==================================================
-        // LẤY USER
-        // ==================================================
 
         const user =
             getUser(
                 message.author.id
             );
 
-        /*
-         * Đảm bảo money tồn tại.
-         */
+        // ==============================
+        // KIỂM TRA QUEST HÔM NAY
+        // ==============================
 
-        if (
-            typeof user.money !==
-            "number"
-        ) {
+        checkDaily(user);
 
-            user.money =
-                Number(
-                    user.money || 0
-                );
+        const quests =
+            user.quest.quests;
 
-        }
+        let description =
+            "";
 
-        // ==================================================
-        // NGÀY HÔM NAY
-        // ==================================================
+        // ==============================
+        // HIỂN THỊ QUEST
+        // ==============================
 
-        const today =
-            getToday();
+        quests.forEach(
+            (quest, index) => {
 
-        // ==================================================
-        // TẠO QUEST MỚI
-        // ==================================================
-
-        if (
-            !user.quest ||
-            user.quest.date !== today
-        ) {
-
-            user.quest = {
-
-                date:
-                    today,
-
-                quests:
-                    generateQuests()
-
-            };
-
-            save();
-
-        }
-
-        // ==================================================
-        // NẾU QUEST BỊ HỎNG
-        // ==================================================
-
-        if (
-            !Array.isArray(
-                user.quest.quests
-            )
-        ) {
-
-            user.quest.quests =
-                generateQuests();
-
-            save();
-
-        }
-
-        // ==================================================
-        // KIỂM TRA HOÀN THÀNH
-        // ==================================================
-
-        const result =
-            processQuests(
-                user
-            );
-
-        if (
-            result.completedNow > 0
-        ) {
-
-            save();
-
-        }
-
-        // ==================================================
-        // HIỂN THỊ
-        // ==================================================
-
-        let text = "";
-
-        let completed = 0;
-
-        user.quest.quests.forEach(
-            (
-                quest,
-                index
-            ) => {
-
-                // ==========================================
-                // ĐÃ HOÀN THÀNH
-                // ==========================================
-
-                if (
-                    quest.completed
-                ) {
-
-                    completed++;
-
-                    text +=
-                        `~~${index + 1}. ` +
-                        `${getQuestName(
-                            quest
-                        )}~~\n` +
-
-                        `└・Đã hoàn thành · ` +
-                        `+${formatMoney(
-                            quest.reward
-                        )} ` +
-                        `${emoji.money}\n\n`;
-
-                    return;
-
-                }
-
-                // ==========================================
-                // CHƯA HOÀN THÀNH
-                // ==========================================
-
-                const progress =
-                    Math.min(
-                        getProgress(
-                            quest,
-                            user
-                        ),
-                        quest.target
+                const completed =
+                    isCompleted(
+                        user,
+                        quest
                     );
 
-                text +=
-                    `${index + 1}. ` +
-                    `${getQuestName(
+                const progress =
+                    formatProgress(
+                        user,
                         quest
-                    )}\n` +
+                    );
 
-                    `└・Tiến độ: ` +
-                    `${progress}/${quest.target} ` +
-                    `· +${formatMoney(
+                const status =
+                    completed
+                        ? "✅"
+                        : "🔄";
+
+                description +=
+                    `${status} **${index + 1}. ${quest.title}**\n` +
+
+                    `╭・${quest.description}\n` +
+
+                    `╭・📊 Tiến độ: ${progress}\n` +
+
+                    `╰・🎁 Thưởng: ${formatMoney(
                         quest.reward
-                    )} ` +
-                    `${emoji.money}\n\n`;
-
+                    )} ${emoji.money}\n\n`;
             }
         );
 
-        // ==================================================
-        // DESCRIPTION
-        // ==================================================
+        // ==============================
+        // ĐẾM HOÀN THÀNH
+        // ==============================
 
-        let description =
-            `*Nhiệm vụ được random riêng cho từng người chơi.*\n` +
-            `*Mỗi ngày có tối đa ${MAX_QUEST} nhiệm vụ.*\n\n` +
+        const completedCount =
+            quests.filter(
+                quest =>
+                    isCompleted(
+                        user,
+                        quest
+                    )
+            ).length;
 
-            `📋 Hoàn thành: ` +
-            `\`${completed}/${MAX_QUEST}\`\n\n` +
-
-            text;
-
-        // ==================================================
-        // THÔNG BÁO THƯỞNG
-        // ==================================================
-
-        if (
-            result.completedNow > 0
-        ) {
-
-            description +=
-                `\n🎁 Vừa hoàn thành:\n` +
-                result.rewardText.join(
-                    "\n"
-                ) +
-                `\n\n` +
-                `💰 Tổng nhận: ` +
-                `${formatMoney(
-                    result.rewardTotal
-                )} ` +
-                `${emoji.money}`;
-
-        }
-
-        // ==================================================
+        // ==============================
         // EMBED
-        // ==================================================
+        // ==============================
 
         const embed =
             new EmbedBuilder()
 
                 .setColor(
-                    "#9b7cff"
+                    "#7ddcff"
                 )
 
                 .setTitle(
-                    "📋 `DAILY QUEST`"
+                    "╭・📜 NHIỆM VỤ HÀNG NGÀY"
                 )
 
                 .setDescription(
-                    description
+
+                    `🎯 Hôm nay bạn có **${MAX_QUEST_PER_DAY} nhiệm vụ random**.\n` +
+
+                    `🏆 Đã hoàn thành: **${completedCount}/${MAX_QUEST_PER_DAY}**\n\n` +
+
+                    description +
+
+                    `╰・🎣 Nhiệm vụ sẽ làm mới vào ngày mai.`
                 )
 
                 .setFooter({
 
                     text:
-                        `✦ Fishing Adventure · ${today}`
+                        "✦ Fishing Adventure • Daily Quest"
 
-                })
-
-                .setTimestamp();
+                });
 
         return message.reply({
 
@@ -1181,7 +1082,5 @@ module.exports = {
             ]
 
         });
-
     }
-
 };

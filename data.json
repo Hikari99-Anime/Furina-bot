@@ -63,10 +63,15 @@
     "level": 1,
     "exp": 0,
     "can": {
-      "dangDung": "can_1",
+      "dangDung": "wood",
       "danhSach": {
         "can_1": 1,
-        "can_5": 1
+        "can_5": 1,
+        "wood": true,
+        "iron": true,
+        "gold": true,
+        "diamond": true,
+        "legendary": true
       }
     },
     "moi": {
@@ -344,9 +349,57 @@
       "streak": 1
     },
     "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
+      "date": "2026-08-08",
+      "quests": [
+        {
+          "id": "fish_1786191519465_npa3llf7ee",
+          "type": "fish",
+          "target": 34,
+          "reward": 9370,
+          "title": "🌊 Càn quét đại dương",
+          "description": "Bắt 34 con cá",
+          "emoji": "🐟"
+        },
+        {
+          "id": "rod_1786191519488_recof0cpfgn",
+          "type": "rod",
+          "target": 5,
+          "reward": 10000,
+          "title": "🎣 Tân binh cường hóa",
+          "description": "Có một cần câu đạt +5",
+          "emoji": "🎣"
+        },
+        {
+          "id": "money_1786191519489_h7rgsayyp7q",
+          "type": "money",
+          "target": 35733,
+          "reward": 5960,
+          "title": "💰 Tích lũy tài sản",
+          "description": "Có ít nhất 35.733 xu",
+          "emoji": "💰"
+        },
+        {
+          "id": "specific_1786191519489_8468xq56hkm",
+          "type": "specific",
+          "fishId": "whale",
+          "target": 5,
+          "reward": 4079,
+          "title": "🐋 Thợ săn Cá voi",
+          "description": "Bắt 5 Cá voi",
+          "emoji": "🐋"
+        },
+        {
+          "id": "mixed_1786191519501_zqdof85upo",
+          "type": "mixed",
+          "target": 16,
+          "reward": 11335,
+          "title": "🌊 Chuyến câu hoàn hảo",
+          "description": "Bắt 16 con cá và đạt ít nhất 24 KG",
+          "kgTarget": 24,
+          "emoji": "🌊"
+        }
+      ],
+      "completed": 0
     },
     "rodData": {
       "can_1": {
@@ -362,6 +415,36 @@
         "uses": 500,
         "maxUses": 500,
         "destroyed": false
+      },
+      "wood": {
+        "level": 1,
+        "luck": 1,
+        "uses": 100,
+        "maxUses": 100
+      },
+      "iron": {
+        "level": 1,
+        "luck": 1.2,
+        "uses": 100,
+        "maxUses": 100
+      },
+      "gold": {
+        "level": 1,
+        "luck": 1.5,
+        "uses": 100,
+        "maxUses": 100
+      },
+      "diamond": {
+        "level": 1,
+        "luck": 2,
+        "uses": 100,
+        "maxUses": 100
+      },
+      "legendary": {
+        "level": 1,
+        "luck": 2.5,
+        "uses": 100,
+        "maxUses": 100
       }
     },
     "stats": {
@@ -564,6 +647,40 @@
     "daily": {
       "last": 1786178848320,
       "streak": 1
+    },
+    "quest": {
+      "date": "",
+      "list": [],
+      "claim": false
+    },
+    "rodData": {},
+    "stats": {
+      "catch": 0,
+      "sell": 0,
+      "kg": 0
+    }
+  },
+  "867667224088936478": {
+    "money": 5300,
+    "level": 1,
+    "exp": 0,
+    "can": {
+      "dangDung": null,
+      "danhSach": {}
+    },
+    "moi": {
+      "moithuong": 10,
+      "moibac": 0,
+      "moivang": 0
+    },
+    "fish": {},
+    "keys": {},
+    "chests": {},
+    "insurance": 0,
+    "inv": {},
+    "daily": {
+      "last": 0,
+      "streak": 0
     },
     "quest": {
       "date": "",

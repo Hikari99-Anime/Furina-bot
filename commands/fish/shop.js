@@ -7,7 +7,7 @@ const {
 
 const {
     emoji
-} = require("../../Config/config");
+} = require("../../config");
 
 const {
     getUser

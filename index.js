@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-
 const {
     chests,
     keys,
@@ -12,22 +11,17 @@ const {
     prefix
 } = require("./config");
 
-
-const PREFIX = prefix;
-
+const PREFIX = String(prefix || "f").toLowerCase();
 
 const noitu = require("./games/noitugame");
-
 
 const {
     getUser
 } = require("./data");
 
-
 const {
     purchase
 } = require("./commands/fish/buy");
-
 
 const {
     Client,
@@ -42,15 +36,16 @@ const {
     TextInputStyle
 } = require("discord.js");
 
-
 const fs = require("fs");
 
 
+// ==========================================
+// CLIENT
+// ==========================================
 
 const client = new Client({
 
-
-    intents:[
+    intents: [
 
         GatewayIntentBits.Guilds,
 
@@ -60,47 +55,37 @@ const client = new Client({
 
     ]
 
-
 });
 
 
-
-
-// ======================
+// ==========================================
 // COMMAND LOADER
-// ======================
-
+// ==========================================
 
 client.commands = new Collection();
 
 
+function loadCommands(folder) {
 
-function loadCommands(folder){
-
-
-    if(!fs.existsSync(folder))
-
+    if (!fs.existsSync(folder))
         return;
-
 
 
     const files = fs.readdirSync(folder);
 
 
-
-    for(const file of files){
-
-
+    for (const file of files) {
 
         const path = `${folder}/${file}`;
 
 
+        try {
 
-        try{
+            // ==============================
+            // FOLDER
+            // ==============================
 
-
-            if(fs.statSync(path).isDirectory()){
-
+            if (fs.statSync(path).isDirectory()) {
 
                 loadCommands(path);
 
@@ -109,53 +94,77 @@ function loadCommands(folder){
             }
 
 
+            // ==============================
+            // ONLY JS
+            // ==============================
 
-            if(!file.endsWith(".js"))
-
+            if (!file.endsWith(".js"))
                 continue;
 
 
+            // ==============================
+            // LOAD
+            // ==============================
 
-            const command = require(`./${path}`);
+            const command =
+                require(`./${path}`);
 
 
+            // ==============================
+            // VALIDATE
+            // ==============================
 
-            if(!command.name || !command.execute)
+            if (
+                !command.name ||
+                !command.execute
+            ) {
+
+                console.log(
+                    "⚠️ Bỏ qua command:",
+                    path
+                );
 
                 continue;
 
+            }
 
+
+            // ==============================
+            // COMMAND
+            // ==============================
 
             client.commands.set(
 
-                command.name,
+                command.name.toLowerCase(),
 
                 command
 
             );
 
 
+            // ==============================
+            // ALIASES
+            // ==============================
 
-            if(command.aliases){
+            if (Array.isArray(command.aliases)) {
 
+                for (const alias of command.aliases) {
 
-                for(const alias of command.aliases){
+                    if (!alias)
+                        continue;
 
 
                     client.commands.set(
 
-                        alias,
+                        String(alias).toLowerCase(),
 
                         command
 
                     );
 
-
                 }
 
-
             }
-
 
 
             console.log(
@@ -166,12 +175,9 @@ function loadCommands(folder){
 
             );
 
-
-
         }
 
-        catch(err){
-
+        catch (err) {
 
             console.log(
 
@@ -181,918 +187,1019 @@ function loadCommands(folder){
 
             );
 
-
             console.error(err);
-
 
         }
 
-
     }
 
-
 }
-
 
 
 loadCommands("commands");
 
 
-
-
-
-
-
-
-
-// ======================
+// ==========================================
 // READY
-// ======================
-
+// ==========================================
 
 client.once(
 
-"ready",
+    "ready",
 
-()=>{
+    () => {
 
+        console.log("==============================");
 
-console.log("================");
+        console.log(
 
-console.log(
+            `🤖 ${client.user.tag} ONLINE`
 
-`🤖 ${client.user.tag} ONLINE`
+        );
+
+        console.log(
+
+            `📁 Commands: ${client.commands.size}`
+
+        );
+
+        console.log(
+
+            `🎁 Chest: ${Object.keys(chests || {}).length}`
+
+        );
+
+        console.log(
+
+            `🔑 Key: ${Object.keys(keys || {}).length}`
+
+        );
+
+        console.log(
+
+            `🎣 Rod: ${Object.keys(rods || {}).length}`
+
+        );
+
+        console.log(
+
+            `🪱 Bait: ${Object.keys(baits || {}).length}`
+
+        );
+
+        console.log(
+
+            `⚡ Prefix: ${PREFIX}`
+
+        );
+
+        console.log("==============================");
+
+    }
 
 );
 
 
-console.log(
-
-`📁 Commands: ${client.commands.size}`
-
-);
-
-
-
-console.log(
-
-`🎁 Chest: ${Object.keys(chests).length}`
-
-);
-
-
-
-console.log(
-
-`🔑 Key: ${Object.keys(keys).length}`
-
-);
-
-
-
-console.log("================");
-
-
-}
-
-);
-
-
-
-
-
-
-
-
-
-// ======================
+// ==========================================
 // PREFIX COMMAND
-// ======================
-
+// ==========================================
 
 client.on(
 
-"messageCreate",
+    "messageCreate",
 
-async message=>{
+    async message => {
 
+        try {
 
-if(message.author.bot)
+            // ==============================
+            // BOT
+            // ==============================
 
-return;
-
-
-
-if(await noitu.handleMessage(message))
-
-return;
+            if (message.author.bot)
+                return;
 
 
+            // ==============================
+            // NOITU
+            // ==============================
 
-if(!message.content.toLowerCase().startsWith(PREFIX))
+            if (
+                await noitu.handleMessage(message)
+            ) {
 
-return;
+                return;
 
-
-
-
-const args = message.content
-
-.slice(PREFIX.length)
-
-.trim()
-
-.split(/\s+/);
+            }
 
 
+            // ==============================
+            // CONTENT
+            // ==============================
+
+            const content =
+                message.content.trim();
 
 
-const cmd = args.shift().toLowerCase();
+            if (!content)
+                return;
 
 
+            // ==============================
+            // PREFIX
+            // ==============================
 
-const command = client.commands.get(cmd);
+            if (
+                !content
+                    .toLowerCase()
+                    .startsWith(PREFIX)
+            ) {
+
+                return;
+
+            }
 
 
+            // ==============================
+            // REMOVE PREFIX
+            // ==============================
 
-if(!command)
-
-return;
-
-
-
-try{
+            const commandText =
+                content
+                    .slice(PREFIX.length)
+                    .trim();
 
 
-await command.execute(
+            if (!commandText)
+                return;
 
-message,
 
-args,
+            // ==============================
+            // ARGUMENTS
+            // ==============================
 
-client
+            const parts =
+                commandText.split(/\s+/);
+
+
+            const cmd =
+                parts
+                    .shift()
+                    .toLowerCase();
+
+
+            const args = parts;
+
+
+            // ==============================
+            // FIND COMMAND
+            // ==============================
+
+            const command =
+                client.commands.get(cmd);
+
+
+            if (!command)
+                return;
+
+
+            // ==============================
+            // EXECUTE
+            // ==============================
+
+            await command.execute(
+
+                message,
+
+                args,
+
+                client
+
+            );
+
+        }
+
+        catch (err) {
+
+            console.error(
+
+                "❌ COMMAND ERROR:"
+
+            );
+
+            console.error(err);
+
+
+            try {
+
+                await message.reply(
+
+                    "❌ Lệnh xảy ra lỗi."
+
+                );
+
+            }
+
+            catch {}
+
+        }
+
+    }
 
 );
 
 
-
-}
-
-catch(err){
-
-
-console.log(
-
-"COMMAND ERROR:",
-
-err
-
-);
-
-
-
-message.reply(
-
-"❌ Lệnh lỗi."
-
-);
-
-
-}
-
-
-
-}
-
-);
-
-
-
-
-
-
-
-
-
-
-
-// ======================
-// SHOP INTERACTION
-// ======================
-
+// ==========================================
+// INTERACTION
+// SHOP / BUTTON / MODAL
+// ==========================================
 
 client.on(
 
-"interactionCreate",
+    "interactionCreate",
 
-async interaction=>{
+    async interaction => {
 
+        try {
 
-try{
+            // ==================================
+            // BUTTON
+            // ==================================
 
-
-
-// ======================
-// BUTTON
-// ======================
-
-
-if(interaction.isButton()){
+            if (interaction.isButton()) {
 
 
+                // ==============================
+                // ROD SHOP
+                // ==============================
 
-// ROD SHOP
+                if (
+                    interaction.customId ===
+                    "shop_rod"
+                ) {
 
-if(interaction.customId === "shop_rod"){
-
-
-
-const rodIds=
-Object.keys(rods);
-
-
-
-const embed = new EmbedBuilder()
+                    const rodIds =
+                        Object.keys(rods);
 
 
-.setColor("#60A5FA")
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#60A5FA")
+
+                            .setTitle(
+                                "╭・🎣 ROD COLLECTION"
+                            )
+
+                            .setDescription(
+
+                                rodIds
+                                    .map(rid => {
+
+                                        const r =
+                                            rods[rid];
+
+                                        return (
+                                            `${r.emoji} **${r.name}**\n` +
+                                            `💰 ${formatMoney(r.price)} ${emoji.money} · 🍀 Luck ${r.luck}`
+                                        );
+
+                                    })
+                                    .join(
+                                        "\n\n━━━━━━━━━━━━\n\n"
+                                    )
+
+                            );
 
 
-.setTitle(
-
-"╭・🎣 ROD COLLECTION"
-
-)
+                    const row =
+                        new ActionRowBuilder();
 
 
-.setDescription(
+                    for (
+                        const rid of rodIds
+                    ) {
 
-rodIds.map(rid=>{
+                        row.addComponents(
 
-const r=rods[rid];
+                            new ButtonBuilder()
 
-return `${r.emoji} **${r.name}**\n💰 ${formatMoney(r.price)} ${emoji.money} · 🍀 Luck ${r.luck}`;
+                                .setCustomId(
+                                    `buy_${rid}`
+                                )
 
-}).join("\n\n━━━━━━━━━━━━\n\n")
+                                .setLabel(
+                                    rods[rid].name
+                                )
+
+                                .setStyle(
+                                    ButtonStyle.Primary
+                                )
+
+                        );
+
+                    }
+
+
+                    return interaction.reply({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components: [
+                            row
+                        ],
+
+                        ephemeral: true
+
+                    });
+
+                }
+
+
+                // ==============================
+                // BUY BUTTON
+                // ==============================
+
+                if (
+                    interaction.customId
+                        .startsWith("buy_")
+                ) {
+
+                    const item =
+                        interaction.customId
+                            .replace(
+                                "buy_",
+                                ""
+                            );
+
+
+                    const modal =
+                        new ModalBuilder()
+
+                            .setCustomId(
+                                `modal_${item}`
+                            )
+
+                            .setTitle(
+                                "🛒 Nhập số lượng mua"
+                            );
+
+
+                    const input =
+                        new TextInputBuilder()
+
+                            .setCustomId(
+                                "amount"
+                            )
+
+                            .setLabel(
+                                "Số lượng"
+                            )
+
+                            .setStyle(
+                                TextInputStyle.Short
+                            )
+
+                            .setPlaceholder(
+                                "Ví dụ: 1"
+                            )
+
+                            .setRequired(true);
+
+
+                    modal.addComponents(
+
+                        new ActionRowBuilder()
+                            .addComponents(
+                                input
+                            )
+
+                    );
+
+
+                    return interaction.showModal(
+                        modal
+                    );
+
+                }
+
+
+                // ==============================
+                // BAIT SHOP
+                // ==============================
+
+                if (
+                    interaction.customId ===
+                    "shop_bait"
+                ) {
+
+                    const baitIds =
+                        Object.keys(baits);
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#86EFAC")
+
+                            .setTitle(
+                                "╭・🪱 BAIT MARKET"
+                            )
+
+                            .setDescription(
+
+                                baitIds
+                                    .map(bid => {
+
+                                        const b =
+                                            baits[bid];
+
+                                        return (
+                                            `${b.emoji} **${b.name}**\n` +
+                                            `💰 ${formatMoney(b.price)} ${emoji.money}`
+                                        );
+
+                                    })
+                                    .join(
+                                        "\n\n━━━━━━━━━━━━\n\n"
+                                    )
+
+                            );
+
+
+                    const row =
+                        new ActionRowBuilder();
+
+
+                    for (
+                        const bid of baitIds
+                    ) {
+
+                        row.addComponents(
+
+                            new ButtonBuilder()
+
+                                .setCustomId(
+                                    `buy_${bid}`
+                                )
+
+                                .setLabel(
+                                    baits[bid].name
+                                )
+
+                                .setStyle(
+                                    ButtonStyle.Success
+                                )
+
+                        );
+
+                    }
+
+
+                    return interaction.reply({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components: [
+                            row
+                        ],
+
+                        ephemeral: true
+
+                    });
+
+                }
+
+
+                // ==============================
+                // KEY + INSURANCE
+                // ==============================
+
+                if (
+                    interaction.customId ===
+                    "shop_key"
+                ) {
+
+                    const keyIds =
+                        Object.keys(keys);
+
+
+                    const insuranceIds =
+                        Object.keys(insurance);
+
+
+                    const allIds = [
+                        ...keyIds,
+                        ...insuranceIds
+                    ];
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#FACC15")
+
+                            .setTitle(
+                                "╭・🎟️ TREASURE & INSURANCE MARKET"
+                            )
+
+                            .setDescription(
+
+                                keyIds
+
+                                    .map(kid => {
+
+                                        const k =
+                                            keys[kid];
+
+                                        return (
+                                            `${k.emoji} **${k.name}**\n` +
+                                            `💰 ${formatMoney(k.price)} ${emoji.money}`
+                                        );
+
+                                    })
+
+                                    .concat(
+
+                                        insuranceIds
+                                            .map(iid => {
+
+                                                const it =
+                                                    insurance[iid];
+
+                                                return (
+                                                    `${it.emoji} **${it.name}**\n` +
+                                                    `💰 ${formatMoney(it.price)} ${emoji.money}`
+                                                );
+
+                                            })
+
+                                    )
+
+                                    .join(
+                                        "\n\n━━━━━━━━━━━━\n\n"
+                                    )
+
+                            );
+
+
+                    const rows = [];
+
+
+                    for (
+                        let i = 0;
+                        i < allIds.length;
+                        i += 5
+                    ) {
+
+                        const chunk =
+                            allIds.slice(
+                                i,
+                                i + 5
+                            );
+
+
+                        const row =
+                            new ActionRowBuilder();
+
+
+                        for (
+                            const id of chunk
+                        ) {
+
+                            const item =
+                                keys[id] ||
+                                insurance[id];
+
+
+                            row.addComponents(
+
+                                new ButtonBuilder()
+
+                                    .setCustomId(
+                                        `buy_${id}`
+                                    )
+
+                                    .setLabel(
+                                        item.name
+                                    )
+
+                                    .setStyle(
+
+                                        keys[id]
+                                            ? ButtonStyle.Secondary
+                                            : ButtonStyle.Success
+
+                                    )
+
+                            );
+
+                        }
+
+
+                        rows.push(row);
+
+                    }
+
+
+                    return interaction.reply({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components:
+                            rows,
+
+                        ephemeral: true
+
+                    });
+
+                }
+
+            }
+
+
+            // ==================================
+            // MODAL
+            // ==================================
+
+            if (
+                interaction.isModalSubmit()
+            ) {
+
+                if (
+                    interaction.customId
+                        .startsWith("modal_")
+                ) {
+
+                    const itemID =
+                        interaction.customId
+                            .replace(
+                                "modal_",
+                                ""
+                            );
+
+
+                    const amount =
+                        Number(
+
+                            interaction.fields
+                                .getTextInputValue(
+                                    "amount"
+                                )
+
+                        );
+
+
+                    if (
+                        !Number.isInteger(amount) ||
+                        amount <= 0
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Số lượng không hợp lệ.",
+
+                            ephemeral: true
+
+                        });
+
+                    }
+
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    const result =
+                        purchase(
+                            user,
+                            itemID,
+                            amount
+                        );
+
+
+                    if (!result.ok) {
+
+                        return interaction.reply({
+
+                            content:
+                                result.reason,
+
+                            ephemeral: true
+
+                        });
+
+                    }
+
+
+                    return interaction.reply({
+
+                        content:
+
+                            `✅ **Mua thành công**\n\n` +
+
+                            `${result.item.emoji} ` +
+                            `${result.item.name} x${amount}\n\n` +
+
+                            `💸 Đã trả: ` +
+                            `${formatMoney(result.price)} ` +
+                            `${emoji.money}\n\n` +
+
+                            `💰 Số dư: ` +
+                            `${formatMoney(user.money)} ` +
+                            `${emoji.money}`,
+
+                        ephemeral: true
+
+                    });
+
+                }
+
+            }
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "❌ INTERACTION ERROR:"
+            );
+
+            console.error(err);
+
+        }
+
+    }
 
 );
 
 
-
-const row = new ActionRowBuilder()
-
-
-.addComponents(
-
-rodIds.map(rid=>
-
-new ButtonBuilder()
-
-.setCustomId("buy_"+rid)
-
-.setLabel(rods[rid].name)
-
-.setStyle(ButtonStyle.Primary)
-
-)
-
-);
-
-
-
-return interaction.reply({
-
-embeds:[embed],
-
-components:[row],
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-
-
-
-// BUY BUTTON
-
-if(interaction.customId.startsWith("buy_")){
-
-
-const item = interaction.customId.replace(
-
-"buy_",
-
-""
-
-);
-
-
-
-const modal = new ModalBuilder()
-
-
-.setCustomId(
-
-"modal_"+item
-
-)
-
-
-.setTitle(
-
-"🛒 Nhập số lượng mua"
-
-);
-
-
-
-
-const input = new TextInputBuilder()
-
-
-.setCustomId(
-
-"amount"
-
-)
-
-
-.setLabel(
-
-"Số lượng"
-
-)
-
-
-.setStyle(
-
-TextInputStyle.Short
-
-)
-
-
-.setPlaceholder(
-
-"Ví dụ: 1"
-
-)
-
-
-.setRequired(true);
-
-
-
-
-modal.addComponents(
-
-new ActionRowBuilder()
-
-.addComponents(input)
-
-);
-
-
-
-return interaction.showModal(modal);
-
-
-}
-
-
-
-
-// BAIT
-
-if(interaction.customId === "shop_bait"){
-
-
-
-const baitIds=
-Object.keys(baits);
-
-
-
-const embed = new EmbedBuilder()
-
-
-.setColor("#86EFAC")
-
-
-.setTitle(
-
-"╭・🪱 BAIT MARKET"
-
-)
-
-
-.setDescription(
-
-baitIds.map(bid=>{
-
-const b=baits[bid];
-
-return `${b.emoji} **${b.name}**\n💰 ${formatMoney(b.price)} ${emoji.money}`;
-
-}).join("\n\n━━━━━━━━━━━━\n\n")
-
-);
-
-
-
-const row = new ActionRowBuilder()
-
-
-.addComponents(
-
-baitIds.map(bid=>
-
-new ButtonBuilder()
-
-.setCustomId("buy_"+bid)
-
-.setLabel(baits[bid].name)
-
-.setStyle(ButtonStyle.Success)
-
-)
-
-);
-
-
-
-return interaction.reply({
-
-embeds:[embed],
-
-components:[row],
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-
-
-// KEY
-
-
-if(interaction.customId === "shop_key"){
-
-
-
-const keyIds=
-Object.keys(keys);
-
-
-const insuranceIds=
-Object.keys(insurance);
-
-
-const allIds=
-[...keyIds, ...insuranceIds];
-
-
-
-const embed = new EmbedBuilder()
-
-
-.setColor("#FACC15")
-
-
-.setTitle(
-
-"╭・🎟️ TREASURE & INSURANCE MARKET"
-
-)
-
-
-.setDescription(
-
-keyIds.map(kid=>{
-
-const k=keys[kid];
-
-return `${k.emoji} **${k.name}**\n💰 ${formatMoney(k.price)} ${emoji.money}`;
-
-}).concat(
-
-insuranceIds.map(iid=>{
-
-const it=insurance[iid];
-
-return `${it.emoji} **${it.name}**\n💰 ${formatMoney(it.price)} ${emoji.money}`;
-
-})
-
-).join("\n\n━━━━━━━━━━━━\n\n")
-
-);
-
-
-
-const rows=[];
-
-
-for(let i=0;i<allIds.length;i+=5){
-
-
-const chunk=
-allIds.slice(i,i+5);
-
-
-rows.push(
-
-new ActionRowBuilder()
-
-.addComponents(
-
-chunk.map(id=>{
-
-const item=
-keys[id] || insurance[id];
-
-
-return new ButtonBuilder()
-
-.setCustomId("buy_"+id)
-
-.setLabel(item.name)
-
-.setStyle(
-keys[id] ? ButtonStyle.Secondary : ButtonStyle.Success
-);
-
-})
-
-)
-
-);
-
-
-}
-
-
-
-return interaction.reply({
-
-embeds:[embed],
-
-components:rows,
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ======================
-// MODAL
-// ======================
-
-
-if(interaction.isModalSubmit()){
-
-
-
-if(interaction.customId.startsWith("modal_")){
-
-
-
-const itemID = interaction.customId.replace(
-
-"modal_",
-
-""
-
-);
-
-
-
-const amount = Number(
-
-interaction.fields.getTextInputValue(
-
-"amount"
-
-)
-
-);
-
-
-
-const user=
-getUser(
-interaction.user.id
-);
-
-
-
-const result=
-purchase(user,itemID,amount);
-
-
-
-if(!result.ok)
-
-return interaction.reply({
-
-content:
-result.reason,
-
-ephemeral:true
-
-});
-
-
-
-return interaction.reply({
-
-content:
-
-`
-✅ Mua thành công
-
-${result.item.emoji} ${result.item.name} x${amount}
-
-💸 Đã trả: ${formatMoney(result.price)} ${emoji.money}
-
-💰 Số dư: ${formatMoney(user.money)} ${emoji.money}
-`,
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-}
-
-
-
-}
-
-catch(err){
-
-
-console.log(
-
-"INTERACTION ERROR:",
-
-err
-
-);
-
-
-}
-
-
-
-}
-
-);
-
-
-
-
-
-
-
-
-
-
-
-// ======================
-// INTERACTION (SLASH COMMAND + TÀI XỈU BET MODAL)
-// ======================
+// ==========================================
+// SLASH + TÀI XỈU MODAL
+// ==========================================
 
 client.on(
-"interactionCreate",
-async interaction=>{
+
+    "interactionCreate",
+
+    async interaction => {
+
+        try {
+
+            // ==============================
+            // PING
+            // ==============================
+
+            if (
+                interaction.isChatInputCommand() &&
+                interaction.commandName === "ping"
+            ) {
+
+                return interaction.reply(
+                    "🏓 Pong! Bot đang online."
+                );
+
+            }
 
 
-try{
+            // ==============================
+            // TÀI XỈU BET
+            // ==============================
+
+            if (
+                interaction.isModalSubmit() &&
+                interaction.customId
+                    .startsWith("txbet_")
+            ) {
+
+                const {
+                    addBet,
+                    getGame,
+                    hasBetType,
+                    totalBetOf
+                } =
+                    require(
+                        "./games/taixiugame"
+                    );
 
 
-if(
-interaction.isChatInputCommand() &&
-interaction.commandName === "ping"
-){
+                const {
+                    getUser
+                } =
+                    require(
+                        "./database"
+                    );
 
-return interaction.reply(
-"🏓 Pong! Bot đang online."
+
+                const type =
+                    interaction.customId
+                        .replace(
+                            "txbet_",
+                            ""
+                        );
+
+
+                const amount =
+                    Number(
+
+                        interaction.fields
+                            .getTextInputValue(
+                                "money"
+                            )
+
+                    );
+
+
+                if (
+                    !Number.isInteger(amount) ||
+                    amount <= 0
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Số tiền cược không hợp lệ",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                let number = null;
+
+
+                if (type === "so") {
+
+                    number =
+                        Number(
+
+                            interaction.fields
+                                .getTextInputValue(
+                                    "sonum"
+                                )
+
+                        );
+
+
+                    if (
+                        !Number.isInteger(number) ||
+                        number < 3 ||
+                        number > 18
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Số dự đoán phải từ 3 đến 18",
+
+                            flags: 64
+
+                        });
+
+                    }
+
+                }
+
+
+                if (!getGame()) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Ván tài xỉu đã kết thúc",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                if (
+                    hasBetType(
+                        interaction.user.id,
+                        type
+                    )
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Bạn đã cược cửa này rồi",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                const user =
+                    getUser(
+                        interaction.user.id
+                    );
+
+
+                const daCuoc =
+                    totalBetOf(
+                        interaction.user.id
+                    );
+
+
+                if (
+                    user.money <
+                    daCuoc + amount
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Không đủ tiền",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                const label =
+
+                    type === "tai"
+                        ? "🔴 TÀI"
+
+                    : type === "xiu"
+                        ? "🔵 XỈU"
+
+                    : type === "chan"
+                        ? "⚫ CHẴN"
+
+                    : type === "le"
+                        ? "⚪ LẺ"
+
+                    : `🔢 SỐ ${number}`;
+
+
+                addBet({
+
+                    id:
+                        interaction.user.id,
+
+                    type,
+
+                    number,
+
+                    money:
+                        amount
+
+                });
+
+
+                return interaction.reply({
+
+                    content:
+                        `✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${label}**`,
+
+                    flags: 64
+
+                });
+
+            }
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "❌ INTERACTION ERROR:"
+            );
+
+            console.error(err);
+
+        }
+
+    }
+
 );
 
-}
 
-
-
-if(
-interaction.isModalSubmit() &&
-interaction.customId.startsWith("txbet_")
-){
-
-
-const {
-addBet,
-getGame,
-hasBetType,
-totalBetOf
-} = require("./games/taixiugame");
-
-
-const {
-getUser
-} = require("./database");
-
-
-const type =
-interaction.customId.replace(
-"txbet_",
-""
-);
-
-
-const amount =
-Number(
-interaction.fields
-.getTextInputValue("money")
-);
-
-
-if(
-!Number.isInteger(amount)
-||
-amount<=0
-){
-
-return interaction.reply({
-content:
-"❌ Số tiền cược không hợp lệ",
-flags:64
-});
-
-}
-
-
-let number = null;
-
-
-if(type==="so"){
-
-
-number =
-Number(
-interaction.fields
-.getTextInputValue("sonum")
-);
-
-
-if(
-!Number.isInteger(number)
-||
-number<3
-||
-number>18
-){
-
-return interaction.reply({
-content:
-"❌ Số dự đoán phải từ 3 đến 18",
-flags:64
-});
-
-}
-
-
-}
-
-
-if(!getGame()){
-
-return interaction.reply({
-content:
-"❌ Ván tài xỉu đã kết thúc",
-flags:64
-});
-
-}
-
-
-if(
-hasBetType(interaction.user.id,type)
-){
-
-return interaction.reply({
-content:
-"❌ Bạn đã cược cửa này rồi",
-flags:64
-});
-
-}
-
-
-const user =
-getUser(
-interaction.user.id
-);
-
-
-const daCuoc =
-totalBetOf(interaction.user.id);
-
-
-if(user.money < daCuoc+amount){
-
-return interaction.reply({
-content:
-"❌ Không đủ tiền",
-flags:64
-});
-
-}
-
-
-const label =
-
-type==="tai" ? "🔴 TÀI" :
-
-type==="xiu" ? "🔵 XỈU" :
-
-type==="chan" ? "⚫ CHẴN" :
-
-type==="le" ? "⚪ LẺ" :
-
-`🔢 SỐ ${number}`;
-
-
-addBet({
-id:interaction.user.id,
-type,
-number,
-money:amount
-});
-
-
-return interaction.reply({
-content:
-`✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${label}**`,
-flags:64
-});
-
-
-}
-
-
-}catch(err){
-
-console.log(
-"INTERACTION ERROR:",
-err
-);
-
-}
-
-
-}
-
-);
-
-
-
-
-// ======================
+// ==========================================
 // LOGIN
-// ======================
-
+// ==========================================
 
 client.login(
 
-process.env.TOKEN
+    process.env.TOKEN
 
 );

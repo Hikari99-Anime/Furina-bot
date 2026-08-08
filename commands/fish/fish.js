@@ -8,7 +8,7 @@ const {
     baits,
     fishingZones,
     prefix
-} = require("../../Config/config");
+} = require("../../config");
 
 const {
     getUser,
