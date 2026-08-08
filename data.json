@@ -59,7 +59,7 @@
     }
   },
   "743028655097380895": {
-    "money": 49959724320,
+    "money": 49916974320,
     "level": 1,
     "exp": 0,
     "can": {
@@ -403,7 +403,7 @@
     },
     "chests": {},
     "inv": {},
-    "insurance": 42,
+    "insurance": 39,
     "daily": {
       "last": 1786121406897,
       "streak": 1
@@ -524,17 +524,18 @@
       },
       "mythic": {
         "level": 10,
-        "luck": 6.1,
-        "uses": 275,
+        "luck": 6.2,
+        "uses": 0,
         "maxUses": 500,
-        "destroyed": false
+        "destroyed": true
       }
     },
     "stats": {
       "catch": 0,
       "sell": 0,
       "kg": 0
-    }
+    },
+    "items": {}
   },
   "1148615485399764992": {
     "money": 500000,

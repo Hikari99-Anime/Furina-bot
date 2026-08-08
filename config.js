@@ -11,7 +11,18 @@ const prefix = "f";
 const prefixes = [
     "f"
 ];
-
+// ======================================
+// ĐÁ CƯỜNG HÓA
+// ======================================
+const rateStone = {
+    da_tang_rate: {
+        name: "Đá tăng tỉ lệ",
+        emoji: "🪨",
+        price: 500000,
+        uses: 5,
+        rate: 5
+    }
+};
 // ==========================================
 // EMOJI
 // ==========================================
@@ -1417,5 +1428,8 @@ module.exports = {
     fishingConfig,
 
     // Economy
-    economyConfig
+    economyConfig,
+
+    // Ratestone
+    rateStone
 };

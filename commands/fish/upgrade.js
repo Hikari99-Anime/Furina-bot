@@ -35,6 +35,19 @@ const DOWNGRADE_CHANCE_LV10 = 0.5;
 const DESTROY_CHANCE = 0.5;
 
 // ======================================================
+// ĐÁ TĂNG RATE
+// ======================================================
+
+// ID vật phẩm trong inventory
+const RATE_STONE_ID = "da_rate";
+
+// Mỗi đá +5% rate
+const RATE_STONE_BONUS = 5;
+
+// Mỗi lần upgrade dùng tối đa 5 đá
+const MAX_RATE_STONES = 5;
+
+// ======================================================
 // GIÁ UPGRADE
 // ======================================================
 
@@ -45,6 +58,7 @@ function getUpgradeCost(base, level) {
         (level + 1) *
         0.5
     );
+
 }
 
 // ======================================================
@@ -59,7 +73,7 @@ function getLuck(rod, base) {
     ) {
 
         rod.luck =
-            base.luck || 1;
+            Number(base.luck) || 1;
 
     }
 
@@ -78,15 +92,17 @@ function getLuck(rod, base) {
             Number(
                 base.luck
             ) || 1;
+
     }
 
-    // Làm tròn để tránh 9.999999999
+    // Chống 9.999999999
     rod.luck =
         Math.round(
             rod.luck * 10
         ) / 10;
 
     return rod.luck;
+
 }
 
 // ======================================================
@@ -103,9 +119,9 @@ function formatLuck(value) {
     ) {
 
         value = 0;
+
     }
 
-    // Làm tròn 1 chữ số
     value =
         Math.round(
             value * 10
@@ -116,15 +132,17 @@ function formatLuck(value) {
     ) {
 
         return String(value);
+
     }
 
     return value
         .toFixed(1)
         .replace(/\.0$/, "");
+
 }
 
 // ======================================================
-// LẤY SUCCESS RATE
+// SUCCESS RATE
 // ======================================================
 
 function getSuccessRate(level) {
@@ -137,17 +155,147 @@ function getSuccessRate(level) {
     ) {
 
         return Number(rate);
+
     }
 
-    // Fallback nếu config thiếu level
     return Math.max(
         10,
         100 - level * 5
     );
+
 }
 
 // ======================================================
-// KHỞI TẠO ROD DATA
+// FORMAT RATE
+// ======================================================
+
+function formatRate(value) {
+
+    value =
+        Number(value) || 0;
+
+    value =
+        Math.round(
+            value * 10
+        ) / 10;
+
+    return Number.isInteger(value)
+        ? String(value)
+        : value.toFixed(1).replace(/\.0$/, "");
+
+}
+
+// ======================================================
+// LẤY SỐ ĐÁ
+// ======================================================
+
+function getRateStoneCount(user) {
+
+    return Math.max(
+        0,
+        Number(
+            user?.[RATE_STONE_ID] ||
+            user?.inventory?.[RATE_STONE_ID] ||
+            user?.items?.[RATE_STONE_ID] ||
+            0
+        )
+    );
+
+}
+
+// ======================================================
+// TRỪ ĐÁ
+// ======================================================
+
+function removeRateStones(user, amount) {
+
+    if (
+        amount <= 0
+    ) {
+
+        return;
+
+    }
+
+    // Cách 1: inventory
+    if (
+        user.inventory &&
+        Number.isFinite(
+            Number(
+                user.inventory[RATE_STONE_ID]
+            )
+        )
+    ) {
+
+        user.inventory[RATE_STONE_ID] =
+            Math.max(
+                0,
+                Number(
+                    user.inventory[RATE_STONE_ID]
+                ) - amount
+            );
+
+        return;
+
+    }
+
+    // Cách 2: items
+    if (
+        user.items &&
+        Number.isFinite(
+            Number(
+                user.items[RATE_STONE_ID]
+            )
+        )
+    ) {
+
+        user.items[RATE_STONE_ID] =
+            Math.max(
+                0,
+                Number(
+                    user.items[RATE_STONE_ID]
+                ) - amount
+            );
+
+        return;
+
+    }
+
+    // Cách 3: trực tiếp user.da_rate
+    user[RATE_STONE_ID] =
+        Math.max(
+            0,
+            Number(
+                user[RATE_STONE_ID] || 0
+            ) - amount
+        );
+
+}
+
+// ======================================================
+// TẠO NƠI LƯU ĐÁ
+// ======================================================
+
+function addRateStones(user, amount) {
+
+    if (!user.items) {
+
+        user.items = {};
+
+    }
+
+    user.items[RATE_STONE_ID] =
+        Math.max(
+            0,
+            Number(
+                user.items[RATE_STONE_ID] || 0
+            )
+        ) + amount;
+
+}
+
+// ======================================================
+// NORMALIZE ROD
 // ======================================================
 
 function normalizeRod(
@@ -175,9 +323,9 @@ function normalizeRod(
             Number(
                 base.luck
             ) || 1;
+
     }
 
-    // Làm tròn Luck
     rod.luck =
         Math.round(
             rod.luck * 10
@@ -207,6 +355,7 @@ function normalizeRod(
 
         rod.uses =
             rod.maxUses;
+
     }
 
     rod.destroyed =
@@ -215,10 +364,11 @@ function normalizeRod(
         );
 
     return rod;
+
 }
 
 // ======================================================
-// TẠO HEADER
+// ROD HEADER
 // ======================================================
 
 function rodHeader(
@@ -232,6 +382,90 @@ function rodHeader(
         `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
         `🍀 Luck ${formatLuck(rod.luck)}`
     );
+
+}
+
+// ======================================================
+// NÚT CHỌN ĐÁ
+// ======================================================
+
+function createRateStoneButtons(
+    user,
+    ownerID
+) {
+
+    const count =
+        getRateStoneCount(user);
+
+    const buttons = [];
+
+    for (
+        let i = 0;
+        i <= MAX_RATE_STONES;
+        i++
+    ) {
+
+        const bonus =
+            i *
+            RATE_STONE_BONUS;
+
+        const disabled =
+            i > count;
+
+        buttons.push(
+
+            new ButtonBuilder()
+
+                .setCustomId(
+                    `upgrade_stone_${ownerID}_${i}`
+                )
+
+                .setLabel(
+                    i === 0
+                        ? "Không dùng"
+                        : `${i} đá (+${bonus}%)`
+                )
+
+                .setEmoji(
+                    i === 0
+                        ? "❌"
+                        : "🪨"
+                )
+
+                .setStyle(
+                    i === 0
+                        ? ButtonStyle.Secondary
+                        : ButtonStyle.Primary
+                )
+
+                .setDisabled(
+                    disabled
+                )
+
+        );
+
+    }
+
+    // Discord tối đa 5 button / row
+    // Tách 0-4 và 5
+    const rows = [];
+
+    rows.push(
+        new ActionRowBuilder()
+            .addComponents(
+                buttons.slice(0, 5)
+            )
+    );
+
+    rows.push(
+        new ActionRowBuilder()
+            .addComponents(
+                buttons.slice(5)
+            )
+    );
+
+    return rows;
+
 }
 
 // ======================================================
@@ -263,6 +497,9 @@ module.exports = {
 
         if (!user.rodData)
             user.rodData = {};
+
+        if (!user.items)
+            user.items = {};
 
         const id =
             user.can.dangDung;
@@ -300,6 +537,7 @@ module.exports = {
                 ]
 
             });
+
         }
 
         // ==================================================
@@ -317,6 +555,7 @@ module.exports = {
                     "❌ Không tìm thấy loại cần này."
 
             });
+
         }
 
         // ==================================================
@@ -348,6 +587,7 @@ module.exports = {
                     false
 
             };
+
         }
 
         const rod =
@@ -355,10 +595,6 @@ module.exports = {
                 user.rodData[id],
                 base
             );
-
-        // ==================================================
-        // LẤY LUCK HIỆN TẠI
-        // ==================================================
 
         getLuck(
             rod,
@@ -410,6 +646,7 @@ module.exports = {
                 ]
 
             });
+
         }
 
         // ==================================================
@@ -454,6 +691,7 @@ module.exports = {
                 ]
 
             });
+
         }
 
         // ==================================================
@@ -466,7 +704,7 @@ module.exports = {
                 rod.level
             );
 
-        const successRate =
+        const baseSuccessRate =
             getSuccessRate(
                 rod.level
             );
@@ -517,26 +755,284 @@ module.exports = {
                 ]
 
             });
+
         }
+
+        // ==================================================
+        // CHỌN ĐÁ
+        // ==================================================
+
+        const stoneCount =
+            getRateStoneCount(user);
+
+        let selectedStones = 0;
+
+        let stoneMessage = null;
+
+        // Luôn cho chọn đá
+        stoneMessage =
+            await message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#8b5cf6"
+                        )
+
+                        .setTitle(
+                            "🪨 `RATE STONE`"
+                        )
+
+                        .setDescription(
+
+                            `${rodHeader(
+                                base,
+                                rod
+                            )}\n\n` +
+
+                            `🎲 Tỉ lệ gốc: **${formatRate(
+                                baseSuccessRate
+                            )}%**\n\n` +
+
+                            `🪨 Đá đang có: **${stoneCount}**\n` +
+
+                            `🪨 Mỗi đá: **+${RATE_STONE_BONUS}%**\n` +
+
+                            `📦 Tối đa mỗi lần: **${MAX_RATE_STONES} đá**\n\n` +
+
+                            `Chọn số đá muốn sử dụng:`
+
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure · Rate Stone"
+                        })
+
+                ],
+
+                components:
+                    createRateStoneButtons(
+                        user,
+                        message.author.id
+                    )
+
+            });
+
+        // ==================================================
+        // CHỜ CHỌN ĐÁ
+        // ==================================================
+
+        try {
+
+            const interaction =
+                await stoneMessage.awaitMessageComponent({
+
+                    filter:
+                        buttonInteraction =>
+
+                            buttonInteraction.user.id ===
+                            message.author.id &&
+
+                            buttonInteraction.customId.startsWith(
+                                `upgrade_stone_${message.author.id}_`
+                            ),
+
+                    time:
+                        30000
+
+                });
+
+            selectedStones =
+                Number(
+                    interaction.customId
+                        .split("_")
+                        .pop()
+                );
+
+            // ==================================================
+            // KIỂM TRA LẠI SỐ ĐÁ
+            // ==================================================
+
+            const currentStoneCount =
+                getRateStoneCount(user);
+
+            if (
+                selectedStones < 0 ||
+                selectedStones > MAX_RATE_STONES ||
+                selectedStones > currentStoneCount
+            ) {
+
+                return interaction.update({
+
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor(
+                                "#ff6b81"
+                            )
+
+                            .setTitle(
+                                "❌ `STONE ERROR`"
+                            )
+
+                            .setDescription(
+                                "Số lượng đá không hợp lệ hoặc bạn không đủ đá."
+                            )
+
+                    ],
+
+                    components: []
+
+                });
+
+            }
+
+            // ==================================================
+            // RATE CUỐI
+            // ==================================================
+
+            const stoneBonus =
+                selectedStones *
+                RATE_STONE_BONUS;
+
+            const finalSuccessRate =
+                Math.min(
+                    100,
+                    baseSuccessRate +
+                    stoneBonus
+                );
+
+            // ==================================================
+            // UPDATE CHỜ UPGRADE
+            // ==================================================
+
+            await interaction.update({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#7ddcff"
+                        )
+
+                        .setTitle(
+                            "🎲 `UPGRADING`"
+                        )
+
+                        .setDescription(
+
+                            `${rodHeader(
+                                base,
+                                rod
+                            )}\n\n` +
+
+                            `🎲 Tỉ lệ gốc: **${formatRate(
+                                baseSuccessRate
+                            )}%**\n` +
+
+                            `🪨 Đã dùng: **${selectedStones} đá**\n` +
+
+                            `📈 Bonus: **+${formatRate(
+                                stoneBonus
+                            )}%**\n` +
+
+                            `🎯 Tỉ lệ cuối: **${formatRate(
+                                finalSuccessRate
+                            )}%**\n` +
+
+                            `💸 Chi phí: ${formatMoney(
+                                price
+                            )} ${emoji.money}\n\n` +
+
+                            `Đang cường hóa...\n` +
+                            `Hãy chờ kết quả.`
+
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure · Upgrade"
+                        })
+
+                ],
+
+                components: []
+
+            });
+
+        } catch (error) {
+
+            return stoneMessage.edit({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ffd166"
+                        )
+
+                        .setTitle(
+                            "⏰ `UPGRADE TIMEOUT`"
+                        )
+
+                        .setDescription(
+                            `Bạn không chọn số đá trong **30 giây**.\n\n` +
+                            `Hãy dùng lại lệnh upgrade để thử lại.`
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure · Upgrade"
+                        })
+
+                ],
+
+                components: []
+
+            });
+
+        }
+
+        // ==================================================
+        // RATE CUỐI
+        // ==================================================
+
+        const stoneBonus =
+            selectedStones *
+            RATE_STONE_BONUS;
+
+        const finalSuccessRate =
+            Math.min(
+                100,
+                baseSuccessRate +
+                stoneBonus
+            );
 
         // ==================================================
         // BẢO HIỂM
         // ==================================================
 
         const hasRisk =
-            rod.level >= DOWNGRADE_LEVEL;
+            rod.level >=
+            DOWNGRADE_LEVEL;
 
         let useInsurance = false;
 
-        let insuranceMessage = null;
-
         if (
             hasRisk &&
-            Number(user.insurance || 0) > 0
+            Number(
+                user.insurance || 0
+            ) > 0
         ) {
 
-            insuranceMessage =
-                await message.reply({
+            const insuranceMessage =
+                await message.channel.send({
 
                     embeds: [
 
@@ -568,7 +1064,8 @@ module.exports = {
 
                                 `\n\n` +
 
-                                `🎫 Vé bảo hiểm ${user.insurance}\n` +
+                                `🎫 Vé bảo hiểm: **${user.insurance}**\n` +
+
                                 `💡 Vé chỉ bị trừ khi thực sự bảo vệ cần.\n\n` +
 
                                 `Bạn có 20 giây để lựa chọn.`
@@ -663,6 +1160,7 @@ module.exports = {
                                             true
 
                                     });
+
                                 }
 
                                 await interaction.deferUpdate();
@@ -686,6 +1184,7 @@ module.exports = {
                                     resolve(
                                         false
                                     );
+
                                 }
 
                             }
@@ -693,87 +1192,19 @@ module.exports = {
 
                     }
                 );
+
+            // Xóa bảng bảo hiểm
+            try {
+
+                await insuranceMessage.delete();
+
+            } catch {}
+
         }
-
-        // ==================================================
-        // EMBED UPGRADING
-        // ==================================================
-
-        const suspense =
-            new EmbedBuilder()
-
-                .setColor(
-                    "#7ddcff"
-                )
-
-                .setTitle(
-                    "🎲 `UPGRADING`"
-                )
-
-                .setDescription(
-
-                    `${rodHeader(
-                        base,
-                        rod
-                    )}\n\n` +
-
-                    `🎲 Tỉ lệ thành công ${successRate}%\n` +
-                    `💸 Chi phí ${formatMoney(price)} ${emoji.money}\n\n` +
-
-                    `Đang cường hóa...\n` +
-                    `Hãy chờ kết quả.`
-
-                )
-
-                .setFooter({
-                    text:
-                        "✦ Fishing Adventure · Upgrade"
-                });
-
-        if (
-            insuranceMessage
-        ) {
-
-            await insuranceMessage.edit({
-
-                embeds: [
-                    suspense
-                ],
-
-                components: []
-
-            });
-
-        } else {
-
-            insuranceMessage =
-                await message.reply({
-
-                    embeds: [
-                        suspense
-                    ]
-
-                });
-        }
-
-        // ==================================================
-        // CHỜ
-        // ==================================================
-
-        await new Promise(
-            resolve =>
-                setTimeout(
-                    resolve,
-                    3000
-                )
-        );
 
         // ==================================================
         // LƯU TRẠNG THÁI CŨ
         // ==================================================
-        // QUAN TRỌNG:
-        // Phải lưu cả level + luck trước khi thay đổi.
-        // Tránh trường hợp Luck cũ bị hiển thị thành Luck mới.
 
         const startLevel =
             rod.level;
@@ -793,15 +1224,33 @@ module.exports = {
         // TRỪ TIỀN
         // ==================================================
 
-        user.money -=
-            price;
+        user.money =
+            Number(
+                user.money
+            ) - price;
+
+        // ==================================================
+        // TRỪ ĐÁ
+        // ==================================================
+
+        if (
+            selectedStones > 0
+        ) {
+
+            removeRateStones(
+                user,
+                selectedStones
+            );
+
+        }
 
         // ==================================================
         // RANDOM
         // ==================================================
 
         const roll =
-            Math.random() * 100;
+            Math.random() *
+            100;
 
         let resultText = "";
 
@@ -814,7 +1263,7 @@ module.exports = {
 
         if (
             roll <
-            successRate
+            finalSuccessRate
         ) {
 
             rod.level =
@@ -823,7 +1272,6 @@ module.exports = {
                     rod.level + 1
                 );
 
-            // Lấy Luck tăng mỗi cấp
             const luckPerLevel =
                 Number(
                     upgrade?.luckPerLevel
@@ -842,7 +1290,6 @@ module.exports = {
                 ) +
                 luckIncrease;
 
-            // Làm tròn Luck sau khi cộng
             rod.luck =
                 Math.round(
                     rod.luck * 10
@@ -858,7 +1305,7 @@ module.exports = {
 
             resultText =
 
-                `✨ Cường hóa thành công!\n` +
+                `✨ Cường hóa thành công!\n\n` +
 
                 `Cấp \`+${rod.level}\`` +
 
@@ -929,7 +1376,9 @@ module.exports = {
                     destroy =
                         Math.random() <
                         DESTROY_CHANCE;
+
                 }
+
             }
 
             // ==============================================
@@ -944,6 +1393,7 @@ module.exports = {
                 downgrade =
                     Math.random() <
                     DOWNGRADE_CHANCE;
+
             }
 
             // ==============================================
@@ -971,7 +1421,7 @@ module.exports = {
 
                 resultText =
 
-                    `🎫 Cường hóa thất bại nhưng bảo hiểm đã bảo vệ cần!\n` +
+                    `🎫 Cường hóa thất bại nhưng bảo hiểm đã bảo vệ cần!\n\n` +
 
                     `Cấp vẫn \`+${rod.level}\`\n` +
 
@@ -1008,7 +1458,7 @@ module.exports = {
 
                 resultText =
 
-                    `💥 Cường hóa thất bại, cần bị gãy!\n` +
+                    `💥 Cường hóa thất bại, cần bị gãy!\n\n` +
 
                     `Cấp còn \`+${rod.level}\`\n` +
 
@@ -1041,7 +1491,7 @@ module.exports = {
 
                 resultText =
 
-                    `⬇️ Cường hóa thất bại, cần bị giảm cấp!\n` +
+                    `⬇️ Cường hóa thất bại, cần bị giảm cấp!\n\n` +
 
                     `Cấp còn \`+${rod.level}\`\n` +
 
@@ -1064,7 +1514,7 @@ module.exports = {
 
                 resultText =
 
-                    `❌ Cường hóa thất bại.\n` +
+                    `❌ Cường hóa thất bại.\n\n` +
 
                     `Cấp vẫn \`+${rod.level}\`\n` +
 
@@ -1075,6 +1525,7 @@ module.exports = {
                     `Xu đã mất, hãy thử lại.`;
 
             }
+
         }
 
         // ==================================================
@@ -1084,7 +1535,7 @@ module.exports = {
         save();
 
         // ==================================================
-        // LUCK CŨ / LUCK MỚI
+        // LUCK CŨ / MỚI
         // ==================================================
 
         const oldLuck =
@@ -1098,8 +1549,6 @@ module.exports = {
         // ==================================================
         // HEADER CŨ
         // ==================================================
-        // Dùng startLevel + startLuck
-        // KHÔNG dùng rod.luck hiện tại.
 
         const oldHeader =
             `${base.emoji} ${base.name} ` +
@@ -1116,6 +1565,13 @@ module.exports = {
             `\`+${rod.level}\` ` +
             `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
             `🍀 Luck ${newLuck}`;
+
+        // ==================================================
+        // ĐÁ CÒN LẠI
+        // ==================================================
+
+        const remainingStones =
+            getRateStoneCount(user);
 
         // ==================================================
         // FINAL EMBED
@@ -1151,10 +1607,32 @@ module.exports = {
 
                     `→ ${newHeader}\n\n` +
 
-                    `🎲 Thành công ${successRate}%\n` +
-                    `💸 Chi phí ${formatMoney(price)} ${emoji.money}\n\n` +
+                    `🎲 Tỉ lệ gốc: **${formatRate(
+                        baseSuccessRate
+                    )}%**\n` +
+
+                    `🪨 Đá sử dụng: **${selectedStones}**\n` +
+
+                    `📈 Bonus đá: **+${formatRate(
+                        stoneBonus
+                    )}%**\n` +
+
+                    `🎯 Tỉ lệ thực tế: **${formatRate(
+                        finalSuccessRate
+                    )}%**\n` +
+
+                    `🎲 Kết quả: **${roll < finalSuccessRate
+                        ? "Thành công"
+                        : "Thất bại"
+                    }**\n\n` +
+
+                    `💸 Chi phí ${formatMoney(
+                        price
+                    )} ${emoji.money}\n\n` +
 
                     `${resultText}\n\n` +
+
+                    `🪨 Đá còn lại: **${remainingStones}**\n` +
 
                     `💰 Số dư ${formatMoney(
                         user.money
@@ -1171,7 +1649,7 @@ module.exports = {
 
                 .setTimestamp();
 
-        await insuranceMessage.edit({
+        await stoneMessage.edit({
 
             embeds: [
                 finalEmbed
@@ -1180,5 +1658,7 @@ module.exports = {
             components: []
 
         });
+
     }
+
 };
