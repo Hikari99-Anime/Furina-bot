@@ -29,7 +29,7 @@ const enStarters =
 enWords.filter(w => w.length >= 3 && w.length <= 8);
 
 
-let currentGame = null;
+const games = new Map();
 
 const roundCount = { vi:0, en:0 };
 
@@ -49,9 +49,9 @@ function pickStarter(lang){
 
 
 
-function getGame(){
+function getGame(channelId){
 
-    return currentGame;
+    return games.get(channelId);
 
 }
 
@@ -84,7 +84,7 @@ function startRound(game,starter){
 
 function createGame(lang,channel,starter){
 
-    currentGame = {
+    const game = {
 
         lang,
 
@@ -94,22 +94,29 @@ function createGame(lang,channel,starter){
 
     };
 
-    startRound(currentGame,starter);
+    startRound(game,starter);
 
-    return currentGame;
+    games.set(channel.id,game);
+
+    return game;
 
 }
 
 
 
 
-function stopGame(){
+function stopGame(channelId){
 
-    currentGame = null;
+    const game = games.get(channelId);
 
-    roundCount.vi = 0;
+    if(!game)
+        return false;
 
-    roundCount.en = 0;
+    games.delete(channelId);
+
+    roundCount[game.lang] = 0;
+
+    return true;
 
 }
 
@@ -128,7 +135,7 @@ function lastSyllableOf(entry,lang){
 
 
 
-function validateEntry(raw,game){
+function validateEntry(raw,game,authorId){
 
     if(game.lang === "en"){
 
@@ -141,6 +148,9 @@ function validateEntry(raw,game){
 
         if(word[0] !== required)
             return { ok:false, close:false };
+
+        if(game.lastUser === authorId)
+            return { ok:false, close:true, reason:"╰・❌ Phải để người khác nối rồi mới được nối tiếp" };
 
         if(game.used.has(word))
             return { ok:false, close:true, reason:"╰・❌ Từ này đã được dùng rồi" };
@@ -165,6 +175,9 @@ function validateEntry(raw,game){
     if(parts[0] !== required)
         return { ok:false, close:false };
 
+    if(game.lastUser === authorId)
+        return { ok:false, close:true, reason:"╰・❌ Phải để người khác nối rồi mới được nối tiếp" };
+
     if(game.used.has(phrase))
         return { ok:false, close:true, reason:"╰・❌ Cụm này đã được dùng rồi" };
 
@@ -178,40 +191,39 @@ function validateEntry(raw,game){
 
 
 
+function notifyAndDelete(message,text){
+
+    message.reply(text)
+    .then(sent =>
+        setTimeout(() => sent.delete().catch(()=>{}),5000)
+    )
+    .catch(()=>{});
+
+}
+
+
+
+
 async function handleMessage(message){
-
-    if(!currentGame)
-        return false;
-
-    if(message.channel.id !== currentGame.channel.id)
-        return false;
 
     if(message.author.bot)
         return false;
 
 
-    const game = currentGame;
+    const game = games.get(message.channel.id);
 
-    const result = validateEntry(message.content,game);
+    if(!game)
+        return false;
+
+    const result = validateEntry(message.content,game,message.author.id);
 
 
     if(!result.ok){
 
         if(result.close)
-            await message.reply(result.reason).catch(()=>{});
+            notifyAndDelete(message,result.reason);
 
         return result.close;
-
-    }
-
-
-    if(game.lastUser === message.author.id){
-
-        await message.reply(
-            "╰・❌ Phải để người khác nối rồi mới được nối tiếp"
-        ).catch(()=>{});
-
-        return true;
 
     }
 
