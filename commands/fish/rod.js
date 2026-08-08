@@ -6,7 +6,8 @@ const {
 } = require("discord.js");
 
 const {
-    rods
+    rods,
+    rodTitles
 } = require("../../config");
 
 const {
@@ -14,27 +15,86 @@ const {
     save
 } = require("../../data");
 
-// ======================================================
-// EMOJI CUSTOM CẦN CÂU
-// ======================================================
-
-const rodEmojis = {
-    wood: "<:cancau_1:1534625089088393358>",
-    iron: "<:cancau_2:1534635569219633212>",
-    gold: "<:cancau_3:1534625401119445170>",
-    diamond: "<:cancau_4:1534635400793165965>"
-};
 
 // ======================================================
-// FORMAT LEVEL
+// LẤY DỮ LIỆU CẦN
 // ======================================================
 
-function formatLevel(level) {
+function getRodData(user, id) {
 
-    level = Number(level) || 0;
+    if (!user.rodData)
+        user.rodData = {};
 
-    return `\`+${level}\``;
+    if (!user.rodData[id]) {
+
+        const base = rods[id];
+
+        if (!base)
+            return null;
+
+        user.rodData[id] = {
+
+            level: 0,
+
+            luck: base.luck || 1,
+
+            uses: base.uses || 1,
+
+            maxUses: base.uses || 1,
+
+            destroyed: false
+
+        };
+
+    }
+
+    const rod =
+        user.rodData[id];
+
+    const base =
+        rods[id];
+
+    // Đảm bảo dữ liệu cũ không lỗi
+    rod.level =
+        Number(rod.level) || 0;
+
+    rod.luck =
+        Number(rod.luck) || base.luck || 1;
+
+    rod.maxUses =
+        Number(rod.maxUses) ||
+        base.uses ||
+        1;
+
+    rod.uses =
+        Math.max(
+            0,
+            Number(rod.uses) || 0
+        );
+
+    if (
+        rod.uses >
+        rod.maxUses
+    ) {
+
+        rod.uses =
+            rod.maxUses;
+
+    }
+
+    if (
+        typeof rod.destroyed !==
+        "boolean"
+    ) {
+
+        rod.destroyed =
+            rod.uses <= 0;
+
+    }
+
+    return rod;
 }
+
 
 // ======================================================
 // FORMAT LUCK
@@ -42,84 +102,163 @@ function formatLevel(level) {
 
 function formatLuck(luck) {
 
-    luck = Number(luck);
+    luck =
+        Number(luck) || 0;
 
-    if (!Number.isFinite(luck))
-        luck = 1;
+    if (
+        Number.isInteger(luck)
+    ) {
 
-    // Không hiện 1.2000000000000002
-    return Number(
-        luck.toFixed(2)
-    );
+        return String(luck);
+
+    }
+
+    return luck
+        .toFixed(1)
+        .replace(/\.0$/, "");
+
 }
 
+
 // ======================================================
-// FORMAT ROD
+// TẠO DÒNG CẦN
 // ======================================================
 
-function formatRod(id, user) {
+function createRodLine(
+    id,
+    user
+) {
 
     const base =
         rods[id];
 
     if (!base)
-        return null;
+        return "";
 
     const rod =
-        user.rodData?.[id];
+        getRodData(
+            user,
+            id
+        );
 
     if (!rod)
-        return null;
+        return "";
 
-    const maxUses =
-        Number(
-            rod.maxUses ||
-            base.uses ||
-            100
-        );
-
-    const uses =
-        Math.max(
-            0,
-            Math.min(
-                maxUses,
-                Number(
-                    rod.uses ?? maxUses
-                )
-            )
-        );
-
-    const level =
-        Number(
-            rod.level
-        ) || 0;
-
-    const luck =
-        Number(
-            rod.luck ??
-            base.luck ??
-            1
-        );
-
-    const active =
+    const equipped =
         user.can?.dangDung === id
             ? "🟢"
-            : "⚪";
+            : "🔴";
 
-    const customEmoji =
-        rodEmojis[id] ||
-        base.emoji ||
-        "🎣";
+    const level =
+        `\`+${rod.level}\``;
+
+    const durability =
+        `\`${rod.uses}/${rod.maxUses}\``;
+
+    const luck =
+        formatLuck(
+            rod.luck
+        );
 
     return (
-        `${active} ` +
-        `${customEmoji} ` +
-        `${base.name} ` +
-        `${formatLevel(level)} ` +
-        `Độ bền (${uses}/${maxUses}) ` +
-        `Luck ${formatLuck(luck)}`
+        `${equipped} ${base.emoji} ` +
+        `${base.name} ${level} ` +
+        `Độ bền ${durability} ` +
+        `Luck ${luck}`
     );
 }
+
+
+// ======================================================
+// TẠO EMBED
+// ======================================================
+
+function createRodEmbed(
+    user,
+    message
+) {
+
+    const list =
+        Object.keys(
+            user.can?.danhSach || {}
+        ).filter(
+            id => rods[id]
+        );
+
+    let text = "";
+
+    for (
+        const id of list
+    ) {
+
+        text +=
+            createRodLine(
+                id,
+                user
+            ) +
+            "\n";
+
+    }
+
+    text =
+        text.trim();
+
+    if (!text)
+        text =
+            "Bạn chưa có cần câu.";
+
+    const currentId =
+        user.can?.dangDung;
+
+    const current =
+        rods[currentId];
+
+    const currentText =
+        current
+            ? `${current.emoji} ${current.name}`
+            : "Chưa có";
+
+    return new EmbedBuilder()
+
+        .setColor("#89ddff")
+
+        .setAuthor({
+
+            name:
+                `${message.author.username} · Fishing`,
+
+            iconURL:
+                message.author.displayAvatarURL({
+                    extension: "png",
+                    size: 128
+                })
+
+        })
+
+        .setTitle(
+            "🎣 `ROD COLLECTION`"
+        )
+
+        .setDescription(
+
+            `*Kho cần câu của bạn.*\n\n` +
+
+            `${text}\n\n` +
+
+            `🎣 Đang dùng: ${currentText}`
+
+        )
+
+        .setFooter({
+
+            text:
+                "✦ Fishing Adventure · Rod Collection"
+
+        })
+
+        .setTimestamp();
+}
+
 
 // ======================================================
 // MODULE
@@ -141,14 +280,32 @@ module.exports = {
                 message.author.id
             );
 
+
         // ==================================================
-        // LẤY DANH SÁCH CẦN
+        // ĐẢM BẢO DATA
+        // ==================================================
+
+        if (!user.can)
+            user.can = {};
+
+        if (!user.can.danhSach)
+            user.can.danhSach = {};
+
+        if (!user.rodData)
+            user.rodData = {};
+
+
+        // ==================================================
+        // DANH SÁCH CẦN
         // ==================================================
 
         const list =
             Object.keys(
-                user.can?.danhSach || {}
+                user.can.danhSach
+            ).filter(
+                id => rods[id]
             );
+
 
         if (!list.length) {
 
@@ -158,73 +315,64 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ff6b81")
+                        .setColor(
+                            "#ff6b81"
+                        )
 
                         .setTitle(
-                            "🎣 `ROD COLLECTION`"
+                            "🎣 `NO ROD`"
                         )
 
                         .setDescription(
-                            "Bạn chưa sở hữu cần câu."
+
+                            `Bạn chưa có cần câu.\n\n` +
+
+                            `Hãy mua cần câu tại shop ` +
+                            `để bắt đầu câu cá.`
+
                         )
 
                         .setFooter({
+
                             text:
                                 "✦ Fishing Adventure"
+
                         })
 
                 ]
 
             });
+
         }
+
 
         // ==================================================
-        // HIỂN THỊ CẦN
+        // KHỞI TẠO DATA CẦN
         // ==================================================
 
-        const rodLines = [];
+        for (
+            const id of list
+        ) {
 
-        for (const id of list) {
+            getRodData(
+                user,
+                id
+            );
 
-            const line =
-                formatRod(
-                    id,
-                    user
-                );
-
-            if (line)
-                rodLines.push(line);
         }
 
-        if (!rodLines.length) {
+        save();
 
-            return message.reply({
-
-                embeds: [
-
-                    new EmbedBuilder()
-
-                        .setColor("#ff6b81")
-
-                        .setTitle(
-                            "🎣 `ROD COLLECTION`"
-                        )
-
-                        .setDescription(
-                            "Không tìm thấy dữ liệu cần câu."
-                        )
-
-                ]
-
-            });
-        }
 
         // ==================================================
         // BUTTON
         // ==================================================
 
-        const buttons = [];
+        const row =
+            new ActionRowBuilder();
 
+
+        // MỞ TỐI ĐA 5 CẦN
         for (
             const id of list.slice(0, 5)
         ) {
@@ -232,127 +380,54 @@ module.exports = {
             const base =
                 rods[id];
 
-            if (!base)
-                continue;
+            row.addComponents(
 
-            const customEmoji =
-                rodEmojis[id] ||
-                base.emoji ||
-                "🎣";
-
-            const button =
                 new ButtonBuilder()
 
                     .setCustomId(
-                        `equip_${id}`
+                        `equip_${id}_${message.author.id}`
                     )
 
                     .setLabel(
                         base.name
                     )
 
+                    .setEmoji(
+                        base.emoji
+                    )
+
                     .setStyle(
                         ButtonStyle.Primary
-                    );
-
-            // Emoji custom phải dùng object
-            // để Discord nhận ID emoji chính xác
-            if (
-                rodEmojis[id]
-            ) {
-
-                const emojiId =
-                    rodEmojis[id]
-                        .match(
-                            /:(?:[^:]+):(\d+)/
-                        );
-
-                if (emojiId) {
-
-                    button.setEmoji({
-                        id:
-                            emojiId[1]
-                    });
-
-                }
-
-            } else {
-
-                button.setEmoji(
-                    customEmoji
-                );
-
-            }
-
-            buttons.push(
-                button
-            );
-        }
-
-        const rows = [];
-
-        for (
-            let i = 0;
-            i < buttons.length;
-            i += 5
-        ) {
-
-            rows.push(
-
-                new ActionRowBuilder()
-                    .addComponents(
-                        buttons.slice(
-                            i,
-                            i + 5
-                        )
                     )
 
             );
+
         }
 
-        // ==================================================
-        // EMBED
-        // ==================================================
-
-        const embed =
-            new EmbedBuilder()
-
-                .setColor("#89ddff")
-
-                .setTitle(
-                    "🎣 `ROD COLLECTION`"
-                )
-
-                .setDescription(
-
-                    `*Bộ sưu tập cần câu của bạn.*\n\n` +
-
-                    rodLines.join("\n") +
-
-                    `\n\n🟢 Đang trang bị · ⚪ Chưa trang bị`
-
-                )
-
-                .setFooter({
-                    text:
-                        "✦ Fishing Adventure"
-                });
 
         // ==================================================
-        // GỬI
+        // GỬI EMBED
         // ==================================================
 
         const msg =
             await message.reply({
 
                 embeds: [
-                    embed
+
+                    createRodEmbed(
+                        user,
+                        message
+                    )
+
                 ],
 
                 components:
-                    rows
+                    row.components.length
+                        ? [row]
+                        : []
 
             });
+
 
         // ==================================================
         // COLLECTOR
@@ -366,12 +441,13 @@ module.exports = {
 
             });
 
+
         collector.on(
             "collect",
             async interaction => {
 
                 // ==========================================
-                // KIỂM TRA NGƯỜI DÙNG
+                // KIỂM TRA USER
                 // ==========================================
 
                 if (
@@ -388,24 +464,45 @@ module.exports = {
                             true
 
                     });
+
                 }
+
 
                 // ==========================================
                 // LẤY ID
                 // ==========================================
 
+                const parts =
+                    interaction.customId.split("_");
+
                 const id =
-                    interaction.customId.replace(
-                        "equip_",
-                        ""
-                    );
+                    parts[1];
+
 
                 // ==========================================
-                // KIỂM TRA SỞ HỮU
+                // KIỂM TRA CẦN
                 // ==========================================
 
                 if (
-                    !user.can?.danhSach?.[id]
+                    !id ||
+                    !rods[id]
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Không tìm thấy cần câu.",
+
+                        ephemeral:
+                            true
+
+                    });
+
+                }
+
+
+                if (
+                    !user.can.danhSach[id]
                 ) {
 
                     return interaction.reply({
@@ -417,18 +514,25 @@ module.exports = {
                             true
 
                     });
+
                 }
+
+
+                // ==========================================
+                // LẤY DATA
+                // ==========================================
+
+                const rod =
+                    getRodData(
+                        user,
+                        id
+                    );
 
                 const base =
                     rods[id];
 
-                const rod =
-                    user.rodData?.[id];
 
-                if (
-                    !base ||
-                    !rod
-                ) {
+                if (!rod) {
 
                     return interaction.reply({
 
@@ -439,7 +543,31 @@ module.exports = {
                             true
 
                     });
+
                 }
+
+
+                // ==========================================
+                // CẦN GÃY
+                // ==========================================
+
+                if (
+                    rod.destroyed ||
+                    rod.uses <= 0
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "💥 Cần này đang bị gãy. Hãy sửa trước khi trang bị.",
+
+                        ephemeral:
+                            true
+
+                    });
+
+                }
+
 
                 // ==========================================
                 // TRANG BỊ
@@ -450,45 +578,18 @@ module.exports = {
 
                 save();
 
+
                 // ==========================================
-                // THÔNG TIN CẦN
+                // TITLE
                 // ==========================================
 
-                const maxUses =
-                    Number(
-                        rod.maxUses ||
-                        base.uses ||
-                        100
-                    );
-
-                const uses =
-                    Math.max(
-                        0,
-                        Math.min(
-                            maxUses,
-                            Number(
-                                rod.uses ??
-                                maxUses
-                            )
-                        )
-                    );
-
-                const level =
-                    Number(
+                const title =
+                    rodTitles?.[
                         rod.level
-                    ) || 0;
+                    ]
+                        ? ` · ${rodTitles[rod.level]}`
+                        : "";
 
-                const luck =
-                    Number(
-                        rod.luck ??
-                        base.luck ??
-                        1
-                    );
-
-                const customEmoji =
-                    rodEmojis[id] ||
-                    base.emoji ||
-                    "🎣";
 
                 // ==========================================
                 // UPDATE
@@ -500,7 +601,22 @@ module.exports = {
 
                         new EmbedBuilder()
 
-                            .setColor("#8affb2")
+                            .setColor(
+                                "#8affb2"
+                            )
+
+                            .setAuthor({
+
+                                name:
+                                    `${message.author.username} · Fishing`,
+
+                                iconURL:
+                                    message.author.displayAvatarURL({
+                                        extension: "png",
+                                        size: 128
+                                    })
+
+                            })
 
                             .setTitle(
                                 "🎣 `ROD EQUIPPED`"
@@ -508,9 +624,11 @@ module.exports = {
 
                             .setDescription(
 
-                                `${customEmoji} ${base.name} ${formatLevel(level)} ` +
-                                `Độ bền (${uses}/${maxUses}) ` +
-                                `Luck ${formatLuck(luck)}\n\n` +
+                                `${base.emoji} ${base.name} ` +
+                                `\`+${rod.level}\` ` +
+                                `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
+                                `Luck ${formatLuck(rod.luck)}` +
+                                `${title}\n\n` +
 
                                 `🟢 Cần câu đã được trang bị.\n` +
                                 `Sẵn sàng cho chuyến câu tiếp theo.`
@@ -518,9 +636,13 @@ module.exports = {
                             )
 
                             .setFooter({
+
                                 text:
-                                    "✦ Fishing Adventure"
+                                    "✦ Fishing Adventure · Rod"
+
                             })
+
+                            .setTimestamp()
 
                     ],
 
@@ -531,8 +653,9 @@ module.exports = {
             }
         );
 
+
         // ==================================================
-        // HẾT THỜI GIAN
+        // KẾT THÚC
         // ==================================================
 
         collector.on(
@@ -551,5 +674,7 @@ module.exports = {
 
             }
         );
+
     }
+
 };

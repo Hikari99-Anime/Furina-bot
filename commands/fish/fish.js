@@ -1,5 +1,8 @@
 const {
-    EmbedBuilder
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
 } = require("discord.js");
 
 const {
@@ -7,6 +10,7 @@ const {
     rods,
     baits,
     fishingZones,
+    fishingConfig,
     prefix
 } = require("../../config");
 
@@ -15,32 +19,41 @@ const {
     save
 } = require("../../data");
 
-
 // ======================================================
 // LẤY KHU VỰC HIỆN TẠI
 // ======================================================
 
 function getCurrentZone() {
 
-    const now =
-        new Date();
+    if (!fishingZones) {
+        return null;
+    }
 
+    const now = new Date();
+
+    // Chủ nhật -> Núi Lửa
     if (
-        now.getDay() === 0
+        now.getDay() === 0 &&
+        fishingZones.volcano
     ) {
-
         return fishingZones.volcano;
-
     }
 
     const zones = [
-
         fishingZones.tropical,
         fishingZones.cold,
         fishingZones.swamp,
         fishingZones.deep
+    ].filter(Boolean);
 
-    ];
+    if (!zones.length) {
+        return null;
+    }
+
+    // 00-05  -> Tropical
+    // 06-11  -> Cold
+    // 12-17  -> Swamp
+    // 18-23  -> Deep
 
     const index =
         Math.floor(
@@ -52,6 +65,493 @@ function getCurrentZone() {
     ];
 }
 
+// ======================================================
+// LÀM TRÒN SỐ
+// ======================================================
+
+function roundNumber(
+    value,
+    decimals = 2
+) {
+
+    const number =
+        Number(value);
+
+    if (
+        !Number.isFinite(number)
+    ) {
+        return 0;
+    }
+
+    return Number(
+        number.toFixed(decimals)
+    );
+}
+
+// ======================================================
+// FORMAT LUCK
+// ======================================================
+
+function formatLuck(value) {
+
+    const luck =
+        Math.max(
+            0,
+            Number(value) || 0
+        );
+
+    return roundNumber(
+        luck,
+        2
+    );
+}
+
+// ======================================================
+// FORMAT CẦN
+// ======================================================
+
+function formatRod(
+    baseRod,
+    rod
+) {
+
+    const level =
+        Number(
+            rod.level || 0
+        );
+
+    const luck =
+        formatLuck(
+            rod.luck ??
+            baseRod.luck ??
+            0
+        );
+
+    const uses =
+        Math.max(
+            0,
+            Number(
+                rod.uses ?? 0
+            )
+        );
+
+    const maxUses =
+        Math.max(
+            1,
+            Number(
+                baseRod.uses
+            ) || 1
+        );
+
+    return (
+        `${baseRod.emoji || "🎣"} ${baseRod.name} ` +
+        `\`+${level}\` · ` +
+        `🍀 Luck ${luck} · ` +
+        `🎯 ${uses}/${maxUses}`
+    );
+}
+
+// ======================================================
+// RATE CÁ
+// ======================================================
+
+function getFishRate(
+    fish
+) {
+
+    const rate =
+        Number(
+            fish.catchRate ??
+            fish.rate ??
+            0
+        );
+
+    return Math.max(
+        0,
+        rate
+    );
+}
+
+// ======================================================
+// CÂN NẶNG
+// ======================================================
+
+function getFishWeight(
+    fish
+) {
+
+    const fishMin =
+        Number(
+            fish.min
+        );
+
+    const fishMax =
+        Number(
+            fish.max
+        );
+
+    // Cá có cân riêng
+    if (
+        Number.isFinite(fishMin) &&
+        Number.isFinite(fishMax) &&
+        fishMax > fishMin
+    ) {
+
+        return Number(
+            (
+                Math.random() *
+                (
+                    fishMax -
+                    fishMin
+                ) +
+                fishMin
+            ).toFixed(2)
+        );
+    }
+
+    // Cân mặc định
+    const min =
+        Number(
+            fishingConfig?.minWeight
+        ) || 0.5;
+
+    const max =
+        Number(
+            fishingConfig?.maxWeight
+        ) || 20;
+
+    return Number(
+        (
+            Math.random() *
+            (
+                max -
+                min
+            ) +
+            min
+        ).toFixed(2)
+    );
+}
+
+// ======================================================
+// RARITY MULTIPLIER
+// ======================================================
+
+function getRarityMultiplier(
+    fish,
+    luck
+) {
+
+    const rarity =
+        fish.rarity ||
+        "common";
+
+    const safeLuck =
+        Math.max(
+            0,
+            Number(luck) || 0
+        );
+
+    switch (rarity) {
+
+        case "rare":
+
+            return (
+                1 +
+                safeLuck * 0.05
+            );
+
+        case "epic":
+
+            return (
+                1 +
+                safeLuck * 0.08
+            );
+
+        case "legendary":
+
+            return (
+                1 +
+                safeLuck * 0.12
+            );
+
+        case "mythical":
+
+            return (
+                1 +
+                safeLuck * 0.18
+            );
+
+        default:
+
+            return 1;
+    }
+}
+
+// ======================================================
+// CHỌN CÁ
+// ======================================================
+
+function randomFish(
+    zoneFish,
+    luck
+) {
+
+    const weightedFish =
+        zoneFish
+            .map(
+                fish => {
+
+                    const baseRate =
+                        getFishRate(
+                            fish
+                        );
+
+                    const rarityMultiplier =
+                        getRarityMultiplier(
+                            fish,
+                            luck
+                        );
+
+                    return {
+
+                        fish,
+
+                        rate:
+                            baseRate *
+                            rarityMultiplier
+                    };
+                }
+            )
+            .filter(
+                item =>
+                    item.rate > 0
+            );
+
+    if (
+        !weightedFish.length
+    ) {
+        return null;
+    }
+
+    let totalRate = 0;
+
+    for (
+        const item
+        of weightedFish
+    ) {
+
+        totalRate +=
+            item.rate;
+    }
+
+    let random =
+        Math.random() *
+        totalRate;
+
+    for (
+        const item
+        of weightedFish
+    ) {
+
+        random -=
+            item.rate;
+
+        if (
+            random <= 0
+        ) {
+
+            return item.fish;
+        }
+    }
+
+    return (
+        weightedFish[
+            weightedFish.length - 1
+        ].fish
+    );
+}
+
+// ======================================================
+// TÊN MỒI
+// ======================================================
+
+function getBaitName(
+    baitID
+) {
+
+    const names = {
+
+        moithuong:
+            "🪱 Mồi thường",
+
+        moibac:
+            "🦐 Mồi bạc",
+
+        moivang:
+            "✨ Mồi vàng"
+
+    };
+
+    return (
+        names[baitID] ||
+        "🪱 Mồi"
+    );
+}
+
+// ======================================================
+// EMOJI MỒI
+// ======================================================
+
+function getBaitEmoji(
+    baitID
+) {
+
+    const emojis = {
+
+        moithuong:
+            baits?.worm?.emoji ||
+            "🪱",
+
+        moibac:
+            baits?.shrimp?.emoji ||
+            "🦐",
+
+        moivang:
+            baits?.golden_bait?.emoji ||
+            "✨"
+
+    };
+
+    return (
+        emojis[baitID] ||
+        "🪱"
+    );
+}
+
+// ======================================================
+// LẤY SỐ LƯỢNG MỒI
+// ======================================================
+
+function getBaitCount(
+    user,
+    baitID
+) {
+
+    return Math.max(
+        0,
+        Number(
+            user.moi?.[baitID] || 0
+        )
+    );
+}
+
+// ======================================================
+// TẠO NÚT CHỌN MỒI
+// ======================================================
+
+function createBaitButtons(
+    user,
+    ownerID
+) {
+
+    const normal =
+        getBaitCount(
+            user,
+            "moithuong"
+        );
+
+    const silver =
+        getBaitCount(
+            user,
+            "moibac"
+        );
+
+    const golden =
+        getBaitCount(
+            user,
+            "moivang"
+        );
+
+    const row =
+        new ActionRowBuilder()
+            .addComponents(
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `fishbait_${ownerID}_moithuong`
+                    )
+
+                    .setLabel(
+                        `Mồi thường (${normal})`
+                    )
+
+                    .setEmoji(
+                        getBaitEmoji(
+                            "moithuong"
+                        )
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Primary
+                    )
+
+                    .setDisabled(
+                        normal <= 0
+                    ),
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `fishbait_${ownerID}_moibac`
+                    )
+
+                    .setLabel(
+                        `Mồi bạc (${silver})`
+                    )
+
+                    .setEmoji(
+                        getBaitEmoji(
+                            "moibac"
+                        )
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Secondary
+                    )
+
+                    .setDisabled(
+                        silver <= 0
+                    ),
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `fishbait_${ownerID}_moivang`
+                    )
+
+                    .setLabel(
+                        `Mồi vàng (${golden})`
+                    )
+
+                    .setEmoji(
+                        getBaitEmoji(
+                            "moivang"
+                        )
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Success
+                    )
+
+                    .setDisabled(
+                        golden <= 0
+                    )
+
+            );
+
+    return row;
+}
 
 // ======================================================
 // MODULE
@@ -66,13 +566,26 @@ module.exports = {
         "cau"
     ],
 
-    async execute(message, args) {
+    async execute(
+        message,
+        args
+    ) {
+
+        // ==================================================
+        // USER
+        // ==================================================
 
         const user =
             getUser(
                 message.author.id
             );
 
+        if (!user) {
+
+            return message.reply(
+                "❌ Không tìm thấy dữ liệu người chơi."
+            );
+        }
 
         // ==================================================
         // SỐ LẦN CÂU
@@ -92,27 +605,69 @@ module.exports = {
                 );
 
             if (
-                !Number.isInteger(amount) ||
+                !Number.isInteger(
+                    amount
+                ) ||
                 amount <= 0
             ) {
 
-                return message.reply(
-                    `╰・❌ Số lần câu không hợp lệ. Ví dụ: \`${prefix}fish 10\``
-                );
+                return message.reply({
 
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor(
+                                "#ff6b81"
+                            )
+
+                            .setTitle(
+                                "❌ `INVALID AMOUNT`"
+                            )
+
+                            .setDescription(
+                                `Số lần câu không hợp lệ.\n\n` +
+                                `Ví dụ: \`${prefix}fish 10\``
+                            )
+
+                            .setFooter({
+                                text:
+                                    "✦ Fishing Adventure"
+                            })
+                    ]
+                });
             }
 
             if (
                 amount > MAX_AMOUNT
             ) {
 
-                return message.reply(
-                    `╰・❌ Tối đa ${MAX_AMOUNT} lần/lượt`
-                );
+                return message.reply({
 
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor(
+                                "#ff6b81"
+                            )
+
+                            .setTitle(
+                                "❌ `TOO MANY CASTS`"
+                            )
+
+                            .setDescription(
+                                `Mỗi lượt chỉ được câu tối đa **${MAX_AMOUNT} lần**.`
+                            )
+
+                            .setFooter({
+                                text:
+                                    "✦ Fishing Adventure"
+                            })
+                    ]
+                });
             }
         }
-
 
         // ==================================================
         // KHU VỰC
@@ -121,6 +676,33 @@ module.exports = {
         const zone =
             getCurrentZone();
 
+        if (!zone) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ff6b81"
+                        )
+
+                        .setTitle(
+                            "🌊 `NO FISHING ZONE`"
+                        )
+
+                        .setDescription(
+                            "Hiện chưa có khu vực câu cá."
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+            });
+        }
 
         // ==================================================
         // CẦN ĐANG DÙNG
@@ -131,14 +713,39 @@ module.exports = {
 
         if (!rodID) {
 
-            return message.reply(
-                "╰・❌ Bạn chưa trang bị cần câu"
-            );
+            return message.reply({
 
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ff6b81"
+                        )
+
+                        .setTitle(
+                            "🎣 `NO ROD EQUIPPED`"
+                        )
+
+                        .setDescription(
+                            `Bạn chưa trang bị cần câu.\n\n` +
+                            `Dùng \`${prefix}rod\` để kiểm tra cần.`
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+            });
         }
 
+        // ==================================================
+        // DATA CẦN
+        // ==================================================
+
         const baseRod =
-            rods[rodID];
+            rods?.[rodID];
 
         const rod =
             user.rodData?.[rodID];
@@ -148,17 +755,115 @@ module.exports = {
             !rod
         ) {
 
-            return message.reply(
-                "╰・❌ Dữ liệu cần bị lỗi"
-            );
+            return message.reply({
 
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ff6b81"
+                        )
+
+                        .setTitle(
+                            "❌ `ROD DATA ERROR`"
+                        )
+
+                        .setDescription(
+                            "Dữ liệu cần câu không hợp lệ."
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+            });
         }
 
-        rod.maxUses =
-            rod.maxUses ||
-            baseRod.uses ||
-            1;
+        // ==================================================
+        // CHUẨN HÓA CẦN
+        // ==================================================
 
+        rod.level =
+            Number(
+                rod.level || 0
+            );
+
+        rod.luck =
+            formatLuck(
+                rod.luck ??
+                baseRod.luck ??
+                0
+            );
+
+        // ==================================================
+        // ĐỘ BỀN
+        // ==================================================
+
+        const configMaxUses =
+            Math.max(
+                1,
+                Number(
+                    baseRod.uses
+                ) || 1
+            );
+
+        const oldMaxUses =
+            Number(
+                rod.maxUses
+            ) || 0;
+
+        let currentUses =
+            Number(
+                rod.uses
+            );
+
+        // DATA CŨ KHÔNG CÓ uses
+        if (
+            !Number.isFinite(
+                currentUses
+            )
+        ) {
+
+            currentUses =
+                configMaxUses;
+        }
+
+        // MIGRATE DATA CŨ
+        if (
+            oldMaxUses > 0 &&
+            oldMaxUses !== configMaxUses
+        ) {
+
+            if (
+                currentUses >= oldMaxUses
+            ) {
+
+                currentUses =
+                    configMaxUses;
+
+            } else {
+
+                currentUses =
+                    Math.min(
+                        currentUses,
+                        configMaxUses
+                    );
+            }
+        }
+
+        rod.uses =
+            Math.max(
+                0,
+                Math.min(
+                    currentUses,
+                    configMaxUses
+                )
+            );
+
+        rod.maxUses =
+            configMaxUses;
 
         // ==================================================
         // CẦN GÃY
@@ -175,7 +880,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ff4d67")
+                        .setColor(
+                            "#ff4d67"
+                        )
 
                         .setTitle(
                             "💥 `ROD BROKEN`"
@@ -183,30 +890,29 @@ module.exports = {
 
                         .setDescription(
 
-                            `${baseRod.emoji} ${baseRod.name}\n\n` +
+                            `${formatRod(
+                                baseRod,
+                                {
+                                    ...rod,
+                                    uses: 0
+                                }
+                            )}\n\n` +
 
-                            `> 🎯 Độ bền: 0/${rod.maxUses}\n` +
-                            `> 🔧 Trạng thái: Đã gãy\n\n` +
+                            `🔧 Trạng thái: **Đã gãy**\n\n` +
 
-                            `Cần câu đã hỏng hoàn toàn.\n` +
-                            `💡 Hãy mua cần mới để tiếp tục câu cá.`
-
+                            `💡 Hãy sửa hoặc mua cần mới trước khi tiếp tục.`
                         )
 
                         .setFooter({
                             text:
                                 "✦ Fishing Adventure"
                         })
-
                 ]
-
             });
-
         }
 
-
         // ==================================================
-        // KIỂM TRA ĐỘ BỀN
+        // ĐỦ ĐỘ BỀN
         // ==================================================
 
         if (
@@ -219,50 +925,71 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ffd166")
+                        .setColor(
+                            "#ffd166"
+                        )
 
                         .setTitle(
-                            "🎣 `NOT ENOUGH DURABILITY`"
+                            "🎯 `NOT ENOUGH DURABILITY`"
                         )
 
                         .setDescription(
 
-                            `${baseRod.emoji} ${baseRod.name}\n\n` +
+                            `${formatRod(
+                                baseRod,
+                                rod
+                            )}\n\n` +
 
-                            `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
-                            `> 🎣 Số lần câu: ${amount}\n\n` +
+                            `🎣 Muốn câu: **${amount} lần**\n` +
+                            `🎯 Độ bền: **${rod.uses}/${configMaxUses}**\n\n` +
 
-                            `💡 Cần ít nhất ${amount} độ bền để câu.`
-
+                            `💡 Cần ít nhất **${amount}** độ bền.`
                         )
 
                         .setFooter({
                             text:
                                 "✦ Fishing Adventure"
                         })
-
                 ]
-
             });
-
         }
 
-
         // ==================================================
-        // KIỂM TRA MỒI
+        // MỒI
         // ==================================================
 
         user.moi =
             user.moi || {};
 
-        const totalBait =
+        const normalBait =
+            getBaitCount(
+                user,
+                "moithuong"
+            );
 
-            (user.moi.moithuong || 0) +
-            (user.moi.moibac || 0) +
-            (user.moi.moivang || 0);
+        const silverBait =
+            getBaitCount(
+                user,
+                "moibac"
+            );
+
+        const goldenBait =
+            getBaitCount(
+                user,
+                "moivang"
+            );
+
+        const totalBait =
+            normalBait +
+            silverBait +
+            goldenBait;
+
+        // ==================================================
+        // KHÔNG CÓ MỒI
+        // ==================================================
 
         if (
-            totalBait < amount
+            totalBait <= 0
         ) {
 
             return message.reply({
@@ -271,41 +998,335 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ff6b81")
+                        .setColor(
+                            "#ff6b81"
+                        )
 
                         .setTitle(
-                            "🪱 `NOT ENOUGH BAIT`"
+                            "🪱 `NO BAIT`"
                         )
 
                         .setDescription(
 
-                            `Bạn không đủ mồi để câu.\n\n` +
+                            `${formatRod(
+                                baseRod,
+                                rod
+                            )}\n\n` +
 
-                            `> 🪱 Cần dùng: ${amount}\n` +
-                            `> 🪱 Hiện có: ${totalBait}\n\n` +
+                            `Bạn không còn mồi.\n\n` +
+
+                            `🪱 Mồi thường: **0**\n` +
+                            `🦐 Mồi bạc: **0**\n` +
+                            `✨ Mồi vàng: **0**\n\n` +
 
                             `💡 Hãy mua thêm mồi rồi thử lại.`
-
                         )
 
                         .setFooter({
                             text:
                                 "✦ Fishing Adventure"
                         })
-
                 ]
-
             });
-
         }
 
+        // ==================================================
+        // CÁ CỦA KHU VỰC
+        // ==================================================
+
+        const zoneFish =
+            fishList.filter(
+                fish => {
+
+                    if (
+                        !Array.isArray(
+                            zone.fish
+                        )
+                    ) {
+                        return false;
+                    }
+
+                    return zone.fish.includes(
+                        fish.id
+                    );
+                }
+            );
+
+        // ==================================================
+        // KIỂM TRA ID CÁ
+        // ==================================================
+
+        if (
+            zoneFish.length === 0
+        ) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ff6b81"
+                        )
+
+                        .setTitle(
+                            "❌ `ZONE FISH ERROR`"
+                        )
+
+                        .setDescription(
+
+                            `${zone.name}\n\n` +
+
+                            `Khu vực đang có ID cá:\n` +
+
+                            `\`${zone.fish?.join(
+                                ", "
+                            ) || "Không có"}\`\n\n` +
+
+                            `Nhưng các ID này không tồn tại trong \`fishList\`.`
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+            });
+        }
+
+        // ==================================================
+        // CHỌN MỒI
+        // ==================================================
+
+        const ownerID =
+            message.author.id;
+
+        const baitSelectEmbed =
+            new EmbedBuilder()
+
+                .setColor(
+                    "#7ddcff"
+                )
+
+                .setTitle(
+                    "🪱 `CHỌN MỒI`"
+                )
+
+                .setDescription(
+
+                    `${zone.name}\n\n` +
+
+                    `${formatRod(
+                        baseRod,
+                        rod
+                    )}\n\n` +
+
+                    `🎣 Số lần câu: **${amount}**\n\n` +
+
+                    `🪱 Mồi thường: **${normalBait}**\n` +
+                    `🦐 Mồi bạc: **${silverBait}**\n` +
+                    `✨ Mồi vàng: **${goldenBait}**\n\n` +
+
+                    `👇 **Chọn loại mồi muốn sử dụng:**`
+                )
+
+                .setFooter({
+                    text:
+                        "✦ Fishing Adventure · Bấm nút để chọn mồi"
+                });
+
+        const baitMessage =
+            await message.reply({
+
+                embeds: [
+                    baitSelectEmbed
+                ],
+
+                components: [
+                    createBaitButtons(
+                        user,
+                        ownerID
+                    )
+                ]
+            });
+
+        // ==================================================
+        // CHỜ BẤM NÚT
+        // ==================================================
+
+        let baitID = null;
+
+        try {
+
+            const interaction =
+                await baitMessage.awaitMessageComponent({
+
+                    filter:
+                        buttonInteraction =>
+                            buttonInteraction.user.id ===
+                            ownerID &&
+                            buttonInteraction.customId.startsWith(
+                                `fishbait_${ownerID}_`
+                            ),
+
+                    time:
+                        30000
+                });
+
+            baitID =
+                interaction.customId
+                    .split("_")
+                    .pop();
+
+            // ==================================================
+            // KIỂM TRA MỒI SAU KHI BẤM
+            // ==================================================
+
+            const selectedBaitCount =
+                getBaitCount(
+                    user,
+                    baitID
+                );
+
+            if (
+                selectedBaitCount < amount
+            ) {
+
+                await interaction.update({
+
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor(
+                                "#ff6b81"
+                            )
+
+                            .setTitle(
+                                "❌ `NOT ENOUGH BAIT`"
+                            )
+
+                            .setDescription(
+
+                                `${getBaitName(
+                                    baitID
+                                )}\n\n` +
+
+                                `🎣 Cần: **${amount}**\n` +
+                                `🪱 Hiện có: **${selectedBaitCount}**\n\n` +
+
+                                `💡 Bạn không đủ loại mồi này để câu ${amount} lần.`
+                            )
+
+                            .setFooter({
+                                text:
+                                    "✦ Fishing Adventure"
+                            })
+                    ],
+
+                    components: []
+                });
+
+                return;
+            }
+
+            // ==================================================
+            // UPDATE THÀNH ĐANG CÂU
+            // ==================================================
+
+            await interaction.update({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#7ddcff"
+                        )
+
+                        .setTitle(
+                            "🎣 `FISHING`"
+                        )
+
+                        .setDescription(
+
+                            `${zone.name}\n` +
+                            `${zone.description || ""}\n\n` +
+
+                            `${formatRod(
+                                baseRod,
+                                rod
+                            )}\n\n` +
+
+                            `🎣 Số lần câu: **${amount}**\n` +
+                            `🪱 Mồi sử dụng: **${getBaitName(
+                                baitID
+                            )}**\n` +
+                            `🪱 Số lượng: **${selectedBaitCount}**\n\n` +
+
+                            `✦ *Đang chuẩn bị câu...*`
+                        )
+
+                        .setImage(
+                            zone.image || null
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ],
+
+                components: []
+            });
+
+        } catch (error) {
+
+            // ==================================================
+            // HẾT THỜI GIAN CHỌN MỒI
+            // ==================================================
+
+            return baitMessage.edit({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ffd166"
+                        )
+
+                        .setTitle(
+                            "⏰ `BAIT SELECTION TIMEOUT`"
+                        )
+
+                        .setDescription(
+                            `Bạn đã không chọn mồi trong **30 giây**.\n\n` +
+                            `Hãy dùng lại \`${prefix}fish ${amount}\` để câu cá.`
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ],
+
+                components: []
+            });
+        }
 
         // ==================================================
         // THỜI GIAN CÂU
         // ==================================================
 
         const star =
-            baseRod.star || 1;
+            Math.max(
+                1,
+                Number(
+                    baseRod.star || 1
+                )
+            );
 
         const perCatchMs =
             Math.max(
@@ -316,70 +1337,68 @@ module.exports = {
 
         const totalMs =
             Math.min(
-                amount * perCatchMs,
+                amount *
+                perCatchMs,
                 30000
             );
 
         const etaSec =
-            (totalMs / 1000)
-                .toFixed(1);
-
-
-        // ==================================================
-        // THÔNG TIN CẦN
-        // ==================================================
-
-        const rodInfo =
-            `${baseRod.emoji} ${baseRod.name} · +${rod.luck || 0} 🍀 · 🎯 ${rod.uses}/${rod.maxUses}`;
-
+            (
+                totalMs / 1000
+            ).toFixed(1);
 
         // ==================================================
-        // EMBED ĐANG CÂU
+        // UPDATE ĐANG CHỜ
         // ==================================================
 
-        const msg =
-            await message.reply({
+        await baitMessage.edit({
 
-                embeds: [
+            embeds: [
 
-                    new EmbedBuilder()
+                new EmbedBuilder()
 
-                        .setColor("#7ddcff")
+                    .setColor(
+                        "#7ddcff"
+                    )
 
-                        .setImage(
-                            zone.image
-                        )
+                    .setTitle(
+                        "🎣 `FISHING`"
+                    )
 
-                        .setTitle(
-                            "🎣 `FISHING`"
-                        )
+                    .setDescription(
 
-                        .setDescription(
+                        `${zone.name}\n` +
+                        `${zone.description || ""}\n\n` +
 
-                            `${zone.name}\n` +
-                            `${zone.description}\n\n` +
+                        `${formatRod(
+                            baseRod,
+                            rod
+                        )}\n\n` +
 
-                            `> 🎣 Cần: ${rodInfo}\n` +
-                            `> 🎯 Số lần câu: ${amount}\n` +
-                            `> ⏳ Thời gian: ${etaSec} giây\n` +
-                            `> 🪱 Mồi: ${amount}\n\n` +
+                        `🎣 Số lần câu: **${amount}**\n` +
+                        `⏳ Thời gian: **${etaSec} giây**\n` +
+                        `🪱 Mồi: **${getBaitName(
+                            baitID
+                        )}**\n\n` +
 
-                            `✦ *Đang chờ cá cắn câu...*`
+                        `✦ *Đang chờ cá cắn câu...*`
+                    )
 
-                        )
+                    .setImage(
+                        zone.image || null
+                    )
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                    .setFooter({
+                        text:
+                            "✦ Fishing Adventure"
+                    })
+            ],
 
-                ]
-
-            });
-
+            components: []
+        });
 
         // ==================================================
-        // CHỜ CÂU
+        // CHỜ
         // ==================================================
 
         await new Promise(
@@ -390,60 +1409,62 @@ module.exports = {
                 )
         );
 
-
         // ==================================================
-        // LẤY CÁ TRONG KHU VỰC
+        // KIỂM TRA MỒI LẠI
         // ==================================================
 
-        const zoneFish =
-            fishList.filter(
-                fish =>
-                    zone.fish.includes(
-                        fish.id
-                    )
+        const finalBaitCount =
+            getBaitCount(
+                user,
+                baitID
             );
 
         if (
-            zoneFish.length === 0
+            finalBaitCount < amount
         ) {
 
-            return msg.edit({
+            return baitMessage.edit({
 
                 embeds: [
 
                     new EmbedBuilder()
 
-                        .setColor("#ff6b81")
+                        .setColor(
+                            "#ff6b81"
+                        )
 
                         .setTitle(
-                            "❌ `NO FISH`"
+                            "❌ `BAIT ERROR`"
                         )
 
                         .setDescription(
-
-                            `${zone.name}\n\n` +
-
-                            `Khu vực này hiện không có cá để câu.`
-
+                            `Không đủ ${getBaitName(
+                                baitID
+                            )} để hoàn thành lượt câu.`
                         )
 
-                ]
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ],
 
+                components: []
             });
-
         }
-
 
         // ==================================================
         // LUCK
         // ==================================================
 
-        const luckBonus =
-            Math.max(
-                0,
-                (rod.level || 0) * 0.5
+        const luck =
+            formatLuck(
+                rod.luck
             );
 
+        // ==================================================
+        // SUMMARY
+        // ==================================================
 
         const caughtSummary = {};
 
@@ -455,6 +1476,7 @@ module.exports = {
 
         };
 
+        let actualCaught = 0;
 
         // ==================================================
         // CÂU CÁ
@@ -466,138 +1488,98 @@ module.exports = {
             i++
         ) {
 
-            let baitID =
-                "moithuong";
+            // ==================================================
+            // DÙNG ĐÚNG MỒI ĐÃ CHỌN
+            // ==================================================
 
             if (
-                (user.moi.moivang || 0) > 0
+                Number(
+                    user.moi[baitID] || 0
+                ) <= 0
             ) {
-
-                baitID =
-                    "moivang";
-
-            } else if (
-                (user.moi.moibac || 0) > 0
-            ) {
-
-                baitID =
-                    "moibac";
-
-            }
-
-
-            if (
-                (user.moi[baitID] || 0) <= 0
-            ) {
-
                 break;
-
             }
 
+            // ==================================================
+            // TRỪ MỒI
+            // ==================================================
 
             user.moi[baitID]--;
 
+            user.moi[baitID] =
+                Math.max(
+                    0,
+                    user.moi[baitID]
+                );
+
             baitUsed[baitID]++;
+
+            // ==================================================
+            // TRỪ ĐỘ BỀN
+            // ==================================================
 
             rod.uses--;
 
-
-            // ==========================================
-            // RANDOM CÁ
-            // ==========================================
-
-            let totalRate = 0;
-
-            for (
-                const fish of zoneFish
-            ) {
-
-                totalRate +=
-                    fish.rate +
-                    luckBonus;
-
-            }
-
-
-            let random =
-                Math.random() *
-                totalRate;
-
-            let catchFish;
-
-
-            for (
-                const fish of zoneFish
-            ) {
-
-                random -=
-                    fish.rate +
-                    luckBonus;
-
-                if (
-                    random <= 0
-                ) {
-
-                    catchFish =
-                        fish;
-
-                    break;
-
-                }
-
-            }
-
-
-            if (!catchFish)
-                catchFish =
-                    zoneFish[0];
-
-
-            // ==========================================
-            // CÂN NẶNG
-            // ==========================================
-
-            const weight =
-                Number(
-
-                    (
-                        Math.random() *
-                        (
-                            catchFish.max -
-                            catchFish.min
-                        ) +
-                        catchFish.min
-
-                    ).toFixed(2)
-
+            rod.uses =
+                Math.max(
+                    0,
+                    rod.uses
                 );
 
+            // ==================================================
+            // CHỌN CÁ
+            // ==================================================
+
+            const catchFish =
+                randomFish(
+                    zoneFish,
+                    luck
+                );
+
+            if (!catchFish) {
+                continue;
+            }
+
+            actualCaught++;
+
+            // ==================================================
+            // CÂN
+            // ==================================================
+
+            const weight =
+                getFishWeight(
+                    catchFish
+                );
+
+            // ==================================================
+            // LƯU CÁ
+            // ==================================================
 
             user.fish =
                 user.fish || {};
 
-
             if (
-                !user.fish[
-                    catchFish.id
-                ]
+                !Array.isArray(
+                    user.fish[
+                        catchFish.id
+                    ]
+                )
             ) {
 
                 user.fish[
                     catchFish.id
                 ] = [];
-
             }
-
 
             user.fish[
                 catchFish.id
-            ].push(weight);
+            ].push(
+                weight
+            );
 
-
-            // ==========================================
+            // ==================================================
             // SUMMARY
-            // ==========================================
+            // ==================================================
 
             if (
                 !caughtSummary[
@@ -619,9 +1601,7 @@ module.exports = {
                         0
 
                 };
-
             }
-
 
             caughtSummary[
                 catchFish.id
@@ -631,12 +1611,10 @@ module.exports = {
                 catchFish.id
             ].weight +=
                 weight;
-
         }
 
-
         // ==================================================
-        // CẦN HẾT ĐỘ BỀN
+        // CẦN GÃY
         // ==================================================
 
         if (
@@ -648,15 +1626,16 @@ module.exports = {
 
             rod.destroyed =
                 true;
-
         }
 
+        // ==================================================
+        // SAVE
+        // ==================================================
 
         save();
 
-
         // ==================================================
-        // KẾT QUẢ
+        // TỔNG KẾT
         // ==================================================
 
         const summaryList =
@@ -668,24 +1647,29 @@ module.exports = {
                     a.count
             );
 
-
         const catchText =
             summaryList
                 .map(
                     item =>
-                        `${item.fish.emoji} ${item.fish.name} x${item.count} · ⚖️ ${item.weight.toFixed(2)} KG`
+                        `${item.fish.emoji || "🐟"} ${item.fish.name} x${item.count} · ⚖️ ${item.weight.toFixed(2)} KG`
                 )
                 .join("\n") ||
             "Không câu được gì";
 
-
         const totalWeight =
             summaryList.reduce(
-                (sum, item) =>
-                    sum + item.weight,
+                (
+                    sum,
+                    item
+                ) =>
+                    sum +
+                    item.weight,
                 0
             );
 
+        // ==================================================
+        // MỒI
+        // ==================================================
 
         const baitText =
             Object.keys(
@@ -697,26 +1681,39 @@ module.exports = {
                 )
                 .map(
                     id =>
-                        `${baits[id].emoji} x${baitUsed[id]}`
+                        `${getBaitEmoji(
+                            id
+                        )} x${baitUsed[id]}`
                 )
                 .join(" · ") ||
             "-";
 
+        // ==================================================
+        // TRẠNG THÁI
+        // ==================================================
+
+        const rodStatus =
+            rod.destroyed ||
+            rod.uses <= 0
+
+                ? "💥 Đã gãy"
+
+                : "✅ Sẵn sàng";
 
         // ==================================================
-        // EMBED KẾT QUẢ
+        // RESULT EMBED
         // ==================================================
 
-        await msg.edit({
+        await baitMessage.edit({
 
             embeds: [
 
                 new EmbedBuilder()
 
-                    .setColor("#A0E7E5")
-
-                    .setImage(
-                        zone.image
+                    .setColor(
+                        rod.destroyed
+                            ? "#ff6b81"
+                            : "#A0E7E5"
                     )
 
                     .setTitle(
@@ -727,15 +1724,34 @@ module.exports = {
 
                         `${zone.name}\n\n` +
 
-                        `🐟 Chiến lợi phẩm\n` +
+                        `🐟 **Chiến lợi phẩm**\n` +
                         `${catchText}\n\n` +
 
-                        `> ⚖️ Tổng cân nặng: ${totalWeight.toFixed(2)} KG\n` +
-                        `> 🪱 Mồi đã dùng: ${baitText}\n` +
-                        `> 🎣 Cần: ${rodInfo}\n\n` +
+                        `🎣 Số lần câu: **${actualCaught}/${amount}**\n` +
+
+                        `⚖️ Tổng cân nặng: **${totalWeight.toFixed(2)} KG**\n` +
+
+                        // CHỈ HIỆN 1 DÒNG MỒI
+                        `🪱 Mồi đã dùng: ${baitText}\n\n` +
+
+                        `${formatRod(
+                            baseRod,
+                            rod
+                        )}\n` +
+
+                        `🔧 Trạng thái: ${rodStatus}\n\n` +
+
+                        (
+                            rod.destroyed
+                                ? `💥 **Cần đã hết độ bền!** Hãy sửa cần trước khi câu tiếp.\n\n`
+                                : ""
+                        ) +
 
                         `✦ *Chúc bạn câu được cá hiếm.*`
+                    )
 
+                    .setImage(
+                        zone.image || null
                     )
 
                     .setFooter({
@@ -745,10 +1761,9 @@ module.exports = {
 
                     .setTimestamp()
 
-            ]
+            ],
 
+            components: []
         });
-
     }
-
 };

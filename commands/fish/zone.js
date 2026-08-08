@@ -12,11 +12,15 @@ const {
 
 function getCurrentZone() {
 
-    const now = new Date();
+    const now =
+        new Date();
 
     // Chủ nhật → Núi lửa
-    if (now.getDay() === 0)
+    if (
+        now.getDay() === 0
+    ) {
         return fishingZones.volcano;
+    }
 
     const zones = [
         fishingZones.tropical,
@@ -26,11 +30,73 @@ function getCurrentZone() {
     ];
 
     const index =
-        Math.floor(now.getHours() / 6);
+        Math.floor(
+            now.getHours() / 6
+        );
 
-    return zones[index % zones.length];
+    return zones[
+        index % zones.length
+    ];
 }
 
+// ======================================================
+// THỜI GIAN ĐỔI VÙNG
+// ======================================================
+
+function getNextChange() {
+
+    const now =
+        new Date();
+
+    const nextHour =
+        (
+            Math.floor(
+                now.getHours() / 6
+            ) + 1
+        ) * 6;
+
+    let hours =
+        nextHour -
+        now.getHours();
+
+    let minutes =
+        60 -
+        now.getMinutes();
+
+    if (
+        now.getMinutes() === 0
+    ) {
+        minutes = 0;
+    }
+
+    if (
+        minutes === 60
+    ) {
+        minutes = 0;
+        hours++;
+    }
+
+    if (
+        hours >= 24
+    ) {
+        hours -= 24;
+    }
+
+    if (
+        hours === 0 &&
+        minutes === 0
+    ) {
+        return "Sắp đổi";
+    }
+
+    if (
+        hours > 0
+    ) {
+        return `${hours} giờ ${minutes} phút`;
+    }
+
+    return `${minutes} phút`;
+}
 
 // ======================================================
 // MODULE
@@ -50,47 +116,86 @@ module.exports = {
         const zone =
             getCurrentZone();
 
-        const now =
-            new Date();
+        if (!zone) {
 
-        // Mốc đổi vùng tiếp theo
-        const nextHour =
-            (Math.floor(now.getHours() / 6) + 1) * 6;
+            return message.reply(
+                "❌ Không tìm thấy khu vực câu cá."
+            );
 
-        const remain =
-            nextHour - now.getHours();
+        }
 
-        const embed =
+        const fishCount =
+            Array.isArray(zone.fish)
+                ? zone.fish.length
+                : 0;
+
+        const nextChange =
+            getNextChange();
+
+        // ==================================================
+        // EMBED THÔNG TIN
+        // ==================================================
+
+        const infoEmbed =
             new EmbedBuilder()
 
                 .setColor("#7ddcff")
 
                 .setTitle(
-                    "🌍 KHU VỰC CÂU CÁ"
+                    "🌍 `FISHING ZONE`"
                 )
 
                 .setDescription(
+
                     `${zone.name}\n` +
                     `${zone.description}\n\n` +
 
-                    `🐟 Cá: ${zone.fish.length} loại\n` +
-                    `⏰ Đổi vùng: ${remain} giờ\n` +
-                    `🕐 Thời gian: <t:${Math.floor(Date.now() / 1000)}:R>`
-                )
+                    `🐟 Cá: ${fishCount} loại\n` +
+                    `⏰ Đổi vùng: ${nextChange}\n` +
+                    `🕐 Hiện tại: <t:${Math.floor(Date.now() / 1000)}:R>\n\n` +
 
-                .setImage(
-                    zone.image
+                    `✦ *Hãy chọn thời điểm thích hợp để câu cá.*`
+
                 )
 
                 .setFooter({
                     text:
-                        "✦ Fishing Adventure"
-                });
+                        "✦ Fishing Adventure · Fishing Zone"
+                })
+
+                .setTimestamp();
+
+        // ==================================================
+        // EMBED ẢNH
+        // ==================================================
+
+        const imageEmbed =
+            new EmbedBuilder()
+                .setColor("#7ddcff");
+
+        if (
+            zone.image
+        ) {
+
+            imageEmbed.setImage(
+                zone.image
+            );
+
+        }
+
+        // ==================================================
+        // GỬI
+        // ==================================================
 
         return message.reply({
+
             embeds: [
-                embed
+
+                infoEmbed,
+                imageEmbed
+
             ]
+
         });
     }
 };

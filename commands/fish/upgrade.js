@@ -20,23 +20,27 @@ const {
 
 
 // ======================================================
-// CẤU HÌNH
+// CONFIG
 // ======================================================
 
 const MAX_LEVEL = 15;
+
 const DOWNGRADE_LEVEL = 5;
+
 const DESTROY_LEVEL = 10;
 
 const DOWNGRADE_CHANCE = 0.9;
+
 const DOWNGRADE_CHANCE_LV10 = 0.5;
+
 const DESTROY_CHANCE = 0.5;
 
 
 // ======================================================
-// GIÁ CƯỜNG HÓA
+// GIÁ UPGRADE
 // ======================================================
 
-function upgradeCost(base, level) {
+function getUpgradeCost(base, level) {
 
     return Math.floor(
         base.price *
@@ -48,28 +52,147 @@ function upgradeCost(base, level) {
 
 
 // ======================================================
-// EMBED THÔNG TIN
+// LUCK
 // ======================================================
 
-function createInfo(
-    base,
+function getLuck(rod, base) {
+
+    if (
+        rod.luck === undefined ||
+        rod.luck === null
+    ) {
+
+        rod.luck =
+            base.luck || 1;
+
+    }
+
+    return Number(rod.luck) || 0;
+
+}
+
+
+// ======================================================
+// FORMAT LUCK
+// ======================================================
+
+function formatLuck(value) {
+
+    value =
+        Number(value) || 0;
+
+    if (
+        Number.isInteger(value)
+    ) {
+
+        return String(value);
+
+    }
+
+    return value
+        .toFixed(1)
+        .replace(/\.0$/, "");
+
+}
+
+
+// ======================================================
+// LẤY SUCCESS RATE
+// ======================================================
+
+function getSuccessRate(level) {
+
+    const rate =
+        upgrade?.success?.[level];
+
+    if (
+        rate !== undefined
+    ) {
+
+        return Number(rate);
+
+    }
+
+    // Fallback nếu config thiếu level
+    return Math.max(
+        10,
+        100 - level * 5
+    );
+
+}
+
+
+// ======================================================
+// KHỞI TẠO ROD DATA
+// ======================================================
+
+function normalizeRod(
     rod,
-    price,
-    successRate,
-    money
+    base
+) {
+
+    rod.level =
+        Number(rod.level) || 0;
+
+    rod.luck =
+        Number(rod.luck);
+
+    if (
+        !Number.isFinite(
+            rod.luck
+        )
+    ) {
+
+        rod.luck =
+            base.luck || 1;
+
+    }
+
+    rod.maxUses =
+        Number(rod.maxUses) ||
+        base.uses ||
+        1;
+
+    rod.uses =
+        Math.max(
+            0,
+            Number(rod.uses) || 0
+        );
+
+    if (
+        rod.uses >
+        rod.maxUses
+    ) {
+
+        rod.uses =
+            rod.maxUses;
+
+    }
+
+    rod.destroyed =
+        Boolean(
+            rod.destroyed
+        );
+
+    return rod;
+
+}
+
+
+// ======================================================
+// TẠO HEADER
+// ======================================================
+
+function rodHeader(
+    base,
+    rod
 ) {
 
     return (
-
-        `${base.emoji} ${base.name} · ` +
-        `⭐ +${rod.level} · ` +
-        `+${rod.luck || 0} 🍀 · ` +
-        `🎯 ${rod.uses}/${rod.maxUses}\n\n` +
-
-        `> 🎲 Thành công: ${successRate}%\n` +
-        `> 💸 Chi phí: ${formatMoney(price)} ${emoji.money}\n` +
-        `> 💰 Số dư: ${formatMoney(money)} ${emoji.money}`
-
+        `${base.emoji} ${base.name} ` +
+        `\`+${rod.level}\` ` +
+        `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
+        `Luck ${formatLuck(rod.luck)}`
     );
 
 }
@@ -97,54 +220,112 @@ module.exports = {
 
 
         // ==================================================
-        // CẦN ĐANG DÙNG
+        // DATA
         // ==================================================
 
-        const id =
-            user.can?.dangDung;
+        if (!user.can)
+            user.can = {};
 
+        if (!user.rodData)
+            user.rodData = {};
+
+
+        const id =
+            user.can.dangDung;
+
+
+        // ==================================================
+        // CHƯA TRANG BỊ
+        // ==================================================
 
         if (!id) {
 
-            return message.reply(
-                "╰・❌ Bạn chưa trang bị cần câu"
-            );
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ff6b81"
+                        )
+
+                        .setTitle(
+                            "🎣 `NO ROD EQUIPPED`"
+                        )
+
+                        .setDescription(
+                            "Bạn chưa trang bị cần câu.\n" +
+                            "Hãy trang bị cần trước khi cường hóa."
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure · Upgrade"
+                        })
+
+                ]
+
+            });
 
         }
 
+
+        // ==================================================
+        // BASE
+        // ==================================================
 
         const base =
             rods[id];
 
-        const rod =
-            user.rodData?.[id];
 
+        if (!base) {
 
-        if (!base || !rod) {
+            return message.reply({
 
-            return message.reply(
-                "╰・❌ Không tìm thấy dữ liệu cần"
-            );
+                content:
+                    "❌ Không tìm thấy loại cần này."
+
+            });
 
         }
 
 
-        rod.level =
-            rod.level || 0;
+        // ==================================================
+        // ROD DATA
+        // ==================================================
 
-        rod.luck =
-            rod.luck || 0;
+        if (!user.rodData[id]) {
 
-        rod.maxUses =
-            rod.maxUses ||
-            base.uses ||
-            1;
+            user.rodData[id] = {
 
-        rod.uses =
-            Math.max(
-                0,
-                rod.uses || 0
+                level: 0,
+
+                luck:
+                    base.luck || 1,
+
+                uses:
+                    base.uses || 1,
+
+                maxUses:
+                    base.uses || 1,
+
+                destroyed:
+                    false
+
+            };
+
+        }
+
+
+        const rod =
+            normalizeRod(
+                user.rodData[id],
+                base
             );
+
+
+        save();
 
 
         // ==================================================
@@ -162,7 +343,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ff4d67")
+                        .setColor(
+                            "#ff4d67"
+                        )
 
                         .setTitle(
                             "💥 `ROD BROKEN`"
@@ -170,19 +353,19 @@ module.exports = {
 
                         .setDescription(
 
-                            `${base.emoji} ${base.name}\n\n` +
+                            `${rodHeader(
+                                base,
+                                rod
+                            )}\n\n` +
 
-                            `> ⭐ Cấp: +${rod.level}\n` +
-                            `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n\n` +
-
-                            `╰・Cần đã bị phá hủy.\n` +
+                            `Cần câu đã bị gãy.\n` +
                             `Hãy sửa chữa trước khi cường hóa.`
 
                         )
 
                         .setFooter({
                             text:
-                                "✦ Fishing Adventure"
+                                "✦ Fishing Adventure · Upgrade"
                         })
 
                 ]
@@ -206,7 +389,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ffd43b")
+                        .setColor(
+                            "#ffd43b"
+                        )
 
                         .setTitle(
                             "✨ `MAX LEVEL`"
@@ -214,18 +399,19 @@ module.exports = {
 
                         .setDescription(
 
-                            `${base.emoji} ${base.name} · ` +
-                            `⭐ +${rod.level} · ` +
-                            `+${rod.luck} 🍀 · ` +
-                            `🎯 ${rod.uses}/${rod.maxUses}\n\n` +
+                            `${rodHeader(
+                                base,
+                                rod
+                            )}\n\n` +
 
-                            `╰・Cần đã đạt cấp cường hóa tối đa.`
+                            `Cần câu đã đạt cấp tối đa \`+${MAX_LEVEL}\`.\n` +
+                            `Không thể cường hóa thêm.`
 
                         )
 
                         .setFooter({
                             text:
-                                "✦ Fishing Adventure"
+                                "✦ Fishing Adventure · Upgrade"
                         })
 
                 ]
@@ -236,20 +422,20 @@ module.exports = {
 
 
         // ==================================================
-        // GIÁ
+        // COST
         // ==================================================
 
         const price =
-            upgradeCost(
+            getUpgradeCost(
                 base,
                 rod.level
             );
 
 
         const successRate =
-            upgrade.success?.[
+            getSuccessRate(
                 rod.level
-            ] || 0;
+            );
 
 
         // ==================================================
@@ -257,7 +443,8 @@ module.exports = {
         // ==================================================
 
         if (
-            user.money < price
+            Number(user.money) <
+            price
         ) {
 
             return message.reply({
@@ -266,7 +453,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ff6b81")
+                        .setColor(
+                            "#ff6b81"
+                        )
 
                         .setTitle(
                             "💰 `NOT ENOUGH MONEY`"
@@ -274,21 +463,22 @@ module.exports = {
 
                         .setDescription(
 
-                            `${base.emoji} ${base.name} · ` +
-                            `⭐ +${rod.level} · ` +
-                            `🎯 ${rod.uses}/${rod.maxUses}\n\n` +
+                            `${rodHeader(
+                                base,
+                                rod
+                            )}\n\n` +
 
-                            `> 💸 Cần: ${formatMoney(price)} ${emoji.money}\n` +
-                            `> 💰 Bạn có: ${formatMoney(user.money)} ${emoji.money}\n` +
-                            `> ❌ Thiếu: ${formatMoney(price - user.money)} ${emoji.money}\n\n` +
-
-                            `╰・Không đủ tiền để cường hóa.`
+                            `💸 Chi phí ${formatMoney(price)} ${emoji.money}\n` +
+                            `💰 Số dư ${formatMoney(user.money)} ${emoji.money}\n` +
+                            `❌ Thiếu ${formatMoney(
+                                price - user.money
+                            )} ${emoji.money}`
 
                         )
 
                         .setFooter({
                             text:
-                                "✦ Fishing Adventure"
+                                "✦ Fishing Adventure · Upgrade"
                         })
 
                 ]
@@ -306,73 +496,25 @@ module.exports = {
             rod.level >= DOWNGRADE_LEVEL;
 
         let useInsurance = false;
-        let msg = null;
+
+        let insuranceMessage = null;
 
 
         if (
             hasRisk &&
-            (user.insurance || 0) > 0
+            Number(user.insurance || 0) > 0
         ) {
 
-            const warning =
-                rod.level >= DESTROY_LEVEL
-
-                    ?
-
-                    "⚠️ Thất bại có thể giảm cấp và có 50% khả năng làm gãy cần. Độ bền càng thấp, nguy cơ giảm cấp càng cao."
-
-                    :
-
-                    "⚠️ Thất bại có 90% khả năng giảm cấp.";
-
-
-            const row =
-                new ActionRowBuilder()
-                    .addComponents(
-
-                        new ButtonBuilder()
-
-                            .setCustomId(
-                                "upgrade_ins_yes"
-                            )
-
-                            .setLabel(
-                                `Dùng vé bảo hiểm (${user.insurance})`
-                            )
-
-                            .setEmoji("🎫")
-
-                            .setStyle(
-                                ButtonStyle.Success
-                            ),
-
-                        new ButtonBuilder()
-
-                            .setCustomId(
-                                "upgrade_ins_no"
-                            )
-
-                            .setLabel(
-                                "Không dùng"
-                            )
-
-                            .setEmoji("❌")
-
-                            .setStyle(
-                                ButtonStyle.Secondary
-                            )
-
-                    );
-
-
-            msg =
+            insuranceMessage =
                 await message.reply({
 
                     embeds: [
 
                         new EmbedBuilder()
 
-                            .setColor("#ffd166")
+                            .setColor(
+                                "#ffd166"
+                            )
 
                             .setTitle(
                                 "🎫 `INSURANCE`"
@@ -380,28 +522,77 @@ module.exports = {
 
                             .setDescription(
 
-                                `${base.emoji} ${base.name} · ` +
-                                `⭐ +${rod.level} · ` +
-                                `🎯 ${rod.uses}/${rod.maxUses}\n\n` +
+                                `${rodHeader(
+                                    base,
+                                    rod
+                                )}\n\n` +
 
-                                `${warning}\n\n` +
+                                `⚠️ Cường hóa thất bại có thể làm cần giảm cấp.` +
+                                (
+                                    rod.level >=
+                                    DESTROY_LEVEL
+                                        ? ` Ở cấp cao còn có nguy cơ gãy.`
+                                        : ""
+                                ) +
+                                `\n\n` +
 
-                                `> 🎫 Vé hiện có: ${user.insurance}\n` +
-                                `> 💡 Vé chỉ bị trừ khi thực sự bảo vệ bạn.\n\n` +
+                                `🎫 Vé bảo hiểm ${user.insurance}\n` +
+                                `💡 Vé chỉ bị trừ khi thực sự bảo vệ cần.\n\n` +
 
-                                `╰・Bạn có 20 giây để lựa chọn.`
+                                `Bạn có 20 giây để lựa chọn.`
 
                             )
 
                             .setFooter({
                                 text:
-                                    "✦ Fishing Adventure"
+                                    "✦ Fishing Adventure · Upgrade"
                             })
 
                     ],
 
                     components: [
-                        row
+
+                        new ActionRowBuilder()
+                            .addComponents(
+
+                                new ButtonBuilder()
+
+                                    .setCustomId(
+                                        `upgrade_yes_${message.author.id}`
+                                    )
+
+                                    .setLabel(
+                                        `Dùng vé (${user.insurance})`
+                                    )
+
+                                    .setEmoji(
+                                        "🎫"
+                                    )
+
+                                    .setStyle(
+                                        ButtonStyle.Success
+                                    ),
+
+                                new ButtonBuilder()
+
+                                    .setCustomId(
+                                        `upgrade_no_${message.author.id}`
+                                    )
+
+                                    .setLabel(
+                                        "Không dùng"
+                                    )
+
+                                    .setEmoji(
+                                        "❌"
+                                    )
+
+                                    .setStyle(
+                                        ButtonStyle.Secondary
+                                    )
+
+                            )
+
                     ]
 
                 });
@@ -412,30 +603,44 @@ module.exports = {
                     resolve => {
 
                         const collector =
-                            msg.createMessageComponentCollector({
+                            insuranceMessage
+                                .createMessageComponentCollector({
 
-                                filter:
-                                    interaction =>
-                                        interaction.user.id ===
-                                        message.author.id,
+                                    time:
+                                        20000,
 
-                                time:
-                                    20000,
+                                    max:
+                                        1
 
-                                max: 1
-
-                            });
+                                });
 
 
                         collector.on(
                             "collect",
                             async interaction => {
 
+                                if (
+                                    interaction.user.id !==
+                                    message.author.id
+                                ) {
+
+                                    return interaction.reply({
+
+                                        content:
+                                            "❌ Đây không phải bảng nâng cấp của bạn.",
+
+                                        ephemeral:
+                                            true
+
+                                    });
+
+                                }
+
                                 await interaction.deferUpdate();
 
                                 resolve(
                                     interaction.customId ===
-                                    "upgrade_ins_yes"
+                                    `upgrade_yes_${message.author.id}`
                                 );
 
                             }
@@ -450,7 +655,9 @@ module.exports = {
                                     collected.size === 0
                                 ) {
 
-                                    resolve(false);
+                                    resolve(
+                                        false
+                                    );
 
                                 }
 
@@ -464,13 +671,15 @@ module.exports = {
 
 
         // ==================================================
-        // EMBED ĐANG CƯỜNG HÓA
+        // EMBED UPGRADING
         // ==================================================
 
-        const suspenseEmbed =
+        const suspense =
             new EmbedBuilder()
 
-                .setColor("#7ddcff")
+                .setColor(
+                    "#7ddcff"
+                )
 
                 .setTitle(
                     "🎲 `UPGRADING`"
@@ -478,31 +687,33 @@ module.exports = {
 
                 .setDescription(
 
-                    `${base.emoji} ${base.name} · ` +
-                    `⭐ +${rod.level} · ` +
-                    `+${rod.luck} 🍀 · ` +
-                    `🎯 ${rod.uses}/${rod.maxUses}\n\n` +
+                    `${rodHeader(
+                        base,
+                        rod
+                    )}\n\n` +
 
-                    `> 🎲 Tỉ lệ thành công: ${successRate}%\n` +
-                    `> 💸 Chi phí: ${formatMoney(price)} ${emoji.money}\n\n` +
+                    `🎲 Tỉ lệ thành công ${successRate}%\n` +
+                    `💸 Chi phí ${formatMoney(price)} ${emoji.money}\n\n` +
 
-                    `╰・Đang cường hóa...\n` +
-                    `✦ Hãy chờ kết quả.`
+                    `Đang cường hóa...\n` +
+                    `Hãy chờ kết quả.`
 
                 )
 
                 .setFooter({
                     text:
-                        "✦ Fishing Adventure"
+                        "✦ Fishing Adventure · Upgrade"
                 });
 
 
-        if (msg) {
+        if (
+            insuranceMessage
+        ) {
 
-            await msg.edit({
+            await insuranceMessage.edit({
 
                 embeds: [
-                    suspenseEmbed
+                    suspense
                 ],
 
                 components: []
@@ -511,11 +722,11 @@ module.exports = {
 
         } else {
 
-            msg =
+            insuranceMessage =
                 await message.reply({
 
                     embeds: [
-                        suspenseEmbed
+                        suspense
                     ]
 
                 });
@@ -524,14 +735,14 @@ module.exports = {
 
 
         // ==================================================
-        // THỜI GIAN HỒI HỘP
+        // CHỜ
         // ==================================================
 
         await new Promise(
             resolve =>
                 setTimeout(
                     resolve,
-                    5000
+                    3000
                 )
         );
 
@@ -552,34 +763,42 @@ module.exports = {
         // ==================================================
 
         const roll =
-            Math.random() *
-            100;
+            Math.random() * 100;
 
 
         let resultText = "";
-        let color = "#ffcc66";
+
+        let color =
+            "#ffcc66";
 
 
         // ==================================================
-        // THÀNH CÔNG
+        // SUCCESS
         // ==================================================
 
         if (
-            roll < successRate
+            roll <
+            successRate
         ) {
 
-            rod.level++;
+            rod.level =
+                Math.min(
+                    MAX_LEVEL,
+                    rod.level + 1
+                );
+
 
             rod.luck +=
-                upgrade.luckPerLevel || 0;
+                Number(
+                    upgrade.luckPerLevel ||
+                    0.1
+                );
 
 
             const title =
                 rodTitles?.[
                     rod.level
-                ]
-                    ? ` · ${rodTitles[rod.level]}`
-                    : "";
+                ];
 
 
             color =
@@ -589,20 +808,34 @@ module.exports = {
             resultText =
 
                 `✨ Cường hóa thành công!\n` +
-                `> ⭐ Cấp mới: +${rod.level}${title}\n` +
-                `> 🍀 Luck: +${rod.luck}`;
+
+                `Cấp \`+${rod.level}\`` +
+                (
+                    title
+                        ? ` · ${title}`
+                        : ""
+                ) +
+
+                `\n` +
+
+                `Luck ${formatLuck(
+                    rod.luck
+                )}`;
 
         }
 
 
         // ==================================================
-        // THẤT BẠI
+        // FAIL
         // ==================================================
 
         else {
 
-            let downgrade = false;
-            let destroy = false;
+            let downgrade =
+                false;
+
+            let destroy =
+                false;
 
 
             // ==============================================
@@ -610,7 +843,8 @@ module.exports = {
             // ==============================================
 
             if (
-                rod.level >= DESTROY_LEVEL
+                rod.level >=
+                DESTROY_LEVEL
             ) {
 
                 const wearRatio =
@@ -659,7 +893,8 @@ module.exports = {
             // ==============================================
 
             else if (
-                rod.level >= DOWNGRADE_LEVEL
+                rod.level >=
+                DOWNGRADE_LEVEL
             ) {
 
                 downgrade =
@@ -670,7 +905,7 @@ module.exports = {
 
 
             // ==============================================
-            // BẢO HIỂM
+            // INSURANCE
             // ==============================================
 
             if (
@@ -681,7 +916,14 @@ module.exports = {
                 )
             ) {
 
-                user.insurance--;
+                user.insurance =
+                    Math.max(
+                        0,
+                        Number(
+                            user.insurance || 0
+                        ) - 1
+                    );
+
 
                 color =
                     "#66ccff";
@@ -689,15 +931,17 @@ module.exports = {
 
                 resultText =
 
-                    `🎫 Cường hóa thất bại nhưng vé bảo hiểm đã bảo vệ cần!\n` +
-                    `> ⭐ Vẫn +${rod.level}\n` +
-                    `> 🎫 Vé còn: ${user.insurance}`;
+                    `🎫 Cường hóa thất bại nhưng bảo hiểm đã bảo vệ cần!\n` +
+
+                    `Cấp vẫn \`+${rod.level}\`\n` +
+
+                    `🎫 Vé còn ${user.insurance}`;
 
             }
 
 
             // ==============================================
-            // GÃY + GIẢM CẤP
+            // DESTROY
             // ==============================================
 
             else if (
@@ -710,7 +954,8 @@ module.exports = {
                         rod.level - 1
                     );
 
-                rod.uses = 0;
+                rod.uses =
+                    0;
 
                 rod.destroyed =
                     true;
@@ -723,15 +968,18 @@ module.exports = {
                 resultText =
 
                     `💥 Cường hóa thất bại, cần bị gãy!\n` +
-                    `> ⭐ Cấp còn: +${rod.level}\n` +
-                    `> 🎯 Độ bền: 0/${rod.maxUses}\n\n` +
-                    `╰・Hãy sửa chữa để sử dụng lại.`;
+
+                    `Cấp còn \`+${rod.level}\`\n` +
+
+                    `Độ bền \`0/${rod.maxUses}\`\n\n` +
+
+                    `Hãy sửa chữa cần để sử dụng lại.`;
 
             }
 
 
             // ==============================================
-            // GIẢM CẤP
+            // DOWNGRADE
             // ==============================================
 
             else if (
@@ -752,14 +1000,16 @@ module.exports = {
                 resultText =
 
                     `⬇️ Cường hóa thất bại, cần bị giảm cấp!\n` +
-                    `> ⭐ Cấp còn: +${rod.level}\n\n` +
-                    `╰・Xu đã mất, hãy thử lại.`;
+
+                    `Cấp còn \`+${rod.level}\`\n\n` +
+
+                    `Xu đã mất, hãy thử lại.`;
 
             }
 
 
             // ==============================================
-            // THẤT BẠI BÌNH THƯỜNG
+            // NORMAL FAIL
             // ==============================================
 
             else {
@@ -770,9 +1020,11 @@ module.exports = {
 
                 resultText =
 
-                    `❌ Cường hóa thất bại\n` +
-                    `> ⭐ Vẫn +${rod.level}\n\n` +
-                    `╰・Xu đã mất, hãy thử lại.`;
+                    `❌ Cường hóa thất bại.\n` +
+
+                    `Cấp vẫn \`+${rod.level}\`\n\n` +
+
+                    `Xu đã mất, hãy thử lại.`;
 
             }
 
@@ -780,14 +1032,14 @@ module.exports = {
 
 
         // ==================================================
-        // LƯU
+        // SAVE
         // ==================================================
 
         save();
 
 
         // ==================================================
-        // KẾT QUẢ
+        // FINAL EMBED
         // ==================================================
 
         const finalEmbed =
@@ -797,40 +1049,60 @@ module.exports = {
                     color
                 )
 
+                .setAuthor({
+
+                    name:
+                        `${message.author.username} · Upgrade`,
+
+                    iconURL:
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 128
+                        })
+
+                })
+
                 .setTitle(
                     "✨ `ROD UPGRADE`"
                 )
 
                 .setDescription(
 
-                    `${base.emoji} ${base.name} · ` +
-                    `⭐ +${startLevel} → +${rod.level}\n\n` +
+                    `${rodHeader(
+                        base,
+                        {
+                            ...rod,
+                            level: startLevel
+                        }
+                    )}\n` +
 
-                    `> 🎲 Thành công: ${successRate}%\n` +
-                    `> 💸 Chi phí: ${formatMoney(price)} ${emoji.money}\n\n` +
+                    `→ ${base.emoji} ${base.name} ` +
+                    `\`+${rod.level}\` ` +
+                    `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
+                    `Luck ${formatLuck(rod.luck)}\n\n` +
+
+                    `🎲 Thành công ${successRate}%\n` +
+                    `💸 Chi phí ${formatMoney(price)} ${emoji.money}\n\n` +
 
                     `${resultText}\n\n` +
 
-                    `━━━━━━━━━━━━━━━━━━\n` +
-
-                    `🎣 Cần hiện tại\n` +
-                    `> ⭐ +${rod.level} · ` +
-                    `+${rod.luck} 🍀 · ` +
-                    `🎯 ${rod.uses}/${rod.maxUses}\n` +
-
-                    `> 💰 Số dư: ${formatMoney(user.money)} ${emoji.money}`
+                    `💰 Số dư ${formatMoney(
+                        user.money
+                    )} ${emoji.money}`
 
                 )
 
                 .setFooter({
+
                     text:
                         "✦ Fishing Adventure · Upgrade"
+
                 })
 
                 .setTimestamp();
 
 
-        await msg.edit({
+        await insuranceMessage.edit({
 
             embeds: [
                 finalEmbed

@@ -59,11 +59,11 @@
     }
   },
   "743028655097380895": {
-    "money": 74964753,
+    "money": 49981474320,
     "level": 1,
     "exp": 0,
     "can": {
-      "dangDung": "wood",
+      "dangDung": "mythic",
       "danhSach": {
         "can_1": 1,
         "can_5": 1,
@@ -71,13 +71,15 @@
         "iron": true,
         "gold": true,
         "diamond": true,
-        "legendary": true
+        "legendary": true,
+        "mythic": 1
       }
     },
     "moi": {
-      "moithuong": 10,
+      "moithuong": 9,
       "moibac": 0,
-      "moivang": 262
+      "moivang": 16,
+      "golden_bait": 40
     },
     "fish": {
       "cachep": [
@@ -336,6 +338,64 @@
       ],
       "camu": [
         58.8
+      ],
+      "ca11": [
+        6.06,
+        6.09,
+        2.91,
+        1.62,
+        6.18,
+        6.25,
+        6.98,
+        5.65,
+        5.72,
+        3.16,
+        1.38,
+        5.92,
+        5.84,
+        5.63,
+        2.26
+      ],
+      "ca10": [
+        14.27,
+        13.53,
+        14.63,
+        13.49,
+        4.91,
+        4.91,
+        10.07,
+        8.61,
+        11.58,
+        11.74,
+        8.33,
+        7.23,
+        7.67,
+        11.86,
+        12.33,
+        5.1,
+        14.39,
+        13.56,
+        10.45,
+        12.72,
+        9.73,
+        10.52,
+        12.08,
+        14.56,
+        6.5,
+        9.98,
+        12.52
+      ],
+      "ca12": [
+        4.47,
+        6.41,
+        4.55,
+        5.84,
+        8.32,
+        8.93,
+        8.24,
+        6.49,
+        9,
+        4.1
       ]
     },
     "keys": {
@@ -343,7 +403,7 @@
     },
     "chests": {},
     "inv": {},
-    "insurance": 50,
+    "insurance": 43,
     "daily": {
       "last": 1786121406897,
       "streak": 1
@@ -358,7 +418,8 @@
           "reward": 9370,
           "title": "🌊 Càn quét đại dương",
           "description": "Bắt 34 con cá",
-          "emoji": "🐟"
+          "emoji": "🐟",
+          "claimed": true
         },
         {
           "id": "rod_1786191519488_recof0cpfgn",
@@ -367,7 +428,8 @@
           "reward": 10000,
           "title": "🎣 Tân binh cường hóa",
           "description": "Có một cần câu đạt +5",
-          "emoji": "🎣"
+          "emoji": "🎣",
+          "claimed": true
         },
         {
           "id": "money_1786191519489_h7rgsayyp7q",
@@ -376,7 +438,8 @@
           "reward": 5960,
           "title": "💰 Tích lũy tài sản",
           "description": "Có ít nhất 35.733 xu",
-          "emoji": "💰"
+          "emoji": "💰",
+          "claimed": true
         },
         {
           "id": "specific_1786191519489_8468xq56hkm",
@@ -396,10 +459,19 @@
           "title": "🌊 Chuyến câu hoàn hảo",
           "description": "Bắt 16 con cá và đạt ít nhất 24 KG",
           "kgTarget": 24,
-          "emoji": "🌊"
+          "emoji": "🌊",
+          "claimed": true
         }
       ],
-      "completed": 0
+      "completed": 4,
+      "list": [],
+      "claim": false,
+      "claimed": [
+        "rod_1786191519488_recof0cpfgn",
+        "money_1786191519489_h7rgsayyp7q",
+        "mixed_1786191519501_zqdof85upo",
+        "fish_1786191519465_npa3llf7ee"
+      ]
     },
     "rodData": {
       "can_1": {
@@ -417,34 +489,45 @@
         "destroyed": false
       },
       "wood": {
-        "level": 1,
-        "luck": 1,
-        "uses": 100,
-        "maxUses": 100
+        "level": 2,
+        "luck": 1.1,
+        "uses": 0,
+        "maxUses": 20,
+        "destroyed": true
       },
       "iron": {
         "level": 1,
         "luck": 1.2,
         "uses": 100,
-        "maxUses": 100
+        "maxUses": 100,
+        "destroyed": false
       },
       "gold": {
         "level": 1,
         "luck": 1.5,
         "uses": 100,
-        "maxUses": 100
+        "maxUses": 100,
+        "destroyed": false
       },
       "diamond": {
         "level": 1,
         "luck": 2,
         "uses": 100,
-        "maxUses": 100
+        "maxUses": 100,
+        "destroyed": false
       },
       "legendary": {
         "level": 1,
         "luck": 2.5,
         "uses": 100,
         "maxUses": 100
+      },
+      "mythic": {
+        "level": 8,
+        "luck": 5.9,
+        "uses": 275,
+        "maxUses": 500,
+        "destroyed": false
       }
     },
     "stats": {
@@ -454,7 +537,7 @@
     }
   },
   "1148615485399764992": {
-    "money": 0,
+    "money": 500000,
     "level": 1,
     "exp": 0,
     "can": {
@@ -515,7 +598,7 @@
     }
   },
   "592277089999388702": {
-    "money": 0,
+    "money": 500000,
     "level": 1,
     "exp": 0,
     "can": {
@@ -559,7 +642,7 @@
     }
   },
   "934279092314996747": {
-    "money": 6000,
+    "money": 506000,
     "level": 1,
     "exp": 0,
     "can": {
@@ -593,7 +676,7 @@
     }
   },
   "1243204049927671913": {
-    "money": 11000,
+    "money": 511000,
     "level": 1,
     "exp": 0,
     "can": {
@@ -688,6 +771,119 @@
       "claim": false
     },
     "rodData": {},
+    "stats": {
+      "catch": 0,
+      "sell": 0,
+      "kg": 0
+    }
+  },
+  "648015392115261460": {
+    "money": 8900,
+    "level": 1,
+    "exp": 0,
+    "can": {
+      "dangDung": "wood",
+      "danhSach": {
+        "wood": 1
+      }
+    },
+    "moi": {
+      "moithuong": 0,
+      "moibac": 0,
+      "moivang": 0,
+      "golden_bait": 10,
+      "worm": 11
+    },
+    "fish": {
+      "ca11": [],
+      "ca12": [],
+      "ca10": []
+    },
+    "keys": {},
+    "chests": {},
+    "insurance": 1,
+    "inv": {},
+    "daily": {
+      "last": 1786199919467,
+      "streak": 1
+    },
+    "quest": {
+      "date": "2026-08-08",
+      "quests": [
+        {
+          "id": "fish_marathon_1786200089859_l3qq4lws1f",
+          "templateId": "fish_marathon",
+          "type": "fish",
+          "target": 91,
+          "reward": 14406,
+          "title": "🏃 Marathon câu cá",
+          "emoji": "🏃",
+          "claimed": false,
+          "description": "Bắt 91 con cá"
+        },
+        {
+          "id": "kg_master_1786200089859_be7efo7w5a4",
+          "templateId": "kg_master",
+          "type": "kg",
+          "target": 202,
+          "reward": 22853,
+          "title": "👑 Đại sư săn cá",
+          "emoji": "👑",
+          "claimed": false,
+          "description": "Câu đủ 202 KG cá"
+        },
+        {
+          "id": "rare_2_1786200089859_a14sgj46s24",
+          "templateId": "rare_2",
+          "type": "specific_rarity",
+          "target": 2,
+          "reward": 16529,
+          "title": "✨ Săn cá quý",
+          "emoji": "✨",
+          "claimed": false,
+          "fishId": "ca25",
+          "fishName": "Cá ma băng",
+          "fishEmoji": "👻",
+          "description": "Bắt 2 Cá ma băng"
+        },
+        {
+          "id": "mixed_4_1786200089860_gc6kuetive8",
+          "templateId": "mixed_4",
+          "type": "mixed",
+          "target": 57,
+          "reward": 25866,
+          "title": "👑 Bá chủ biển cả",
+          "emoji": "👑",
+          "claimed": false,
+          "kgTarget": 125.4,
+          "description": "Bắt 57 cá · 125.4 KG"
+        },
+        {
+          "id": "fish_big_1786200089860_eoy9urru11i",
+          "templateId": "fish_big",
+          "type": "fish",
+          "target": 67,
+          "reward": 10683,
+          "title": "⚓ Đội trưởng đánh cá",
+          "emoji": "⚓",
+          "claimed": false,
+          "description": "Bắt 67 con cá"
+        }
+      ],
+      "completed": 0,
+      "claimed": [],
+      "list": [],
+      "claim": false
+    },
+    "rodData": {
+      "wood": {
+        "level": 5,
+        "luck": 1.5000000000000004,
+        "uses": 20,
+        "maxUses": 20,
+        "destroyed": false
+      }
+    },
     "stats": {
       "catch": 0,
       "sell": 0,

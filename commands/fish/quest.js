@@ -24,16 +24,20 @@ const MAX_QUEST_PER_DAY = 5;
 // ==========================================
 
 function random(min, max) {
+
     return Math.floor(
-        Math.random() * (max - min + 1)
+        Math.random() *
+        (max - min + 1)
     ) + min;
+
 }
 
 // ==========================================
-// TẠO ID QUEST
+// QUEST ID
 // ==========================================
 
 function questId(type) {
+
     return (
         `${type}_` +
         Date.now() +
@@ -42,6 +46,7 @@ function questId(type) {
             .toString(36)
             .slice(2)
     );
+
 }
 
 // ==========================================
@@ -49,11 +54,16 @@ function questId(type) {
 // ==========================================
 
 function isRealFish(fish) {
-    return fish && fish.isFish !== false;
+
+    return (
+        fish &&
+        fish.isFish !== false
+    );
+
 }
 
 // ==========================================
-// RANDOM CÁ THẬT
+// RANDOM CÁ
 // ==========================================
 
 function randomFish() {
@@ -64,8 +74,12 @@ function randomFish() {
                 isRealFish(fish)
         );
 
-    if (!availableFish.length) {
+    if (
+        !availableFish.length
+    ) {
+
         return null;
+
     }
 
     return availableFish[
@@ -74,7 +88,1275 @@ function randomFish() {
             availableFish.length - 1
         )
     ];
+
 }
+
+// ==========================================
+// RANDOM CÁ THEO RARITY
+// ==========================================
+
+function randomFishByRarity(
+    rarities
+) {
+
+    const fishes =
+        fishList.filter(
+            fish =>
+                isRealFish(fish) &&
+                rarities.includes(
+                    String(
+                        fish.rarity || ""
+                    ).toLowerCase()
+                )
+        );
+
+    if (
+        !fishes.length
+    ) {
+
+        return null;
+
+    }
+
+    return fishes[
+        random(
+            0,
+            fishes.length - 1
+        )
+    ];
+
+}
+
+// ==========================================
+// 50 MẪU QUEST
+// ==========================================
+
+const QUEST_TYPES = [
+
+    // ======================================
+    // 1 - 10 : BẮT CÁ
+    // ======================================
+
+    {
+        id: "fish_easy",
+
+        type: "fish",
+
+        target:
+            () => random(10, 20),
+
+        reward:
+            () => random(2500, 4500),
+
+        title:
+            "🎣 Ngư dân chăm chỉ",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "🐟"
+    },
+
+    {
+        id: "fish_normal",
+
+        type: "fish",
+
+        target:
+            () => random(20, 35),
+
+        reward:
+            () => random(4000, 6500),
+
+        title:
+            "🐟 Tay câu chuyên nghiệp",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "🐟"
+    },
+
+    {
+        id: "fish_many",
+
+        type: "fish",
+
+        target:
+            () => random(30, 60),
+
+        reward:
+            () => random(6500, 10000),
+
+        title:
+            "🌊 Càn quét đại dương",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "🌊"
+    },
+
+    {
+        id: "fish_big",
+
+        type: "fish",
+
+        target:
+            () => random(50, 80),
+
+        reward:
+            () => random(9000, 14000),
+
+        title:
+            "⚓ Đội trưởng đánh cá",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "⚓"
+    },
+
+    {
+        id: "fish_master",
+
+        type: "fish",
+
+        target:
+            () => random(80, 120),
+
+        reward:
+            () => random(14000, 20000),
+
+        title:
+            "👑 Vua ngư dân",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "👑"
+    },
+
+    {
+        id: "fish_speed",
+
+        type: "fish",
+
+        target:
+            () => random(15, 25),
+
+        reward:
+            () => random(3500, 5500),
+
+        title:
+            "⚡ Câu nhanh",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "⚡"
+    },
+
+    {
+        id: "fish_hard",
+
+        type: "fish",
+
+        target:
+            () => random(40, 70),
+
+        reward:
+            () => random(8000, 13000),
+
+        title:
+            "🔥 Không ngừng nghỉ",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "🔥"
+    },
+
+    {
+        id: "fish_marathon",
+
+        type: "fish",
+
+        target:
+            () => random(60, 100),
+
+        reward:
+            () => random(12000, 18000),
+
+        title:
+            "🏃 Marathon câu cá",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "🏃"
+    },
+
+    {
+        id: "fish_pro",
+
+        type: "fish",
+
+        target:
+            () => random(100, 150),
+
+        reward:
+            () => random(18000, 25000),
+
+        title:
+            "🎖️ Ngư thủ kỳ cựu",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "🎖️"
+    },
+
+    {
+        id: "fish_legend",
+
+        type: "fish",
+
+        target:
+            () => random(150, 200),
+
+        reward:
+            () => random(25000, 35000),
+
+        title:
+            "🏆 Huyền thoại biển cả",
+
+        description:
+            target =>
+                `Bắt ${target} con cá`,
+
+        emoji:
+            "🏆"
+    },
+
+    // ======================================
+    // 11 - 18 : KG
+    // ======================================
+
+    {
+        id: "kg_easy",
+
+        type: "kg",
+
+        target:
+            () => random(20, 40),
+
+        reward:
+            () => random(3000, 5000),
+
+        title:
+            "⚖️ Mẻ cá đầu tiên",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "⚖️"
+    },
+
+    {
+        id: "kg_normal",
+
+        type: "kg",
+
+        target:
+            () => random(40, 70),
+
+        reward:
+            () => random(5000, 8000),
+
+        title:
+            "⚖️ Thợ săn khổng lồ",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "⚖️"
+    },
+
+    {
+        id: "kg_big",
+
+        type: "kg",
+
+        target:
+            () => random(70, 100),
+
+        reward:
+            () => random(8000, 12000),
+
+        title:
+            "🐋 Săn cá lớn",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "🐋"
+    },
+
+    {
+        id: "kg_heavy",
+
+        type: "kg",
+
+        target:
+            () => random(100, 150),
+
+        reward:
+            () => random(12000, 18000),
+
+        title:
+            "💪 Cần thủ lực lưỡng",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "💪"
+    },
+
+    {
+        id: "kg_master",
+
+        type: "kg",
+
+        target:
+            () => random(150, 220),
+
+        reward:
+            () => random(18000, 25000),
+
+        title:
+            "👑 Đại sư săn cá",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "👑"
+    },
+
+    {
+        id: "kg_beast",
+
+        type: "kg",
+
+        target:
+            () => random(200, 300),
+
+        reward:
+            () => random(25000, 35000),
+
+        title:
+            "🐉 Quái vật đại dương",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "🐉"
+    },
+
+    {
+        id: "kg_giant",
+
+        type: "kg",
+
+        target:
+            () => random(300, 450),
+
+        reward:
+            () => random(35000, 50000),
+
+        title:
+            "🌊 Sóng thần",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "🌊"
+    },
+
+    {
+        id: "kg_ultimate",
+
+        type: "kg",
+
+        target:
+            () => random(450, 600),
+
+        reward:
+            () => random(50000, 70000),
+
+        title:
+            "🏆 Bá chủ đại dương",
+
+        description:
+            target =>
+                `Câu đủ ${target} KG cá`,
+
+        emoji:
+            "🏆"
+    },
+
+    // ======================================
+    // 19 - 28 : CÁ CỤ THỂ
+    // ======================================
+
+    {
+        id: "specific_1",
+
+        type: "specific",
+
+        target:
+            () => random(2, 4),
+
+        reward:
+            () => random(4000, 7000),
+
+        title:
+            "🎯 Thợ săn mục tiêu",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🎯"
+    },
+
+    {
+        id: "specific_2",
+
+        type: "specific",
+
+        target:
+            () => random(3, 5),
+
+        reward:
+            () => random(5000, 8000),
+
+        title:
+            "🐟 Truy tìm cá",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🐟"
+    },
+
+    {
+        id: "specific_3",
+
+        type: "specific",
+
+        target:
+            () => random(4, 6),
+
+        reward:
+            () => random(6000, 10000),
+
+        title:
+            "🔎 Theo dấu con mồi",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🔎"
+    },
+
+    {
+        id: "specific_4",
+
+        type: "specific",
+
+        target:
+            () => random(5, 8),
+
+        reward:
+            () => random(8000, 12000),
+
+        title:
+            "🎣 Chuyên gia mục tiêu",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🎣"
+    },
+
+    {
+        id: "specific_5",
+
+        type: "specific",
+
+        target:
+            () => random(6, 10),
+
+        reward:
+            () => random(10000, 15000),
+
+        title:
+            "🔥 Săn đến cùng",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🔥"
+    },
+
+    {
+        id: "specific_6",
+
+        type: "specific",
+
+        target:
+            () => random(8, 12),
+
+        reward:
+            () => random(12000, 18000),
+
+        title:
+            "💎 Kho báu sống",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "💎"
+    },
+
+    {
+        id: "specific_7",
+
+        type: "specific",
+
+        target:
+            () => random(2, 3),
+
+        reward:
+            () => random(7000, 11000),
+
+        title:
+            "🏹 Xạ thủ đại dương",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🏹"
+    },
+
+    {
+        id: "specific_8",
+
+        type: "specific",
+
+        target:
+            () => random(3, 5),
+
+        reward:
+            () => random(9000, 14000),
+
+        title:
+            "⭐ Mục tiêu vàng",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "⭐"
+    },
+
+    {
+        id: "specific_9",
+
+        type: "specific",
+
+        target:
+            () => random(5, 8),
+
+        reward:
+            () => random(11000, 17000),
+
+        title:
+            "👀 Con mắt đại dương",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "👀"
+    },
+
+    {
+        id: "specific_10",
+
+        type: "specific",
+
+        target:
+            () => random(8, 12),
+
+        reward:
+            () => random(15000, 22000),
+
+        title:
+            "👑 Thợ săn chuyên nghiệp",
+
+        fish:
+            () => randomFish(),
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "👑"
+    },
+
+    // ======================================
+    // 29 - 34 : RARE / EPIC
+    // ======================================
+
+    {
+        id: "rare_1",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["rare"],
+
+        target:
+            () => random(1, 2),
+
+        reward:
+            () => random(9000, 14000),
+
+        title:
+            "💎 Săn cá hiếm",
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "💎"
+    },
+
+    {
+        id: "rare_2",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["rare", "epic"],
+
+        target:
+            () => random(1, 2),
+
+        reward:
+            () => random(10000, 17000),
+
+        title:
+            "✨ Săn cá quý",
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "✨"
+    },
+
+    {
+        id: "rare_3",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["epic"],
+
+        target:
+            () => 1,
+
+        reward:
+            () => random(14000, 22000),
+
+        title:
+            "💜 Thợ săn Epic",
+
+        description:
+            (target, fish) =>
+                `Bắt 1 ${fish.name}`,
+
+        emoji:
+            "💜"
+    },
+
+    {
+        id: "rare_4",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["rare", "epic"],
+
+        target:
+            () => random(2, 3),
+
+        reward:
+            () => random(18000, 26000),
+
+        title:
+            "💎 Bộ sưu tập quý",
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "💎"
+    },
+
+    {
+        id: "rare_5",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["epic"],
+
+        target:
+            () => random(1, 2),
+
+        reward:
+            () => random(20000, 30000),
+
+        title:
+            "🌟 Báu vật biển sâu",
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🌟"
+    },
+
+    {
+        id: "rare_6",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["rare", "epic"],
+
+        target:
+            () => random(3, 4),
+
+        reward:
+            () => random(25000, 35000),
+
+        title:
+            "👑 Đại săn cá quý",
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "👑"
+    },
+
+    // ======================================
+    // 35 - 38 : LEGENDARY / MYTHICAL
+    // ======================================
+
+    {
+        id: "legendary_1",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["legendary"],
+
+        target:
+            () => 1,
+
+        reward:
+            () => random(22000, 35000),
+
+        title:
+            "👑 Săn cá huyền thoại",
+
+        description:
+            (target, fish) =>
+                `Bắt 1 ${fish.name}`,
+
+        emoji:
+            "👑"
+    },
+
+    {
+        id: "legendary_2",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["legendary", "mythical"],
+
+        target:
+            () => 1,
+
+        reward:
+            () => random(30000, 45000),
+
+        title:
+            "🔥 Sinh vật truyền thuyết",
+
+        description:
+            (target, fish) =>
+                `Bắt 1 ${fish.name}`,
+
+        emoji:
+            "🔥"
+    },
+
+    {
+        id: "legendary_3",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["mythical"],
+
+        target:
+            () => 1,
+
+        reward:
+            () => random(40000, 60000),
+
+        title:
+            "🌌 Săn Mythical",
+
+        description:
+            (target, fish) =>
+                `Bắt 1 ${fish.name}`,
+
+        emoji:
+            "🌌"
+    },
+
+    {
+        id: "legendary_4",
+
+        type: "specific_rarity",
+
+        rarities:
+            ["legendary", "mythical"],
+
+        target:
+            () => 2,
+
+        reward:
+            () => random(50000, 75000),
+
+        title:
+            "🏆 Thợ săn truyền thuyết",
+
+        description:
+            (target, fish) =>
+                `Bắt ${target} ${fish.name}`,
+
+        emoji:
+            "🏆"
+    },
+
+    // ======================================
+    // 39 - 42 : TIỀN
+    // ======================================
+
+    {
+        id: "money_1",
+
+        type: "money",
+
+        target:
+            () => random(15000, 25000),
+
+        reward:
+            () => random(3000, 5000),
+
+        title:
+            "💰 Tích lũy tài sản",
+
+        description:
+            target =>
+                `Có ít nhất ${formatMoney(target)} xu`,
+
+        emoji:
+            emoji.money
+    },
+
+    {
+        id: "money_2",
+
+        type: "money",
+
+        target:
+            () => random(25000, 50000),
+
+        reward:
+            () => random(5000, 8000),
+
+        title:
+            "💵 Túi tiền đầy",
+
+        description:
+            target =>
+                `Có ít nhất ${formatMoney(target)} xu`,
+
+        emoji:
+            emoji.money
+    },
+
+    {
+        id: "money_3",
+
+        type: "money",
+
+        target:
+            () => random(50000, 100000),
+
+        reward:
+            () => random(8000, 14000),
+
+        title:
+            "🤑 Đại gia ngư dân",
+
+        description:
+            target =>
+                `Có ít nhất ${formatMoney(target)} xu`,
+
+        emoji:
+            "🤑"
+    },
+
+    {
+        id: "money_4",
+
+        type: "money",
+
+        target:
+            () => random(100000, 200000),
+
+        reward:
+            () => random(15000, 25000),
+
+        title:
+            "💎 Tài sản khổng lồ",
+
+        description:
+            target =>
+                `Có ít nhất ${formatMoney(target)} xu`,
+
+        emoji:
+            "💎"
+    },
+
+    // ======================================
+    // 43 - 46 : CẦN CÂU
+    // ======================================
+
+    {
+        id: "rod_1",
+
+        type: "rod",
+
+        target:
+            () => 3,
+
+        reward:
+            () => 5000,
+
+        title:
+            "🎣 Nâng cấp đầu tiên",
+
+        description:
+            () =>
+                "Có một cần câu đạt +3",
+
+        emoji:
+            "🎣"
+    },
+
+    {
+        id: "rod_2",
+
+        type: "rod",
+
+        target:
+            () => 5,
+
+        reward:
+            () => 10000,
+
+        title:
+            "⭐ Tân binh cường hóa",
+
+        description:
+            () =>
+                "Có một cần câu đạt +5",
+
+        emoji:
+            "⭐"
+    },
+
+    {
+        id: "rod_3",
+
+        type: "rod",
+
+        target:
+            () => 10,
+
+        reward:
+            () => 25000,
+
+        title:
+            "🔥 Bậc thầy cường hóa",
+
+        description:
+            () =>
+                "Có một cần câu đạt +10",
+
+        emoji:
+            "🔥"
+    },
+
+    {
+        id: "rod_4",
+
+        type: "rod",
+
+        target:
+            () => 15,
+
+        reward:
+            () => 40000,
+
+        title:
+            "👑 Đại sư cần câu",
+
+        description:
+            () =>
+                "Có một cần câu đạt +15",
+
+        emoji:
+            "👑"
+    },
+
+    // ======================================
+    // 47 - 50 : MIXED
+    // ======================================
+
+    {
+        id: "mixed_1",
+
+        type: "mixed",
+
+        target:
+            () => random(10, 20),
+
+        kg:
+            target =>
+                Number(
+                    (
+                        target * 1.5
+                    ).toFixed(1)
+                ),
+
+        reward:
+            () => random(8000, 15000),
+
+        title:
+            "🌊 Chuyến câu hoàn hảo",
+
+        description:
+            (target, kg) =>
+                `Bắt ${target} cá · ${kg} KG`,
+
+        emoji:
+            "🌊"
+    },
+
+    {
+        id: "mixed_2",
+
+        type: "mixed",
+
+        target:
+            () => random(20, 30),
+
+        kg:
+            target =>
+                Number(
+                    (
+                        target * 1.8
+                    ).toFixed(1)
+                ),
+
+        reward:
+            () => random(12000, 20000),
+
+        title:
+            "⚓ Mẻ cá bội thu",
+
+        description:
+            (target, kg) =>
+                `Bắt ${target} cá · ${kg} KG`,
+
+        emoji:
+            "⚓"
+    },
+
+    {
+        id: "mixed_3",
+
+        type: "mixed",
+
+        target:
+            () => random(30, 40),
+
+        kg:
+            target =>
+                Number(
+                    (
+                        target * 2
+                    ).toFixed(1)
+                ),
+
+        reward:
+            () => random(18000, 28000),
+
+        title:
+            "🔥 Đại chiến đại dương",
+
+        description:
+            (target, kg) =>
+                `Bắt ${target} cá · ${kg} KG`,
+
+        emoji:
+            "🔥"
+    },
+
+    {
+        id: "mixed_4",
+
+        type: "mixed",
+
+        target:
+            () => random(40, 60),
+
+        kg:
+            target =>
+                Number(
+                    (
+                        target * 2.2
+                    ).toFixed(1)
+                ),
+
+        reward:
+            () => random(25000, 40000),
+
+        title:
+            "👑 Bá chủ biển cả",
+
+        description:
+            (target, kg) =>
+                `Bắt ${target} cá · ${kg} KG`,
+
+        emoji:
+            "👑"
+    }
+];
 
 // ==========================================
 // TẠO QUEST
@@ -82,410 +1364,158 @@ function randomFish() {
 
 function generateQuest() {
 
-    const type = random(1, 10);
+    const template =
+        QUEST_TYPES[
+            random(
+                0,
+                QUEST_TYPES.length - 1
+            )
+        ];
 
-    // ======================================
-    // 1. BẮT CÁ - DỄ
-    // ======================================
-
-    if (type === 1) {
-
-        const target =
-            random(10, 20);
-
-        return {
-
-            id:
-                questId("fish"),
-
-            type:
-                "fish",
-
-            target,
-
-            reward:
-                random(2500, 4500),
-
-            title:
-                "🎣 Ngư dân chăm chỉ",
-
-            description:
-                `Bắt ${target} con cá`,
-
-            emoji:
-                "🐟"
-
-        };
+    if (!template) {
+        return null;
     }
-
-    // ======================================
-    // 2. BẮT NHIỀU CÁ
-    // ======================================
-
-    if (type === 2) {
-
-        const target =
-            random(30, 60);
-
-        return {
-
-            id:
-                questId("fish"),
-
-            type:
-                "fish",
-
-            target,
-
-            reward:
-                random(6500, 10000),
-
-            title:
-                "🌊 Càn quét đại dương",
-
-            description:
-                `Bắt ${target} con cá`,
-
-            emoji:
-                "🐟"
-
-        };
-    }
-
-    // ======================================
-    // 3. KG
-    // ======================================
-
-    if (type === 3) {
-
-        const target =
-            random(40, 100);
-
-        return {
-
-            id:
-                questId("kg"),
-
-            type:
-                "kg",
-
-            target,
-
-            reward:
-                random(6500, 12000),
-
-            title:
-                "⚖️ Thợ săn khổng lồ",
-
-            description:
-                `Câu đủ ${target} KG cá`,
-
-            emoji:
-                "⚖️"
-
-        };
-    }
-
-    // ======================================
-    // 4. CÁ CỤ THỂ
-    // ======================================
-
-    if (type === 4) {
-
-        const fish =
-            randomFish();
-
-        if (!fish) {
-            return generateQuest();
-        }
-
-        const target =
-            random(2, 5);
-
-        return {
-
-            id:
-                questId("specific"),
-
-            type:
-                "specific",
-
-            fishId:
-                fish.id,
-
-            target,
-
-            reward:
-                random(4000, 8000),
-
-            title:
-                `${fish.emoji || "🐟"} Thợ săn ${fish.name}`,
-
-            description:
-                `Bắt ${target} ${fish.name}`,
-
-            emoji:
-                fish.emoji || "🐟"
-
-        };
-    }
-
-    // ======================================
-    // 5. RARE / EPIC
-    // ======================================
-
-    if (type === 5) {
-
-        const rareFish =
-            fishList.filter(
-                fish =>
-                    isRealFish(fish) &&
-                    (
-                        fish.rarity === "RARE" ||
-                        fish.rarity === "EPIC"
-                    )
-            );
-
-        if (!rareFish.length) {
-            return generateQuest();
-        }
-
-        const fish =
-            rareFish[
-                random(
-                    0,
-                    rareFish.length - 1
-                )
-            ];
-
-        const target =
-            random(1, 2);
-
-        return {
-
-            id:
-                questId("rare"),
-
-            type:
-                "specific",
-
-            fishId:
-                fish.id,
-
-            target,
-
-            reward:
-                random(10000, 18000),
-
-            title:
-                "💎 Săn cá quý",
-
-            description:
-                `Bắt ${target} ${fish.name}`,
-
-            emoji:
-                fish.emoji || "💎"
-
-        };
-    }
-
-    // ======================================
-    // 6. LEGENDARY / MYTHICAL
-    // ======================================
-
-    if (type === 6) {
-
-        const legendaryFish =
-            fishList.filter(
-                fish =>
-                    isRealFish(fish) &&
-                    (
-                        fish.rarity === "LEGENDARY" ||
-                        fish.rarity === "MYTHICAL"
-                    )
-            );
-
-        if (!legendaryFish.length) {
-            return generateQuest();
-        }
-
-        const fish =
-            legendaryFish[
-                random(
-                    0,
-                    legendaryFish.length - 1
-                )
-            ];
-
-        return {
-
-            id:
-                questId("legendary"),
-
-            type:
-                "specific",
-
-            fishId:
-                fish.id,
-
-            target:
-                1,
-
-            reward:
-                random(22000, 35000),
-
-            title:
-                "👑 Săn cá huyền thoại",
-
-            description:
-                `Bắt 1 ${fish.name}`,
-
-            emoji:
-                fish.emoji || "👑"
-
-        };
-    }
-
-    // ======================================
-    // 7. TIỀN
-    // ======================================
-
-    if (type === 7) {
-
-        const target =
-            random(15000, 40000);
-
-        return {
-
-            id:
-                questId("money"),
-
-            type:
-                "money",
-
-            target,
-
-            reward:
-                random(3000, 7000),
-
-            title:
-                "💰 Tích lũy tài sản",
-
-            description:
-                `Có ít nhất ${formatMoney(target)} xu`,
-
-            emoji:
-                emoji.money
-
-        };
-    }
-
-    // ======================================
-    // 8. CẦN +5
-    // ======================================
-
-    if (type === 8) {
-
-        return {
-
-            id:
-                questId("rod"),
-
-            type:
-                "rod",
-
-            target:
-                5,
-
-            reward:
-                10000,
-
-            title:
-                "🎣 Tân binh cường hóa",
-
-            description:
-                "Có một cần câu đạt +5",
-
-            emoji:
-                "🎣"
-
-        };
-    }
-
-    // ======================================
-    // 9. CẦN +10
-    // ======================================
-
-    if (type === 9) {
-
-        return {
-
-            id:
-                questId("rod"),
-
-            type:
-                "rod",
-
-            target:
-                10,
-
-            reward:
-                25000,
-
-            title:
-                "⭐ Bậc thầy cường hóa",
-
-            description:
-                "Có một cần câu đạt +10",
-
-            emoji:
-                "⭐"
-
-        };
-    }
-
-    // ======================================
-    // 10. CÁ + KG
-    // ======================================
 
     const target =
-        random(10, 20);
+        template.target();
 
-    const kgTarget =
-        Number(
-            (target * 1.5)
-                .toFixed(1)
-        );
-
-    return {
+    const quest = {
 
         id:
-            questId("mixed"),
+            questId(
+                template.id
+            ),
+
+        templateId:
+            template.id,
 
         type:
-            "mixed",
+            template.type,
 
         target,
 
         reward:
-            random(8000, 15000),
+            template.reward(),
 
         title:
-            "🌊 Chuyến câu hoàn hảo",
-
-        description:
-            `Bắt ${target} con cá và đạt ít nhất ${kgTarget} KG`,
-
-        kgTarget,
+            template.title,
 
         emoji:
-            "🌊"
+            template.emoji,
 
+        claimed:
+            false
     };
+
+    // ======================================
+    // CÁ CỤ THỂ
+    // ======================================
+
+    if (
+        template.type ===
+        "specific"
+    ) {
+
+        const fish =
+            template.fish();
+
+        if (!fish) {
+            return null;
+        }
+
+        quest.fishId =
+            fish.id;
+
+        quest.fishName =
+            fish.name;
+
+        quest.fishEmoji =
+            fish.emoji ||
+            "🐟";
+
+        quest.description =
+            template.description(
+                target,
+                fish
+            );
+
+        return quest;
+    }
+
+    // ======================================
+    // CÁ THEO RARITY
+    // ======================================
+
+    if (
+        template.type ===
+        "specific_rarity"
+    ) {
+
+        const fish =
+            randomFishByRarity(
+                template.rarities
+            );
+
+        if (!fish) {
+            return null;
+        }
+
+        quest.fishId =
+            fish.id;
+
+        quest.fishName =
+            fish.name;
+
+        quest.fishEmoji =
+            fish.emoji ||
+            "🐟";
+
+        quest.description =
+            template.description(
+                target,
+                fish
+            );
+
+        return quest;
+    }
+
+    // ======================================
+    // MIXED
+    // ======================================
+
+    if (
+        template.type ===
+        "mixed"
+    ) {
+
+        quest.kgTarget =
+            template.kg(
+                target
+            );
+
+        quest.description =
+            template.description(
+                target,
+                quest.kgTarget
+            );
+
+        return quest;
+    }
+
+    // ======================================
+    // QUEST THƯỜNG
+    // ======================================
+
+    quest.description =
+        template.description(
+            target
+        );
+
+    return quest;
 }
 
 // ==========================================
-// ĐẾM CÁ THẬT
+// ĐẾM CÁ
 // ==========================================
 
 function getFishCount(user) {
@@ -502,22 +1532,30 @@ function getFishCount(user) {
         const fishInfo =
             fishList.find(
                 fish =>
-                    String(fish.id) ===
-                    String(fishId)
+                    String(
+                        fish.id
+                    ) ===
+                    String(
+                        fishId
+                    )
             );
 
-        if (!fishInfo) {
-            continue;
-        }
-
-        if (!isRealFish(fishInfo)) {
+        if (
+            !isRealFish(
+                fishInfo
+            )
+        ) {
             continue;
         }
 
         const fishes =
             userFish[fishId];
 
-        if (!Array.isArray(fishes)) {
+        if (
+            !Array.isArray(
+                fishes
+            )
+        ) {
             continue;
         }
 
@@ -529,7 +1567,7 @@ function getFishCount(user) {
 }
 
 // ==========================================
-// TÍNH KG CÁ THẬT
+// TÍNH KG
 // ==========================================
 
 function getFishKg(user) {
@@ -546,39 +1584,50 @@ function getFishKg(user) {
         const fishInfo =
             fishList.find(
                 fish =>
-                    String(fish.id) ===
-                    String(fishId)
+                    String(
+                        fish.id
+                    ) ===
+                    String(
+                        fishId
+                    )
             );
 
-        if (!fishInfo) {
-            continue;
-        }
-
-        if (!isRealFish(fishInfo)) {
+        if (
+            !isRealFish(
+                fishInfo
+            )
+        ) {
             continue;
         }
 
         const fishes =
             userFish[fishId];
 
-        if (!Array.isArray(fishes)) {
+        if (
+            !Array.isArray(
+                fishes
+            )
+        ) {
             continue;
         }
 
         kg +=
             fishes.reduce(
-                (total, value) => {
+                (
+                    total,
+                    value
+                ) => {
 
                     const number =
-                        Number(value);
+                        Number(
+                            value
+                        );
 
-                    if (
-                        Number.isFinite(number)
-                    ) {
-                        return total + number;
-                    }
-
-                    return total;
+                    return Number.isFinite(
+                        number
+                    )
+                        ? total + number
+                        : total;
 
                 },
                 0
@@ -591,20 +1640,26 @@ function getFishKg(user) {
 }
 
 // ==========================================
-// TÍNH TIẾN ĐỘ
+// TIẾN ĐỘ
 // ==========================================
 
-function getProgress(user, quest) {
+function getProgress(
+    user,
+    quest
+) {
 
     // ======================================
     // CÁ
     // ======================================
 
     if (
-        quest.type === "fish"
+        quest.type ===
+        "fish"
     ) {
 
-        return getFishCount(user);
+        return getFishCount(
+            user
+        );
     }
 
     // ======================================
@@ -612,10 +1667,13 @@ function getProgress(user, quest) {
     // ======================================
 
     if (
-        quest.type === "kg"
+        quest.type ===
+        "kg"
     ) {
 
-        return getFishKg(user);
+        return getFishKg(
+            user
+        );
     }
 
     // ======================================
@@ -623,24 +1681,22 @@ function getProgress(user, quest) {
     // ======================================
 
     if (
-        quest.type === "specific"
+        quest.type ===
+        "specific" ||
+        quest.type ===
+        "specific_rarity"
     ) {
 
-        const fishInfo =
-            fishList.find(
-                fish =>
-                    String(fish.id) ===
-                    String(quest.fishId)
-            );
-
-        if (!isRealFish(fishInfo)) {
-            return 0;
-        }
-
         const fishes =
-            user.fish?.[quest.fishId];
+            user.fish?.[
+                quest.fishId
+            ];
 
-        if (!Array.isArray(fishes)) {
+        if (
+            !Array.isArray(
+                fishes
+            )
+        ) {
             return 0;
         }
 
@@ -652,7 +1708,8 @@ function getProgress(user, quest) {
     // ======================================
 
     if (
-        quest.type === "money"
+        quest.type ===
+        "money"
     ) {
 
         return Number(
@@ -661,11 +1718,12 @@ function getProgress(user, quest) {
     }
 
     // ======================================
-    // CẦN CÂU
+    // CẦN
     // ======================================
 
     if (
-        quest.type === "rod"
+        quest.type ===
+        "rod"
     ) {
 
         let maxLevel = 0;
@@ -679,7 +1737,8 @@ function getProgress(user, quest) {
 
             const level =
                 Number(
-                    rodData[id]?.level || 0
+                    rodData[id]?.level ||
+                    0
                 );
 
             maxLevel =
@@ -704,10 +1763,14 @@ function getMixedProgress(user) {
     return {
 
         fish:
-            getFishCount(user),
+            getFishCount(
+                user
+            ),
 
         kg:
-            getFishKg(user)
+            getFishKg(
+                user
+            )
 
     };
 }
@@ -716,23 +1779,34 @@ function getMixedProgress(user) {
 // CHECK HOÀN THÀNH
 // ==========================================
 
-function isCompleted(user, quest) {
+function isCompleted(
+    user,
+    quest
+) {
+
+    if (
+        !quest
+    ) {
+        return false;
+    }
 
     // ======================================
     // MIXED
     // ======================================
 
     if (
-        quest.type === "mixed"
+        quest.type ===
+        "mixed"
     ) {
 
         const progress =
-            getMixedProgress(user);
+            getMixedProgress(
+                user
+            );
 
         return (
             progress.fish >=
                 quest.target &&
-
             progress.kg >=
                 quest.kgTarget
         );
@@ -743,7 +1817,9 @@ function isCompleted(user, quest) {
             user,
             quest
         ) >=
-        quest.target
+        Number(
+            quest.target || 0
+        )
     );
 }
 
@@ -763,8 +1839,7 @@ function createDailyQuests() {
     while (
         quests.length <
             MAX_QUEST_PER_DAY &&
-        attempts <
-            100
+        attempts < 200
     ) {
 
         attempts++;
@@ -776,20 +1851,42 @@ function createDailyQuests() {
             continue;
         }
 
+        // Không lấy trùng template
         const key =
-            quest.type === "specific"
-
-                ? `specific_${quest.fishId}`
-
-                : quest.type;
+            quest.templateId;
 
         if (
-            used.has(key)
+            used.has(
+                key
+            )
         ) {
             continue;
         }
 
-        used.add(key);
+        // Không lấy trùng cá cụ thể
+        if (
+            quest.fishId
+        ) {
+
+            const fishKey =
+                `fish_${quest.fishId}`;
+
+            if (
+                used.has(
+                    fishKey
+                )
+            ) {
+                continue;
+            }
+
+            used.add(
+                fishKey
+            );
+        }
+
+        used.add(
+            key
+        );
 
         quests.push(
             quest
@@ -800,12 +1897,14 @@ function createDailyQuests() {
 }
 
 // ==========================================
-// RESET MỖI NGÀY
+// CHECK DAILY
 // ==========================================
 
 function checkDaily(user) {
 
-    if (!user.quest) {
+    if (
+        !user.quest
+    ) {
 
         user.quest = {
 
@@ -817,14 +1916,51 @@ function checkDaily(user) {
 
             completed:
                 0
-
         };
     }
+
+    // ======================================
+    // DATA CŨ
+    // ======================================
+
+    if (
+        !Array.isArray(
+            user.quest.quests
+        )
+    ) {
+
+        if (
+            Array.isArray(
+                user.quest.list
+            )
+        ) {
+
+            user.quest.quests =
+                user.quest.list;
+
+        }
+        else {
+
+            user.quest.quests =
+                [];
+        }
+    }
+
+    // ======================================
+    // NGÀY
+    // ======================================
 
     const today =
         new Date()
             .toISOString()
-            .slice(0, 10);
+            .slice(
+                0,
+                10
+            );
+
+    // ======================================
+    // QUEST MỚI
+    // ======================================
 
     if (
         user.quest.date !==
@@ -840,16 +1976,34 @@ function checkDaily(user) {
                 createDailyQuests(),
 
             completed:
-                0
+                0,
 
+            claimed:
+                []
         };
 
         save();
     }
+
+    // ======================================
+    // FIX CLAIMED
+    // ======================================
+
+    if (
+        !Array.isArray(
+            user.quest.claimed
+        )
+    ) {
+
+        user.quest.claimed =
+            [];
+    }
+
+    return user.quest;
 }
 
 // ==========================================
-// HIỂN THỊ TIẾN ĐỘ
+// FORMAT TIẾN ĐỘ
 // ==========================================
 
 function formatProgress(
@@ -862,7 +2016,8 @@ function formatProgress(
     // ======================================
 
     if (
-        quest.type === "kg"
+        quest.type ===
+        "kg"
     ) {
 
         const progress =
@@ -885,7 +2040,8 @@ function formatProgress(
     // ======================================
 
     if (
-        quest.type === "money"
+        quest.type ===
+        "money"
     ) {
 
         const progress =
@@ -903,7 +2059,7 @@ function formatProgress(
             )}` +
             `/${formatMoney(
                 quest.target
-            )}`
+            )} xu`
         );
     }
 
@@ -912,11 +2068,14 @@ function formatProgress(
     // ======================================
 
     if (
-        quest.type === "mixed"
+        quest.type ===
+        "mixed"
     ) {
 
         const progress =
-            getMixedProgress(user);
+            getMixedProgress(
+                user
+            );
 
         const fishProgress =
             Math.min(
@@ -931,16 +2090,14 @@ function formatProgress(
             );
 
         return (
-            `${fishProgress}` +
-            `/${quest.target} cá` +
-            ` • ` +
-            `${kgProgress.toFixed(2)}` +
-            `/${quest.kgTarget} KG`
+            `${fishProgress}/${quest.target} cá` +
+            ` · ` +
+            `${kgProgress.toFixed(2)}/${quest.kgTarget} KG`
         );
     }
 
     // ======================================
-    // CÁ / SPECIFIC / ROD
+    // CÁ / ROD
     // ======================================
 
     const progress =
@@ -953,9 +2110,113 @@ function formatProgress(
         `${Math.min(
             progress,
             quest.target
-        )}` +
-        `/${quest.target}`
+        )}/${quest.target}`
     );
+}
+
+// ==========================================
+// NHẬN THƯỞNG QUEST
+// ==========================================
+
+function claimCompletedQuests(
+    user
+) {
+
+    const quests =
+        user.quest?.quests || [];
+
+    if (
+        !Array.isArray(
+            user.quest.claimed
+        )
+    ) {
+
+        user.quest.claimed =
+            [];
+    }
+
+    const rewards = [];
+
+    for (
+        const quest of quests
+    ) {
+
+        if (
+            !quest
+        ) {
+            continue;
+        }
+
+        // Đã nhận
+        if (
+            user.quest.claimed.includes(
+                quest.id
+            )
+        ) {
+            continue;
+        }
+
+        // Đã hoàn thành?
+        if (
+            !isCompleted(
+                user,
+                quest
+            )
+        ) {
+            continue;
+        }
+
+        const reward =
+            Number(
+                quest.reward || 0
+            );
+
+        // ==================================
+        // CỘNG TIỀN
+        // ==================================
+
+        user.money =
+            Number(
+                user.money || 0
+            ) +
+            reward;
+
+        // ==================================
+        // ĐÁNH DẤU
+        // ==================================
+
+        user.quest.claimed.push(
+            quest.id
+        );
+
+        quest.claimed =
+            true;
+
+        rewards.push({
+
+            quest,
+
+            reward
+
+        });
+    }
+
+    if (
+        rewards.length
+    ) {
+
+        user.quest.completed =
+            user.quest.quests.filter(
+                q =>
+                    user.quest.claimed.includes(
+                        q.id
+                    )
+            ).length;
+
+        save();
+    }
+
+    return rewards;
 }
 
 // ==========================================
@@ -975,105 +2236,221 @@ module.exports = {
 
     async execute(message) {
 
+        // ==================================
+        // USER
+        // ==================================
+
         const user =
             getUser(
                 message.author.id
             );
 
-        // ==============================
-        // KIỂM TRA QUEST HÔM NAY
-        // ==============================
+        // ==================================
+        // DAILY
+        // ==================================
 
-        checkDaily(user);
-
-        const quests =
-            user.quest.quests;
-
-        let description =
-            "";
-
-        // ==============================
-        // HIỂN THỊ QUEST
-        // ==============================
-
-        quests.forEach(
-            (quest, index) => {
-
-                const completed =
-                    isCompleted(
-                        user,
-                        quest
-                    );
-
-                const progress =
-                    formatProgress(
-                        user,
-                        quest
-                    );
-
-                const status =
-                    completed
-                        ? "✅"
-                        : "🔄";
-
-                description +=
-                    `${status} **${index + 1}. ${quest.title}**\n` +
-
-                    `╭・${quest.description}\n` +
-
-                    `╭・📊 Tiến độ: ${progress}\n` +
-
-                    `╰・🎁 Thưởng: ${formatMoney(
-                        quest.reward
-                    )} ${emoji.money}\n\n`;
-            }
+        checkDaily(
+            user
         );
 
-        // ==============================
-        // ĐẾM HOÀN THÀNH
-        // ==============================
+        // ==================================
+        // NHẬN THƯỞNG TỰ ĐỘNG
+        // ==================================
+
+        const rewards =
+            claimCompletedQuests(
+                user
+            );
+
+        // ==================================
+        // THÔNG BÁO NHẬN THƯỞNG
+        // ==================================
+
+        if (
+            rewards.length
+        ) {
+
+            for (
+                const item of rewards
+            ) {
+
+                const rewardEmbed =
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#57F287"
+                        )
+
+                        .setTitle(
+                            "🎉 HOÀN THÀNH NHIỆM VỤ"
+                        )
+
+                        .setDescription(
+
+                            `**${item.quest.title}**\n\n` +
+
+                            `✅ ${item.quest.description}\n` +
+
+                            `🎁 Nhận được **${formatMoney(
+                                item.reward
+                            )} ${emoji.money}**`
+
+                        )
+
+                        .setFooter({
+
+                            text:
+                                "✦ Fishing Adventure · Quest Reward"
+
+                        });
+
+                await message.reply({
+
+                    embeds: [
+                        rewardEmbed
+                    ]
+
+                });
+            }
+        }
+
+        // ==================================
+        // QUEST
+        // ==================================
+
+        const quests =
+            Array.isArray(
+                user.quest?.quests
+            )
+                ? user.quest.quests
+                : [];
+
+        // ==================================
+        // ĐẾM ĐÃ NHẬN
+        // ==================================
 
         const completedCount =
             quests.filter(
                 quest =>
-                    isCompleted(
-                        user,
-                        quest
+                    user.quest.claimed.includes(
+                        quest.id
                     )
             ).length;
 
-        // ==============================
+        // ==================================
+        // DANH SÁCH
+        // ==================================
+
+        const questText =
+            quests
+                .map(
+                    (
+                        quest,
+                        index
+                    ) => {
+
+                        const completed =
+                            isCompleted(
+                                user,
+                                quest
+                            );
+
+                        const claimed =
+                            user.quest.claimed.includes(
+                                quest.id
+                            );
+
+                        const status =
+                            claimed
+                                ? "💰"
+                                : completed
+                                    ? "✅"
+                                    : "🔄";
+
+                        const progress =
+                            formatProgress(
+                                user,
+                                quest
+                            );
+
+                        return (
+
+                            `${status} **${index + 1}. ${quest.title}**\n` +
+
+                            `${quest.emoji || "🎯"} ${quest.description}\n` +
+
+                            `📊 ${progress}  •  🎁 ${formatMoney(
+                                quest.reward
+                            )} ${emoji.money}`
+
+                        );
+
+                    }
+                )
+                .join(
+                    "\n\n"
+                );
+
+        // ==================================
         // EMBED
-        // ==============================
+        // ==================================
 
         const embed =
             new EmbedBuilder()
 
                 .setColor(
-                    "#7ddcff"
+                    completedCount ===
+                    MAX_QUEST_PER_DAY
+                        ? "#57F287"
+                        : "#7ddcff"
                 )
 
                 .setTitle(
-                    "╭・📜 NHIỆM VỤ HÀNG NGÀY"
+                    "📜 QUEST DAY"
                 )
 
                 .setDescription(
 
-                    `🎯 Hôm nay bạn có **${MAX_QUEST_PER_DAY} nhiệm vụ random**.\n` +
+                    `🎯 Hoàn thành: **${completedCount}/${MAX_QUEST_PER_DAY}**\n\n` +
 
-                    `🏆 Đã hoàn thành: **${completedCount}/${MAX_QUEST_PER_DAY}**\n\n` +
+                    (
+                        questText ||
+                        "Chưa có nhiệm vụ."
+                    )
 
-                    description +
-
-                    `╰・🎣 Nhiệm vụ sẽ làm mới vào ngày mai.`
                 )
 
                 .setFooter({
 
                     text:
-                        "✦ Fishing Adventure • Daily Quest"
+                        "✦ 5 nhiệm vụ random mỗi ngày · Tự động nhận thưởng"
 
                 });
+
+        // ==================================
+        // THÔNG BÁO FULL QUEST
+        // ==================================
+
+        if (
+            rewards.length &&
+            completedCount ===
+            MAX_QUEST_PER_DAY
+        ) {
+
+            embed.setDescription(
+
+                `🏆 **ĐÃ HOÀN THÀNH TOÀN BỘ ${MAX_QUEST_PER_DAY} QUEST!**\n\n` +
+
+                `💰 Đã tự động nhận toàn bộ phần thưởng.\n\n` +
+
+                questText
+
+            );
+        }
+
+        // ==================================
+        // SEND
+        // ==================================
 
         return message.reply({
 
@@ -1082,5 +2459,7 @@ module.exports = {
             ]
 
         });
+
     }
+
 };

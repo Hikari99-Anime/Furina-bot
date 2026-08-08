@@ -1,457 +1,524 @@
 const fs = require("fs");
 const path = require("path");
 
-
 const { rods } = require("./config");
 
+// ======================================================
+// DATA FILE
+// ======================================================
 
-// luôn lưu đúng thư mục chứa data.js
 const filePath = path.join(
     __dirname,
     "data.json"
 );
 
-
-
 let data = {};
 
 
-
-// ======================
+// ======================================================
 // LOAD DATA
-// ======================
+// ======================================================
 
-if(fs.existsSync(filePath)){
+if (fs.existsSync(filePath)) {
 
-
-    try{
-
+    try {
 
         data = JSON.parse(
-
             fs.readFileSync(
                 filePath,
                 "utf8"
             )
-
         );
 
+        console.log("✅ DATA LOADED");
 
-    }
-    catch(err){
-
+    } catch (err) {
 
         console.log(
-            "⚠️ Data lỗi, tạo mới"
+            "⚠️ Data lỗi, tạo dữ liệu mới."
         );
 
-
-        data={};
-
+        data = {};
 
     }
-
 
 }
 
 
-
-
-
-
-
-
-// ======================
+// ======================================================
 // SAVE DATA
-// ======================
+// ======================================================
 
-function save(){
+function save() {
 
-
-    try{
-
+    try {
 
         fs.writeFileSync(
-
             filePath,
-
             JSON.stringify(
                 data,
                 null,
                 2
             )
-
         );
-
 
         console.log(
             "💾 DATA SAVED"
         );
 
-
-    }
-
-    catch(err){
-
+    } catch (err) {
 
         console.log(
             "❌ SAVE ERROR:",
             err
         );
 
-
     }
-
 
 }
 
 
+// ======================================================
+// TẠO USER MỚI
+// ======================================================
 
+function createUser() {
 
+    return {
 
+        // ==================================================
+        // 💰 TIỀN
+        // ==================================================
 
+        money: 10000,
 
 
+        // ==================================================
+        // ⭐ LEVEL
+        // ==================================================
 
-// ======================
-// CREATE USER
-// ======================
+        level: 1,
 
-function createUser(){
+        exp: 0,
 
 
-return {
+        // ==================================================
+        // 🎣 CẦN CÂU
+        // ==================================================
 
+        /*
+         * User mới KHÔNG có cần.
+         *
+         * Muốn câu cá:
+         * 1. Mua cần
+         * 2. Trang bị cần
+         */
 
-    money:5000,
+        can: {
 
+            dangDung: null,
 
-    level:1,
+            danhSach: {}
 
+        },
 
-    exp:0,
 
+        // ==================================================
+        // 🪱 MỒI
+        // ==================================================
 
+        /*
+         * User mới chỉ được:
+         *
+         * 10 mồi thường
+         *
+         * Không có mồi bạc
+         * Không có mồi vàng
+         */
 
+        moi: {
 
-    // 🎣 CẦN
+            moithuong: 10,
 
-    can:{
+            moibac: 0,
 
+            moivang: 0
 
-        dangDung:null,
+        },
 
 
-        danhSach:{}
+        // ==================================================
+        // 🐟 CÁ
+        // ==================================================
 
+        /*
+         * Chưa có cá.
+         */
 
-    },
+        fish: {},
 
 
+        // ==================================================
+        // 🗝️ CHÌA KHÓA
+        // ==================================================
 
+        /*
+         * Chưa có key.
+         */
 
+        keys: {},
 
 
-    // 🪱 MỒI
+        // ==================================================
+        // 🎁 RƯƠNG
+        // ==================================================
 
-    moi:{
+        /*
+         * Chưa có rương.
+         */
 
+        chests: {},
 
-        moithuong:10,
 
+        // ==================================================
+        // 🛡️ BẢO HIỂM
+        // ==================================================
 
-        moibac:0,
+        /*
+         * Chưa có bảo hiểm.
+         */
 
+        insurance: 0,
 
-        moivang:0
 
+        // ==================================================
+        // 🎒 INVENTORY
+        // ==================================================
 
-    },
+        inv: {},
 
 
+        // ==================================================
+        // 🎁 DAILY
+        // ==================================================
 
+        daily: {
 
+            last: 0,
 
+            streak: 0
 
-    // 🐟 CÁ
+        },
 
-    fish:{},
 
+        // ==================================================
+        // 📜 QUEST
+        // ==================================================
 
+        quest: {
 
+            date: "",
 
+            list: [],
 
+            claim: false
 
-    // 🗝️ KEY
+        },
 
-    keys:{},
 
+        // ==================================================
+        // 🎣 DỮ LIỆU CẦN
+        // ==================================================
 
+        /*
+         * Rất quan trọng:
+         *
+         * Không tự tạo cần gỗ ở đây.
+         *
+         * Khi mua cần thì command shop/rod
+         * mới tạo dữ liệu rodData.
+         */
 
+        rodData: {},
 
 
+        // ==================================================
+        // 📊 STATS
+        // ==================================================
 
-    // 🎁 RƯƠNG
+        stats: {
 
-    chests:{},
+            catch: 0,
 
+            sell: 0,
 
+            kg: 0
 
+        }
 
-    // 🎫 VÉ BẢO HIỂM
-
-    insurance:0,
-
-
-
-
-    // 🎒 INVENTORY
-
-    inv:{},
-
-
-
-
-
-
-    // 🎁 DAILY
-
-    daily:{
-
-
-        last:0,
-
-
-        streak:0
-
-
-    },
-
-
-
-
-
-
-    // 📜 QUEST
-
-    quest:{
-
-
-        date:"",
-
-
-        list:[],
-
-
-        claim:false
-
-
-    },
-
-
-
-
-
-
-    // ⭐ CẦN DATA
-
-    rodData:{},
-
-
-
-
-
-
-    // 📊 STATS
-
-    stats:{
-
-
-        catch:0,
-
-
-        sell:0,
-
-
-        kg:0
-
-
-    }
-
-
-};
-
+    };
 
 }
 
 
-
-
-
-
-
-
-
-
-
-
-// ======================
+// ======================================================
 // GET USER
-// ======================
+// ======================================================
 
-function getUser(userID){
+function getUser(userID) {
 
+    // ==================================================
+    // USER CHƯA TỒN TẠI
+    // ==================================================
 
-
-    if(!data[userID]){
-
+    if (!data[userID]) {
 
         data[userID] =
-        createUser();
-
+            createUser();
 
         save();
 
-
     }
-
-
-
-
 
 
     const user =
-    data[userID];
+        data[userID];
 
 
+    // ==================================================
+    // FIX MONEY
+    // ==================================================
+
+    if (
+        typeof user.money !== "number" ||
+        Number.isNaN(user.money)
+    ) {
+
+        user.money = 10000;
+
+    }
 
 
+    // ==================================================
+    // FIX LEVEL
+    // ==================================================
+
+    if (
+        typeof user.level !== "number"
+    ) {
+
+        user.level = 1;
+
+    }
 
 
+    if (
+        typeof user.exp !== "number"
+    ) {
+
+        user.exp = 0;
+
+    }
 
 
-    // ======================
-    // FIX DATA
-    // ======================
+    // ==================================================
+    // FIX CẦN
+    // ==================================================
 
+    if (!user.can) {
 
+        user.can = {
 
-    if(typeof user.money !== "number")
+            dangDung: null,
 
-        user.money=5000;
-
-
-
-
-    if(!user.can)
-
-        user.can={
-
-            dangDung:null,
-
-            danhSach:{}
+            danhSach: {}
 
         };
 
+    }
 
 
+    if (
+        typeof user.can.danhSach !== "object" ||
+        user.can.danhSach === null
+    ) {
+
+        user.can.danhSach = {};
+
+    }
 
 
-    if(!user.moi)
+    // ==================================================
+    // FIX MỒI
+    // ==================================================
 
-        user.moi={
+    if (!user.moi) {
 
-            moithuong:10,
+        user.moi = {
 
-            moibac:0,
+            moithuong: 10,
 
-            moivang:0
+            moibac: 0,
+
+            moivang: 0
 
         };
 
+    }
 
 
+    if (
+        typeof user.moi.moithuong !== "number"
+    ) {
+
+        user.moi.moithuong = 0;
+
+    }
 
 
-    if(!user.fish)
+    if (
+        typeof user.moi.moibac !== "number"
+    ) {
 
-        user.fish={};
+        user.moi.moibac = 0;
 
-
-
-
-
-    if(!user.keys)
-
-        user.keys={};
+    }
 
 
+    if (
+        typeof user.moi.moivang !== "number"
+    ) {
+
+        user.moi.moivang = 0;
+
+    }
 
 
+    // ==================================================
+    // FIX FISH
+    // ==================================================
 
-    if(!user.chests)
+    if (!user.fish) {
 
-        user.chests={};
+        user.fish = {};
 
-
-
-
-    if(typeof user.insurance !== "number")
-
-        user.insurance=0;
+    }
 
 
+    // ==================================================
+    // FIX KEYS
+    // ==================================================
+
+    if (!user.keys) {
+
+        user.keys = {};
+
+    }
 
 
+    // ==================================================
+    // FIX CHESTS
+    // ==================================================
 
-    if(!user.inv)
+    if (!user.chests) {
 
-        user.inv={};
+        user.chests = {};
 
-
-
-
-
-    if(!user.rodData)
-
-        user.rodData={};
+    }
 
 
+    // ==================================================
+    // FIX INSURANCE
+    // ==================================================
+
+    if (
+        typeof user.insurance !== "number"
+    ) {
+
+        user.insurance = 0;
+
+    }
 
 
-    // cần đang trang bị nhưng thiếu rodData
-    // (dữ liệu cũ trước khi có rodData)
+    // ==================================================
+    // FIX INVENTORY
+    // ==================================================
 
-    if(
-        user.can.dangDung
-        &&
+    if (!user.inv) {
+
+        user.inv = {};
+
+    }
+
+
+    // ==================================================
+    // FIX ROD DATA
+    // ==================================================
+
+    if (!user.rodData) {
+
+        user.rodData = {};
+
+    }
+
+
+    // ==================================================
+    // KIỂM TRA CẦN ĐANG DÙNG
+    // ==================================================
+
+    /*
+     * Nếu user đang trang bị một cần
+     * nhưng rodData bị mất thì tạo lại
+     * theo config của cần đó.
+     */
+
+    if (
+        user.can.dangDung &&
         !user.rodData[user.can.dangDung]
-    ){
+    ) {
 
-        const base=
-        rods[user.can.dangDung];
+        const base =
+            rods?.[
+                user.can.dangDung
+            ];
 
 
-        if(base){
+        if (base) {
 
-            user.rodData[user.can.dangDung]={
+            user.rodData[
+                user.can.dangDung
+            ] = {
 
-                level:0,
+                level: 0,
 
-                luck:base.luck,
+                luck:
+                    Number(
+                        base.luck || 0
+                    ),
 
-                uses:base.uses,
+                uses:
+                    Number(
+                        base.uses || 0
+                    ),
 
-                maxUses:base.uses,
+                maxUses:
+                    Number(
+                        base.uses || 0
+                    ),
 
-                destroyed:false
+                destroyed: false
 
             };
 
-        }
-        else{
+        } else {
 
-            user.can.dangDung=null;
+            /*
+             * Cần không còn tồn tại trong config
+             * thì bỏ trang bị.
+             */
+
+            user.can.dangDung =
+                null;
 
         }
 
@@ -461,148 +528,178 @@ function getUser(userID){
     }
 
 
+    // ==================================================
+    // FIX DAILY
+    // ==================================================
 
+    /*
+     * Data cũ có thể có:
+     *
+     * daily: 1785944117863
+     *
+     * Chuyển về format mới.
+     */
 
+    if (
+        typeof user.daily === "number"
+    ) {
 
-    if(!user.stats)
+        user.daily = {
 
-        user.stats={
+            last:
+                user.daily,
 
-            catch:0,
-
-            sell:0,
-
-            kg:0
-
-        };
-
-
-
-
-
-
-
-
-
-    // ======================
-    // DAILY FIX
-    // ======================
-
-
-
-    // data cũ:
-    // "daily":1785944117863
-
-    if(typeof user.daily === "number"){
-
-
-        user.daily={
-
-
-            last:user.daily,
-
-
-            streak:0
-
+            streak: 0
 
         };
-
 
     }
 
 
+    if (!user.daily) {
 
+        user.daily = {
 
+            last: 0,
 
-
-    if(!user.daily){
-
-
-        user.daily={
-
-
-            last:0,
-
-
-            streak:0
-
+            streak: 0
 
         };
-
 
     }
 
 
+    if (
+        typeof user.daily.last !== "number"
+    ) {
+
+        user.daily.last = 0;
+
+    }
 
 
+    if (
+        typeof user.daily.streak !== "number"
+    ) {
+
+        user.daily.streak = 0;
+
+    }
 
 
-    if(typeof user.daily.last !== "number")
+    // ==================================================
+    // FIX QUEST
+    // ==================================================
 
-        user.daily.last=0;
+    if (!user.quest) {
 
+        user.quest = {
 
+            date: "",
 
+            list: [],
 
-
-    if(typeof user.daily.streak !== "number")
-
-        user.daily.streak=0;
-
-
-
-
-
-
-
-    if(!user.quest)
-
-
-        user.quest={
-
-
-            date:"",
-
-
-            list:[],
-
-
-            claim:false
-
+            claim: false
 
         };
 
+    }
 
 
+    if (
+        typeof user.quest.date !== "string"
+    ) {
+
+        user.quest.date = "";
+
+    }
 
 
+    if (
+        !Array.isArray(
+            user.quest.list
+        )
+    ) {
+
+        user.quest.list = [];
+
+    }
+
+
+    if (
+        typeof user.quest.claim !== "boolean"
+    ) {
+
+        user.quest.claim = false;
+
+    }
+
+
+    // ==================================================
+    // FIX STATS
+    // ==================================================
+
+    if (!user.stats) {
+
+        user.stats = {
+
+            catch: 0,
+
+            sell: 0,
+
+            kg: 0
+
+        };
+
+    }
+
+
+    if (
+        typeof user.stats.catch !== "number"
+    ) {
+
+        user.stats.catch = 0;
+
+    }
+
+
+    if (
+        typeof user.stats.sell !== "number"
+    ) {
+
+        user.stats.sell = 0;
+
+    }
+
+
+    if (
+        typeof user.stats.kg !== "number"
+    ) {
+
+        user.stats.kg = 0;
+
+    }
+
+
+    // ==================================================
+    // RETURN
+    // ==================================================
 
     return user;
-
 
 }
 
 
-
-
-
-
-
-
-
-// ======================
+// ======================================================
 // EXPORT
-// ======================
+// ======================================================
 
-
-module.exports={
-
+module.exports = {
 
     getUser,
 
     save,
 
     data
-
 
 };
