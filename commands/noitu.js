@@ -39,17 +39,15 @@ module.exports = {
                 );
 
 
-            if(!getGame())
+            if(!stopGame(message.channel.id))
 
                 return message.reply(
-                    "╰・❌ Không có ván nối từ nào đang diễn ra"
+                    "╰・❌ Không có ván nối từ nào đang diễn ra ở channel này"
                 );
 
 
-            stopGame();
-
             return message.reply(
-                "╰・✅ Đã dừng ván nối từ và reset lại round (VI + EN)"
+                "╰・✅ Đã dừng ván nối từ ở channel này và reset round"
             );
 
         }
@@ -62,10 +60,10 @@ module.exports = {
             );
 
 
-        if(getGame())
+        if(getGame(message.channel.id))
 
             return message.reply(
-                "╰・❌ Đang có ván nối từ diễn ra!"
+                "╰・❌ Đang có ván nối từ diễn ra ở channel này!"
             );
 
 
