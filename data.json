@@ -59,7 +59,7 @@
     }
   },
   "743028655097380895": {
-    "money": 49981474320,
+    "money": 49959724320,
     "level": 1,
     "exp": 0,
     "can": {
@@ -403,7 +403,7 @@
     },
     "chests": {},
     "inv": {},
-    "insurance": 43,
+    "insurance": 42,
     "daily": {
       "last": 1786121406897,
       "streak": 1
@@ -523,8 +523,8 @@
         "maxUses": 100
       },
       "mythic": {
-        "level": 8,
-        "luck": 5.9,
+        "level": 10,
+        "luck": 6.1,
         "uses": 275,
         "maxUses": 500,
         "destroyed": false

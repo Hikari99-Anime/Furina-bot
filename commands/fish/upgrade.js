@@ -18,7 +18,6 @@ const {
     save
 } = require("../../data");
 
-
 // ======================================================
 // CONFIG
 // ======================================================
@@ -35,7 +34,6 @@ const DOWNGRADE_CHANCE_LV10 = 0.5;
 
 const DESTROY_CHANCE = 0.5;
 
-
 // ======================================================
 // GIÁ UPGRADE
 // ======================================================
@@ -47,9 +45,7 @@ function getUpgradeCost(base, level) {
         (level + 1) *
         0.5
     );
-
 }
-
 
 // ======================================================
 // LUCK
@@ -67,10 +63,31 @@ function getLuck(rod, base) {
 
     }
 
-    return Number(rod.luck) || 0;
+    rod.luck =
+        Number(
+            rod.luck
+        );
 
+    if (
+        !Number.isFinite(
+            rod.luck
+        )
+    ) {
+
+        rod.luck =
+            Number(
+                base.luck
+            ) || 1;
+    }
+
+    // Làm tròn để tránh 9.999999999
+    rod.luck =
+        Math.round(
+            rod.luck * 10
+        ) / 10;
+
+    return rod.luck;
 }
-
 
 // ======================================================
 // FORMAT LUCK
@@ -79,22 +96,32 @@ function getLuck(rod, base) {
 function formatLuck(value) {
 
     value =
-        Number(value) || 0;
+        Number(value);
+
+    if (
+        !Number.isFinite(value)
+    ) {
+
+        value = 0;
+    }
+
+    // Làm tròn 1 chữ số
+    value =
+        Math.round(
+            value * 10
+        ) / 10;
 
     if (
         Number.isInteger(value)
     ) {
 
         return String(value);
-
     }
 
     return value
         .toFixed(1)
         .replace(/\.0$/, "");
-
 }
-
 
 // ======================================================
 // LẤY SUCCESS RATE
@@ -110,7 +137,6 @@ function getSuccessRate(level) {
     ) {
 
         return Number(rate);
-
     }
 
     // Fallback nếu config thiếu level
@@ -118,9 +144,7 @@ function getSuccessRate(level) {
         10,
         100 - level * 5
     );
-
 }
-
 
 // ======================================================
 // KHỞI TẠO ROD DATA
@@ -132,10 +156,14 @@ function normalizeRod(
 ) {
 
     rod.level =
-        Number(rod.level) || 0;
+        Number(
+            rod.level
+        ) || 0;
 
     rod.luck =
-        Number(rod.luck);
+        Number(
+            rod.luck
+        );
 
     if (
         !Number.isFinite(
@@ -144,19 +172,32 @@ function normalizeRod(
     ) {
 
         rod.luck =
-            base.luck || 1;
-
+            Number(
+                base.luck
+            ) || 1;
     }
 
+    // Làm tròn Luck
+    rod.luck =
+        Math.round(
+            rod.luck * 10
+        ) / 10;
+
     rod.maxUses =
-        Number(rod.maxUses) ||
-        base.uses ||
+        Number(
+            rod.maxUses
+        ) ||
+        Number(
+            base.uses
+        ) ||
         1;
 
     rod.uses =
         Math.max(
             0,
-            Number(rod.uses) || 0
+            Number(
+                rod.uses
+            ) || 0
         );
 
     if (
@@ -166,7 +207,6 @@ function normalizeRod(
 
         rod.uses =
             rod.maxUses;
-
     }
 
     rod.destroyed =
@@ -175,9 +215,7 @@ function normalizeRod(
         );
 
     return rod;
-
 }
-
 
 // ======================================================
 // TẠO HEADER
@@ -192,11 +230,9 @@ function rodHeader(
         `${base.emoji} ${base.name} ` +
         `\`+${rod.level}\` ` +
         `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
-        `Luck ${formatLuck(rod.luck)}`
+        `🍀 Luck ${formatLuck(rod.luck)}`
     );
-
 }
-
 
 // ======================================================
 // MODULE
@@ -218,7 +254,6 @@ module.exports = {
                 message.author.id
             );
 
-
         // ==================================================
         // DATA
         // ==================================================
@@ -229,10 +264,8 @@ module.exports = {
         if (!user.rodData)
             user.rodData = {};
 
-
         const id =
             user.can.dangDung;
-
 
         // ==================================================
         // CHƯA TRANG BỊ
@@ -267,9 +300,7 @@ module.exports = {
                 ]
 
             });
-
         }
-
 
         // ==================================================
         // BASE
@@ -277,7 +308,6 @@ module.exports = {
 
         const base =
             rods[id];
-
 
         if (!base) {
 
@@ -287,9 +317,7 @@ module.exports = {
                     "❌ Không tìm thấy loại cần này."
 
             });
-
         }
-
 
         // ==================================================
         // ROD DATA
@@ -302,21 +330,25 @@ module.exports = {
                 level: 0,
 
                 luck:
-                    base.luck || 1,
+                    Number(
+                        base.luck
+                    ) || 1,
 
                 uses:
-                    base.uses || 1,
+                    Number(
+                        base.uses
+                    ) || 1,
 
                 maxUses:
-                    base.uses || 1,
+                    Number(
+                        base.uses
+                    ) || 1,
 
                 destroyed:
                     false
 
             };
-
         }
-
 
         const rod =
             normalizeRod(
@@ -324,9 +356,16 @@ module.exports = {
                 base
             );
 
+        // ==================================================
+        // LẤY LUCK HIỆN TẠI
+        // ==================================================
+
+        getLuck(
+            rod,
+            base
+        );
 
         save();
-
 
         // ==================================================
         // CẦN GÃY
@@ -371,9 +410,7 @@ module.exports = {
                 ]
 
             });
-
         }
-
 
         // ==================================================
         // MAX LEVEL
@@ -417,9 +454,7 @@ module.exports = {
                 ]
 
             });
-
         }
-
 
         // ==================================================
         // COST
@@ -431,12 +466,10 @@ module.exports = {
                 rod.level
             );
 
-
         const successRate =
             getSuccessRate(
                 rod.level
             );
-
 
         // ==================================================
         // KHÔNG ĐỦ TIỀN
@@ -484,9 +517,7 @@ module.exports = {
                 ]
 
             });
-
         }
-
 
         // ==================================================
         // BẢO HIỂM
@@ -498,7 +529,6 @@ module.exports = {
         let useInsurance = false;
 
         let insuranceMessage = null;
-
 
         if (
             hasRisk &&
@@ -528,12 +558,14 @@ module.exports = {
                                 )}\n\n` +
 
                                 `⚠️ Cường hóa thất bại có thể làm cần giảm cấp.` +
+
                                 (
                                     rod.level >=
                                     DESTROY_LEVEL
                                         ? ` Ở cấp cao còn có nguy cơ gãy.`
                                         : ""
                                 ) +
+
                                 `\n\n` +
 
                                 `🎫 Vé bảo hiểm ${user.insurance}\n` +
@@ -597,7 +629,6 @@ module.exports = {
 
                 });
 
-
             useInsurance =
                 await new Promise(
                     resolve => {
@@ -613,7 +644,6 @@ module.exports = {
                                         1
 
                                 });
-
 
                         collector.on(
                             "collect",
@@ -633,7 +663,6 @@ module.exports = {
                                             true
 
                                     });
-
                                 }
 
                                 await interaction.deferUpdate();
@@ -646,7 +675,6 @@ module.exports = {
                             }
                         );
 
-
                         collector.on(
                             "end",
                             collected => {
@@ -658,7 +686,6 @@ module.exports = {
                                     resolve(
                                         false
                                     );
-
                                 }
 
                             }
@@ -666,9 +693,7 @@ module.exports = {
 
                     }
                 );
-
         }
-
 
         // ==================================================
         // EMBED UPGRADING
@@ -705,7 +730,6 @@ module.exports = {
                         "✦ Fishing Adventure · Upgrade"
                 });
 
-
         if (
             insuranceMessage
         ) {
@@ -730,9 +754,7 @@ module.exports = {
                     ]
 
                 });
-
         }
-
 
         // ==================================================
         // CHỜ
@@ -746,17 +768,33 @@ module.exports = {
                 )
         );
 
+        // ==================================================
+        // LƯU TRẠNG THÁI CŨ
+        // ==================================================
+        // QUAN TRỌNG:
+        // Phải lưu cả level + luck trước khi thay đổi.
+        // Tránh trường hợp Luck cũ bị hiển thị thành Luck mới.
+
+        const startLevel =
+            rod.level;
+
+        const startLuck =
+            formatLuck(
+                rod.luck
+            );
+
+        const startUses =
+            rod.uses;
+
+        const startMaxUses =
+            rod.maxUses;
 
         // ==================================================
         // TRỪ TIỀN
         // ==================================================
 
-        const startLevel =
-            rod.level;
-
         user.money -=
             price;
-
 
         // ==================================================
         // RANDOM
@@ -765,12 +803,10 @@ module.exports = {
         const roll =
             Math.random() * 100;
 
-
         let resultText = "";
 
         let color =
             "#ffcc66";
-
 
         // ==================================================
         // SUCCESS
@@ -787,29 +823,45 @@ module.exports = {
                     rod.level + 1
                 );
 
-
-            rod.luck +=
+            // Lấy Luck tăng mỗi cấp
+            const luckPerLevel =
                 Number(
-                    upgrade.luckPerLevel ||
-                    0.1
+                    upgrade?.luckPerLevel
                 );
 
+            const luckIncrease =
+                Number.isFinite(
+                    luckPerLevel
+                )
+                    ? luckPerLevel
+                    : 0.1;
+
+            rod.luck =
+                Number(
+                    rod.luck
+                ) +
+                luckIncrease;
+
+            // Làm tròn Luck sau khi cộng
+            rod.luck =
+                Math.round(
+                    rod.luck * 10
+                ) / 10;
 
             const title =
                 rodTitles?.[
                     rod.level
                 ];
 
-
             color =
                 "#8affb2";
-
 
             resultText =
 
                 `✨ Cường hóa thành công!\n` +
 
                 `Cấp \`+${rod.level}\`` +
+
                 (
                     title
                         ? ` · ${title}`
@@ -818,12 +870,11 @@ module.exports = {
 
                 `\n` +
 
-                `Luck ${formatLuck(
+                `🍀 Luck ${formatLuck(
                     rod.luck
                 )}`;
 
         }
-
 
         // ==================================================
         // FAIL
@@ -836,7 +887,6 @@ module.exports = {
 
             let destroy =
                 false;
-
 
             // ==============================================
             // LEVEL 10+
@@ -860,7 +910,6 @@ module.exports = {
                         )
                     );
 
-
                 const downgradeChance =
                     DOWNGRADE_CHANCE_LV10 +
                     (
@@ -869,11 +918,9 @@ module.exports = {
                     ) *
                     wearRatio;
 
-
                 downgrade =
                     Math.random() <
                     downgradeChance;
-
 
                 if (
                     rod.uses > 0
@@ -882,11 +929,8 @@ module.exports = {
                     destroy =
                         Math.random() <
                         DESTROY_CHANCE;
-
                 }
-
             }
-
 
             // ==============================================
             // LEVEL 5-9
@@ -900,9 +944,7 @@ module.exports = {
                 downgrade =
                     Math.random() <
                     DOWNGRADE_CHANCE;
-
             }
-
 
             // ==============================================
             // INSURANCE
@@ -924,10 +966,8 @@ module.exports = {
                         ) - 1
                     );
 
-
                 color =
                     "#66ccff";
-
 
                 resultText =
 
@@ -935,10 +975,13 @@ module.exports = {
 
                     `Cấp vẫn \`+${rod.level}\`\n` +
 
+                    `🍀 Luck vẫn ${formatLuck(
+                        rod.luck
+                    )}\n` +
+
                     `🎫 Vé còn ${user.insurance}`;
 
             }
-
 
             // ==============================================
             // DESTROY
@@ -960,10 +1003,8 @@ module.exports = {
                 rod.destroyed =
                     true;
 
-
                 color =
                     "#ff4d67";
-
 
                 resultText =
 
@@ -971,12 +1012,15 @@ module.exports = {
 
                     `Cấp còn \`+${rod.level}\`\n` +
 
+                    `🍀 Luck ${formatLuck(
+                        rod.luck
+                    )}\n` +
+
                     `Độ bền \`0/${rod.maxUses}\`\n\n` +
 
                     `Hãy sửa chữa cần để sử dụng lại.`;
 
             }
-
 
             // ==============================================
             // DOWNGRADE
@@ -992,21 +1036,22 @@ module.exports = {
                         rod.level - 1
                     );
 
-
                 color =
                     "#ff8888";
-
 
                 resultText =
 
                     `⬇️ Cường hóa thất bại, cần bị giảm cấp!\n` +
 
-                    `Cấp còn \`+${rod.level}\`\n\n` +
+                    `Cấp còn \`+${rod.level}\`\n` +
+
+                    `🍀 Luck ${formatLuck(
+                        rod.luck
+                    )}\n\n` +
 
                     `Xu đã mất, hãy thử lại.`;
 
             }
-
 
             // ==============================================
             // NORMAL FAIL
@@ -1017,19 +1062,20 @@ module.exports = {
                 color =
                     "#ffcc66";
 
-
                 resultText =
 
                     `❌ Cường hóa thất bại.\n` +
 
-                    `Cấp vẫn \`+${rod.level}\`\n\n` +
+                    `Cấp vẫn \`+${rod.level}\`\n` +
+
+                    `🍀 Luck vẫn ${formatLuck(
+                        rod.luck
+                    )}\n\n` +
 
                     `Xu đã mất, hãy thử lại.`;
 
             }
-
         }
-
 
         // ==================================================
         // SAVE
@@ -1037,6 +1083,39 @@ module.exports = {
 
         save();
 
+        // ==================================================
+        // LUCK CŨ / LUCK MỚI
+        // ==================================================
+
+        const oldLuck =
+            startLuck;
+
+        const newLuck =
+            formatLuck(
+                rod.luck
+            );
+
+        // ==================================================
+        // HEADER CŨ
+        // ==================================================
+        // Dùng startLevel + startLuck
+        // KHÔNG dùng rod.luck hiện tại.
+
+        const oldHeader =
+            `${base.emoji} ${base.name} ` +
+            `\`+${startLevel}\` ` +
+            `Độ bền \`${startUses}/${startMaxUses}\` ` +
+            `🍀 Luck ${oldLuck}`;
+
+        // ==================================================
+        // HEADER MỚI
+        // ==================================================
+
+        const newHeader =
+            `${base.emoji} ${base.name} ` +
+            `\`+${rod.level}\` ` +
+            `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
+            `🍀 Luck ${newLuck}`;
 
         // ==================================================
         // FINAL EMBED
@@ -1068,18 +1147,9 @@ module.exports = {
 
                 .setDescription(
 
-                    `${rodHeader(
-                        base,
-                        {
-                            ...rod,
-                            level: startLevel
-                        }
-                    )}\n` +
+                    `${oldHeader}\n` +
 
-                    `→ ${base.emoji} ${base.name} ` +
-                    `\`+${rod.level}\` ` +
-                    `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
-                    `Luck ${formatLuck(rod.luck)}\n\n` +
+                    `→ ${newHeader}\n\n` +
 
                     `🎲 Thành công ${successRate}%\n` +
                     `💸 Chi phí ${formatMoney(price)} ${emoji.money}\n\n` +
@@ -1101,7 +1171,6 @@ module.exports = {
 
                 .setTimestamp();
 
-
         await insuranceMessage.edit({
 
             embeds: [
@@ -1111,7 +1180,5 @@ module.exports = {
             components: []
 
         });
-
     }
-
 };
