@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 
-const { rods } = require("./config");
+const { rods } = require("./Config/config");
 
 
 // luôn lưu đúng thư mục chứa data.js

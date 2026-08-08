@@ -9,7 +9,7 @@ const {
     rods,
     emoji,
     formatMoney
-} = require("../../config");
+} = require("../../Config/config");
 
 const {
     getUser,
@@ -18,7 +18,7 @@ const {
 
 
 // ======================================================
-// FORMAT THỜI GIAN
+// FORMAT TIME
 // ======================================================
 
 function formatTime(seconds) {
@@ -28,31 +28,41 @@ function formatTime(seconds) {
         Math.ceil(seconds)
     );
 
-    const hours =
-        Math.floor(seconds / 3600);
-
     const minutes =
-        Math.floor(
-            (seconds % 3600) / 60
-        );
+        Math.floor(seconds / 60);
 
     const secs =
         seconds % 60;
 
-
-    if (hours > 0) {
-
-        return `${hours} giờ ${minutes} phút`;
-
-    }
-
-    if (minutes > 0) {
-
+    if (minutes > 0)
         return `${minutes} phút ${secs} giây`;
 
-    }
-
     return `${secs} giây`;
+}
+
+
+// ======================================================
+// THỜI GIAN SỬA TỐI ĐA THEO CẤP CẦN
+//
+// ⭐      = 1 phút
+// ⭐⭐     = 2 phút
+// ⭐⭐⭐    = 3 phút
+// ⭐⭐⭐⭐   = 4 phút
+// ⭐⭐⭐⭐⭐  = 5 phút
+// ======================================================
+
+function getMaxRepairTime(base) {
+
+    const star =
+        Math.max(
+            1,
+            Math.min(
+                5,
+                base.star || 1
+            )
+        );
+
+    return star * 60;
 }
 
 
@@ -73,10 +83,13 @@ function getRepairTime(base, rod) {
             rod.uses || 0
         );
 
-
-    // ==============================================
-    // TỶ LỆ ĐỘ BỀN ĐÃ MẤT
-    // ==============================================
+    // Cần gãy → không sửa
+    if (
+        rod.destroyed ||
+        uses <= 0
+    ) {
+        return 0;
+    }
 
     const lostRatio =
         Math.max(
@@ -87,71 +100,21 @@ function getRepairTime(base, rod) {
             )
         );
 
+    const maxTime =
+        getMaxRepairTime(base);
 
-    // ==============================================
-    // CẤP CẦN
-    //
-    // ⭐  = 5 phút
-    // ⭐⭐ = 10 phút
-    // ⭐⭐⭐ = 15 phút
-    // ⭐⭐⭐⭐ = 20 phút
-    // ⭐⭐⭐⭐⭐ = 25 phút
-    // ==============================================
-
-    const star =
-        base.star || 1;
-
-
-    const baseTime =
-        star * 300;
-
-
-    // ==============================================
-    // CÀNG HỎNG → CÀNG LÂU
-    // ==============================================
-
-    const damageMultiplier =
-        1 + (lostRatio * 2);
-
-
-    let seconds =
-        Math.ceil(
-            baseTime *
-            damageMultiplier
-        );
-
-
-    // ==============================================
-    // GÃY HOÀN TOÀN
-    //
-    // Gãy = sửa lâu nhất
-    // ==============================================
-
-    if (
-        rod.destroyed ||
-        uses <= 0
-    ) {
-
-        seconds =
-            Math.ceil(
-                baseTime * 4
-            );
-
-    }
-
-
-    // Tối thiểu 5 phút
-
-    if (seconds < 300)
-        seconds = 300;
-
-
-    return seconds;
+    // Hỏng nhẹ vẫn sửa nhanh
+    // Tối thiểu 10 giây
+    return Math.ceil(
+        10 +
+        lostRatio *
+        (maxTime - 10)
+    );
 }
 
 
 // ======================================================
-// TÍNH GIÁ SỬA
+// TÍNH PHÍ SỬA THƯỜNG
 // ======================================================
 
 function getRepairPrice(base, rod) {
@@ -167,25 +130,13 @@ function getRepairPrice(base, rod) {
             rod.uses || 0
         );
 
-
-    // ==============================================
-    // CẦN GÃY
-    // = GIÁ MUA MỚI
-    // ==============================================
-
+    // Gãy hoàn toàn → không sửa
     if (
         rod.destroyed ||
         uses <= 0
     ) {
-
-        return base.price;
-
+        return 0;
     }
-
-
-    // ==============================================
-    // TỶ LỆ HƯ HỎNG
-    // ==============================================
 
     const lostRatio =
         Math.max(
@@ -196,9 +147,6 @@ function getRepairPrice(base, rod) {
             )
         );
 
-
-    // Hư càng nhiều → giá càng cao
-
     let price =
         Math.floor(
             base.price *
@@ -208,20 +156,113 @@ function getRepairPrice(base, rod) {
             )
         );
 
-
-    // Giá tối thiểu
-
+    // Có hỏng thì tối thiểu 1.000
     if (price < 1000)
         price = 1000;
 
+    return Math.min(
+        price,
+        base.price
+    );
+}
 
-    // Không vượt quá giá cần
 
-    if (price > base.price)
-        price = base.price;
+// ======================================================
+// TÍNH PHÍ SỬA NHANH
+//
+// Sửa nhanh = phí sửa thường
+//             + 5% giá cần
+//             + 50 tiền / phút
+//
+// Không vượt quá 80% giá cần mới.
+// ======================================================
+
+function getQuickRepairPrice(
+    base,
+    repairPrice,
+    repairSeconds
+) {
+
+    const valueFee =
+        Math.floor(
+            base.price * 0.05
+        );
+
+    const timeFee =
+        Math.ceil(
+            repairSeconds / 60
+        ) * 50;
+
+    const price =
+        repairPrice +
+        valueFee +
+        timeFee;
+
+    return Math.min(
+        Math.max(
+            price,
+            repairPrice + 1
+        ),
+        Math.floor(
+            base.price * 0.8
+        )
+    );
+}
 
 
-    return price;
+// ======================================================
+// EMBED SỬA XONG
+// ======================================================
+
+function createFinishedEmbed(
+    discordUser,
+    base,
+    rod
+) {
+
+    const maxUses =
+        rod.maxUses ||
+        base.uses ||
+        1;
+
+    return new EmbedBuilder()
+
+        .setColor("#8affb2")
+
+        .setAuthor({
+            name:
+                `${discordUser.username} · Workshop`,
+            iconURL:
+                discordUser.displayAvatarURL({
+                    extension: "png",
+                    size: 128
+                })
+        })
+
+        .setTitle(
+            "🔧 `REPAIR COMPLETE`"
+        )
+
+        .setDescription(
+
+            `*Cần câu đã được sửa xong.*\n` +
+            `*Độ bền đã được phục hồi hoàn toàn.*\n\n` +
+
+            `${base.emoji} ${base.name}\n\n` +
+
+            `> 🎯 Độ bền: ${maxUses}/${maxUses}\n` +
+            `> 🔧 Trạng thái: Sẵn sàng\n\n` +
+
+            `✦ *Bạn có thể tiếp tục câu cá.*`
+
+        )
+
+        .setFooter({
+            text:
+                "✦ Fishing Adventure · Workshop"
+        })
+
+        .setTimestamp();
 }
 
 
@@ -239,59 +280,52 @@ async function finishRepair(
         const user =
             getUser(userId);
 
-
         if (
             !user ||
             !user.repair ||
             !user.repair.rodId
         ) {
-
             return;
-
         }
-
 
         const repairId =
             user.repair.rodId;
 
-
         const base =
             rods[repairId];
-
 
         if (!base) {
 
             delete user.repair;
+            delete user.repairChannel;
 
             save();
 
             return;
-
         }
-
 
         const rod =
             user.rodData?.[repairId];
 
-
         if (!rod) {
 
             delete user.repair;
+            delete user.repairChannel;
 
             save();
 
             return;
-
         }
 
+        // Lấy channel TRƯỚC khi xóa trạng thái repair
+        const channelId =
+            user.repairChannel;
 
-        // ==========================================
-        // HỒI ĐẦY ĐỘ BỀN
-        // ==========================================
-
+        // Hồi đầy độ bền
         rod.maxUses =
             rod.maxUses ||
-            base.uses;
+            base.uses ||
+            1;
 
         rod.uses =
             rod.maxUses;
@@ -299,86 +333,10 @@ async function finishRepair(
         rod.destroyed =
             false;
 
-
-        // ==========================================
-        // XÓA TRẠNG THÁI SỬA
-        // ==========================================
-
         delete user.repair;
-
+        delete user.repairChannel;
 
         save();
-
-
-        // ==========================================
-        // TÌM CHANNEL ĐỂ GỬI THÔNG BÁO
-        // ==========================================
-
-        const channelId =
-            user.repairChannel;
-
-
-        let channel = null;
-
-
-        if (channelId) {
-
-            channel =
-                await client.channels
-                    .fetch(channelId)
-                    .catch(
-                        () => null
-                    );
-
-        }
-
-
-        // ==========================================
-        // NẾU KHÔNG TÌM ĐƯỢC CHANNEL
-        // THỬ DM
-        // ==========================================
-
-        if (!channel) {
-
-            const discordUser =
-                await client.users
-                    .fetch(userId)
-                    .catch(
-                        () => null
-                    );
-
-
-            if (!discordUser)
-                return;
-
-
-            const embed =
-                createFinishedEmbed(
-                    discordUser,
-                    base,
-                    rod
-                );
-
-
-            await discordUser.send({
-
-                embeds: [
-                    embed
-                ]
-
-            }).catch(
-                () => {}
-            );
-
-
-            return;
-
-        }
-
-
-        // ==========================================
-        // EMBED HOÀN TẤT
-        // ==========================================
 
         const discordUser =
             await client.users
@@ -387,10 +345,8 @@ async function finishRepair(
                     () => null
                 );
 
-
         if (!discordUser)
             return;
-
 
         const embed =
             createFinishedEmbed(
@@ -399,22 +355,48 @@ async function finishRepair(
                 rod
             );
 
+        // Gửi về channel cũ
+        if (channelId) {
 
-        // ==========================================
-        // PING NGƯỜI CHƠI
-        // ==========================================
+            const channel =
+                await client.channels
+                    .fetch(channelId)
+                    .catch(
+                        () => null
+                    );
 
-        await channel.send({
+            if (
+                channel &&
+                channel.isTextBased()
+            ) {
 
-            content:
-                `<@${userId}>`,
+                await channel.send({
 
-            embeds: [
-                embed
-            ]
+                    content:
+                        `<@${userId}>`,
 
-        });
+                    embeds: [
+                        embed
+                    ]
 
+                }).catch(
+                    () => {}
+                );
+
+                return;
+            }
+        }
+
+        // Không gửi được channel → DM
+        await discordUser
+            .send({
+                embeds: [
+                    embed
+                ]
+            })
+            .catch(
+                () => {}
+            );
 
     } catch (error) {
 
@@ -424,79 +406,60 @@ async function finishRepair(
         );
 
     }
-
 }
 
 
 // ======================================================
-// EMBED HOÀN TẤT
+// EMBED CẦN ĐANG SỬA
 // ======================================================
 
-function createFinishedEmbed(
-    discordUser,
+function createRepairingEmbed(
+    message,
     base,
-    rod
+    rod,
+    price,
+    repairSeconds,
+    quickPrice
 ) {
-
-    const maxUses =
-        rod.maxUses ||
-        base.uses;
-
 
     return new EmbedBuilder()
 
-        .setColor(
-            "#72e6c1"
-        )
+        .setColor("#f5a623")
 
         .setAuthor({
-
             name:
-                `${discordUser.username} · Workshop`,
-
+                `${message.author.username} · Workshop`,
             iconURL:
-                discordUser.displayAvatarURL({
+                message.author.displayAvatarURL({
                     extension: "png",
                     size: 128
                 })
-
         })
 
         .setTitle(
-            "✨ Cần câu đã sửa xong!"
+            "🔧 `REPAIRING`"
         )
 
         .setDescription(
 
-            `${base.emoji} **${base.name}**\n\n` +
+            `${base.emoji} ${base.name}\n\n` +
 
-            `━━━━━━━━━━━━━━━━━━\n\n` +
+            `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+            `> 💸 Phí sửa: ${formatMoney(price)} ${emoji.money}\n` +
+            `> ⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+            `> ⏳ Thời gian: ${formatTime(repairSeconds)}\n\n` +
 
-            `🎯 Độ bền\n` +
+            `🔧 Trạng thái: Đang sửa\n\n` +
 
-            `\`${"█".repeat(16)}\` **100%**\n` +
-
-            `**${maxUses}/${maxUses}**\n\n` +
-
-            `🔧 Trạng thái: **Sẵn sàng**\n\n` +
-
-            `━━━━━━━━━━━━━━━━━━\n\n` +
-
-            `🎣 Cần câu đã được phục hồi hoàn toàn.\n` +
-
-            `Bạn có thể trang bị và tiếp tục câu cá!`
+            `💡 Bạn có thể trang bị cần khác ` +
+            `trong lúc chờ sửa.`
 
         )
 
         .setFooter({
-
             text:
-                "Fishing Adventure · Workshop"
-
-        })
-
-        .setTimestamp();
-
+                "✦ Fishing Adventure · Workshop"
+        });
 }
 
 
@@ -513,7 +476,6 @@ module.exports = {
         "sua"
     ],
 
-
     async execute(message) {
 
         const user =
@@ -523,7 +485,7 @@ module.exports = {
 
 
         // ==================================================
-        // KIỂM TRA SỬA CŨ
+        // KIỂM TRA REPAIR CŨ
         // ==================================================
 
         if (
@@ -536,9 +498,6 @@ module.exports = {
                     user.repair.endAt
                 );
 
-
-            // Nếu sửa đã xong nhưng bot chưa xử lý
-
             if (
                 endAt &&
                 Date.now() >= endAt
@@ -550,7 +509,6 @@ module.exports = {
                 );
 
             }
-
         }
 
 
@@ -566,10 +524,8 @@ module.exports = {
             const repairId =
                 user.repair.rodId;
 
-
             const base =
                 rods[repairId];
-
 
             const remaining =
                 Math.max(
@@ -580,60 +536,41 @@ module.exports = {
                     Date.now()
                 );
 
-
             return message.reply({
 
                 embeds: [
 
                     new EmbedBuilder()
 
-                        .setColor(
-                            "#f5a623"
-                        )
-
-                        .setAuthor({
-
-                            name:
-                                `${message.author.username} · Workshop`,
-
-                            iconURL:
-                                message.author.displayAvatarURL({
-                                    extension: "png",
-                                    size: 128
-                                })
-
-                        })
+                        .setColor("#f5a623")
 
                         .setTitle(
-                            "🔧 Cần đang được sửa"
+                            "🔧 `REPAIRING`"
                         )
 
                         .setDescription(
 
-                            `${base?.emoji || "🎣"} **${base?.name || "Cần câu"}**\n\n` +
+                            `${base?.emoji || "🎣"} ` +
+                            `${base?.name || "Cần câu"}\n\n` +
 
-                            `🔧 Trạng thái: **Đang sửa chữa**\n` +
-
-                            `⏳ Còn lại: **${formatTime(
+                            `> 🔧 Trạng thái: Đang sửa\n` +
+                            `> ⏳ Còn lại: ${formatTime(
                                 remaining / 1000
-                            )}**\n\n` +
+                            )}\n\n` +
 
-                            `💡 Bạn có thể trang bị **cần khác** ` +
+                            `💡 Bạn có thể trang bị cần khác ` +
                             `trong lúc chờ sửa.`
 
                         )
 
                         .setFooter({
-
                             text:
-                                "Fishing Adventure · Workshop"
-
+                                "✦ Fishing Adventure · Workshop"
                         })
 
                 ]
 
             });
-
         }
 
 
@@ -644,7 +581,6 @@ module.exports = {
         const id =
             user.can?.dangDung;
 
-
         if (!id) {
 
             return message.reply({
@@ -653,89 +589,150 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor(
-                            "#ff6b81"
-                        )
-
-                        .setAuthor({
-
-                            name:
-                                `${message.author.username} · Workshop`,
-
-                            iconURL:
-                                message.author.displayAvatarURL({
-                                    extension: "png",
-                                    size: 128
-                                })
-
-                        })
+                        .setColor("#ff6b81")
 
                         .setTitle(
-                            "🎣 Chưa trang bị cần"
+                            "🎣 `NO ROD EQUIPPED`"
                         )
 
                         .setDescription(
-                            "Bạn chưa trang bị cần câu.\n\n" +
-                            "Hãy trang bị một chiếc cần trước khi sửa."
+
+                            `Bạn chưa trang bị cần câu.\n\n` +
+
+                            `> 💡 Hãy trang bị một chiếc cần ` +
+                            `trước khi sửa.`
+
                         )
 
                         .setFooter({
-
                             text:
-                                "Fishing Adventure · Workshop"
-
+                                "✦ Fishing Adventure"
                         })
 
                 ]
 
             });
-
         }
 
 
         // ==================================================
-        // THÔNG TIN CẦN
+        // LẤY THÔNG TIN CẦN
         // ==================================================
 
         const base =
             rods[id];
 
-
         if (!base) {
 
-            return message.reply({
-
-                content:
-                    "❌ Không tìm thấy loại cần."
-
-            });
-
+            return message.reply(
+                "╰・❌ Không tìm thấy loại cần."
+            );
         }
-
 
         const rod =
             user.rodData?.[id];
 
-
         if (!rod) {
 
-            return message.reply({
-
-                content:
-                    "❌ Không tìm thấy dữ liệu cần."
-
-            });
-
+            return message.reply(
+                "╰・❌ Không tìm thấy dữ liệu cần."
+            );
         }
 
 
-        // Đảm bảo maxUses tồn tại
+        rod.maxUses =
+            rod.maxUses ||
+            base.uses ||
+            1;
 
-        if (!rod.maxUses) {
 
-            rod.maxUses =
-                base.uses;
+        // ==================================================
+        // CẦN ĐÃ GÃY
+        // ==================================================
 
+        if (
+            rod.destroyed ||
+            rod.uses <= 0
+        ) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor("#ff4d67")
+
+                        .setTitle(
+                            "💥 `ROD BROKEN`"
+                        )
+
+                        .setDescription(
+
+                            `${base.emoji} ${base.name}\n\n` +
+
+                            `> 🎯 Độ bền: 0/${rod.maxUses}\n` +
+                            `> 🔧 Trạng thái: Đã gãy\n\n` +
+
+                            `Cần câu đã hỏng hoàn toàn.\n` +
+                            `Việc sửa chữa không còn hiệu quả.\n\n` +
+
+                            `💡 Khuyến nghị: Mua cần mới ` +
+                            `để tiếp tục câu cá.`
+
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+
+                ]
+
+            });
+        }
+
+
+        // ==================================================
+        // CẦN CÒN ĐẦY
+        // ==================================================
+
+        if (
+            rod.uses >= rod.maxUses
+        ) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor("#8affb2")
+
+                        .setTitle(
+                            "✨ `ROD IS READY`"
+                        )
+
+                        .setDescription(
+
+                            `${base.emoji} ${base.name}\n\n` +
+
+                            `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                            `> 🔧 Trạng thái: Sẵn sàng\n\n` +
+
+                            `Cần câu vẫn còn tốt.\n` +
+                            `Không cần sửa chữa.`
+
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+
+                ]
+
+            });
         }
 
 
@@ -749,106 +746,18 @@ module.exports = {
                 rod
             );
 
-
         const repairSeconds =
             getRepairTime(
                 base,
                 rod
             );
 
-
-        const ratio =
-            Math.max(
-                0,
-                Math.min(
-                    1,
-                    rod.uses /
-                    rod.maxUses
-                )
+        const quickPrice =
+            getQuickRepairPrice(
+                base,
+                price,
+                repairSeconds
             );
-
-
-        const percent =
-            Math.floor(
-                ratio * 100
-            );
-
-
-        const size = 16;
-
-
-        const filled =
-            Math.round(
-                ratio * size
-            );
-
-
-        const bar =
-            "█".repeat(
-                filled
-            ) +
-
-            "░".repeat(
-                size - filled
-            );
-
-
-        // ==================================================
-        // TRẠNG THÁI
-        // ==================================================
-
-        let status =
-            "🟢 Tốt";
-
-        let color =
-            "#72e6c1";
-
-
-        if (percent <= 75) {
-
-            status =
-                "🟡 Đang hao mòn";
-
-            color =
-                "#ffd166";
-
-        }
-
-
-        if (percent <= 50) {
-
-            status =
-                "🟠 Cần bảo dưỡng";
-
-            color =
-                "#ff9f68";
-
-        }
-
-
-        if (percent <= 25) {
-
-            status =
-                "🔴 Rất yếu";
-
-            color =
-                "#ff6b81";
-
-        }
-
-
-        if (
-            rod.destroyed ||
-            rod.uses <= 0
-        ) {
-
-            status =
-                "💥 Đã gãy";
-
-            color =
-                "#ff4d67";
-
-        }
 
 
         // ==================================================
@@ -857,141 +766,74 @@ module.exports = {
 
         function createRepairEmbed() {
 
+            const ratio =
+                Math.max(
+                    0,
+                    Math.min(
+                        1,
+                        rod.uses /
+                        rod.maxUses
+                    )
+                );
+
+            const percent =
+                Math.floor(
+                    ratio * 100
+                );
+
+            const size =
+                16;
+
+            const filled =
+                Math.round(
+                    ratio * size
+                );
+
+            const bar =
+                "█".repeat(
+                    filled
+                ) +
+                "░".repeat(
+                    size - filled
+                );
+
             return new EmbedBuilder()
 
-                .setColor(
-                    color
-                )
-
-                .setAuthor({
-
-                    name:
-                        `${message.author.username} · Workshop`,
-
-                    iconURL:
-                        message.author.displayAvatarURL({
-                            extension: "png",
-                            size: 128
-                        })
-
-                })
+                .setColor("#ffd166")
 
                 .setTitle(
-                    "🔧 Sửa chữa cần câu"
+                    "🔧 `ROD REPAIR`"
                 )
 
                 .setDescription(
 
-                    `${base.emoji} **${base.name}**\n` +
+                    `${base.emoji} ${base.name}\n` +
 
                     `${"⭐".repeat(
                         base.star || 1
                     )}\n\n` +
 
-                    `${status}\n` +
+                    `\`${bar}\` ${percent}%\n` +
 
-                    `\`${bar}\` **${percent}%**\n` +
+                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                    `> 💸 Sửa thường: ${formatMoney(price)} ${emoji.money}\n` +
+                    `> ⏳ Thời gian: ${formatTime(repairSeconds)}\n` +
+                    `> ⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+                    `> 💰 Số dư: ${formatMoney(user.money)} ${emoji.money}\n\n` +
 
-                    `🎯 ${rod.uses}/${rod.maxUses} độ bền`
-
-                )
-
-                .addFields(
-
-                    {
-
-                        name:
-                            "💸 Phí sửa",
-
-                        value:
-                            `${formatMoney(price)} ${emoji.money}`,
-
-                        inline:
-                            true
-
-                    },
-
-                    {
-
-                        name:
-                            "⏳ Thời gian",
-
-                        value:
-                            formatTime(
-                                repairSeconds
-                            ),
-
-                        inline:
-                            true
-
-                    },
-
-                    {
-
-                        name:
-                            "💰 Số dư",
-
-                        value:
-                            `${formatMoney(user.money)} ${emoji.money}`,
-
-                        inline:
-                            true
-
-                    },
-
-                    {
-
-                        name:
-                            "🎣 Độ bền tối đa",
-
-                        value:
-                            `${rod.maxUses}`,
-
-                        inline:
-                            true
-
-                    },
-
-                    {
-
-                        name:
-                            "🍀 May mắn",
-
-                        value:
-                            `+${base.luck || 0}`,
-
-                        inline:
-                            true
-
-                    },
-
-                    {
-
-                        name:
-                            "⭐ Cấp cần",
-
-                        value:
-                            `${base.star || 1}`,
-
-                        inline:
-                            true
-
-                    }
+                    `✦ *Cần càng hỏng, thời gian và phí sửa càng cao.*`
 
                 )
 
                 .setFooter({
-
                     text:
-                        "💡 Cần càng hỏng → sửa càng lâu"
-
+                        "✦ Fishing Adventure · Workshop"
                 });
-
         }
 
 
         // ==================================================
-        // NÚT
+        // BUTTON
         // ==================================================
 
         const repairButton =
@@ -1013,6 +855,24 @@ module.exports = {
                     ButtonStyle.Primary
                 );
 
+        const quickButton =
+            new ButtonBuilder()
+
+                .setCustomId(
+                    `repair_quick_${message.author.id}`
+                )
+
+                .setLabel(
+                    "Sửa nhanh"
+                )
+
+                .setEmoji(
+                    "⚡"
+                )
+
+                .setStyle(
+                    ButtonStyle.Success
+                );
 
         const cancelButton =
             new ButtonBuilder()
@@ -1033,11 +893,11 @@ module.exports = {
                     ButtonStyle.Secondary
                 );
 
-
         const row =
             new ActionRowBuilder()
                 .addComponents(
                     repairButton,
+                    quickButton,
                     cancelButton
                 );
 
@@ -1066,20 +926,13 @@ module.exports = {
 
         const collector =
             reply.createMessageComponentCollector({
-
-                time:
-                    120000
-
+                time: 120000
             });
 
 
         collector.on(
             "collect",
             async interaction => {
-
-                // ==========================================
-                // KIỂM TRA USER
-                // ==========================================
 
                 if (
                     interaction.user.id !==
@@ -1095,7 +948,6 @@ module.exports = {
                             true
 
                     });
-
                 }
 
 
@@ -1112,34 +964,29 @@ module.exports = {
                         "cancel"
                     );
 
-
                     return interaction.update({
 
                         embeds: [
 
                             new EmbedBuilder()
 
-                                .setColor(
-                                    "#777777"
-                                )
+                                .setColor("#777777")
 
                                 .setTitle(
-                                    "❌ Đã hủy sửa chữa"
+                                    "❌ `REPAIR CANCELLED`"
                                 )
 
                                 .setDescription(
 
-                                    `${base.emoji} **${base.name}**\n\n` +
+                                    `${base.emoji} ${base.name}\n\n` +
 
-                                    "Không có thay đổi nào được thực hiện."
+                                    `Không có thay đổi nào được thực hiện.`
 
                                 )
 
                                 .setFooter({
-
                                     text:
-                                        "Fishing Adventure"
-
+                                        "✦ Fishing Adventure"
                                 })
 
                         ],
@@ -1147,104 +994,52 @@ module.exports = {
                         components: []
 
                     });
-
                 }
 
 
                 // ==========================================
-                // BẤM SỬA
+                // SỬA NHANH
                 // ==========================================
 
                 if (
                     interaction.customId ===
-                    `repair_start_${message.author.id}`
+                    `repair_quick_${message.author.id}`
                 ) {
-
-                    // Cần đã đầy
-
-                    if (
-                        rod.uses >= rod.maxUses &&
-                        !rod.destroyed
-                    ) {
-
-                        return interaction.update({
-
-                            embeds: [
-
-                                new EmbedBuilder()
-
-                                    .setColor(
-                                        "#72e6c1"
-                                    )
-
-                                    .setTitle(
-                                        "✨ Cần vẫn còn tốt"
-                                    )
-
-                                    .setDescription(
-
-                                        `${base.emoji} **${base.name}**\n\n` +
-
-                                        `\`${"█".repeat(16)}\` **100%**\n\n` +
-
-                                        `🎯 ${rod.uses}/${rod.maxUses}\n\n` +
-
-                                        "Cần chưa cần sửa."
-
-                                    )
-
-                            ],
-
-                            components: []
-
-                        });
-
-                    }
-
-
-                    // Không đủ tiền
 
                     if (
                         user.money <
-                        price
+                        quickPrice
                     ) {
 
                         return interaction.reply({
 
                             content:
-                                `❌ Bạn cần ${formatMoney(price)} ${emoji.money} để sửa.`,
+                                `❌ Bạn cần ${formatMoney(quickPrice)} ${emoji.money} để sửa nhanh.`,
 
                             ephemeral:
                                 true
 
                         });
-
                     }
-
-
-                    // ======================================
-                    // XÁC NHẬN
-                    // ======================================
 
                     const confirm =
                         new ButtonBuilder()
 
                             .setCustomId(
-                                `repair_confirm_${message.author.id}`
+                                `repair_quick_confirm_${message.author.id}`
                             )
 
                             .setLabel(
-                                "Chấp nhận"
+                                "Sửa ngay"
                             )
 
                             .setEmoji(
-                                "✅"
+                                "⚡"
                             )
 
                             .setStyle(
                                 ButtonStyle.Success
                             );
-
 
                     const back =
                         new ButtonBuilder()
@@ -1254,17 +1049,16 @@ module.exports = {
                             )
 
                             .setLabel(
-                                "Hủy"
+                                "Quay lại"
                             )
 
                             .setEmoji(
-                                "❌"
+                                "↩️"
                             )
 
                             .setStyle(
-                                ButtonStyle.Danger
+                                ButtonStyle.Secondary
                             );
-
 
                     return interaction.update({
 
@@ -1272,52 +1066,30 @@ module.exports = {
 
                             new EmbedBuilder()
 
-                                .setColor(
-                                    "#9b7cff"
-                                )
-
-                                .setAuthor({
-
-                                    name:
-                                        `${message.author.username} · Workshop`,
-
-                                    iconURL:
-                                        message.author.displayAvatarURL({
-                                            extension: "png",
-                                            size: 128
-                                        })
-
-                                })
+                                .setColor("#ffd166")
 
                                 .setTitle(
-                                    "🔧 Xác nhận sửa"
+                                    "⚡ `QUICK REPAIR`"
                                 )
 
                                 .setDescription(
 
-                                    `${base.emoji} **${base.name}**\n\n` +
+                                    `${base.emoji} ${base.name}\n\n` +
 
-                                    `🎯 Độ bền: **${rod.uses}/${rod.maxUses}**\n` +
+                                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                                    `> 💸 Sửa thường: ${formatMoney(price)} ${emoji.money}\n` +
+                                    `> ⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+                                    `> ⏳ Thời gian: Hoàn tất ngay\n\n` +
 
-                                    `💸 Chi phí: **${formatMoney(price)} ${emoji.money}**\n` +
+                                    `*Sửa nhanh bỏ qua toàn bộ thời gian chờ.*\n\n` +
 
-                                    `⏳ Thời gian: **${formatTime(
-                                        repairSeconds
-                                    )}**\n\n` +
-
-                                    `💡 Trong thời gian sửa, bạn có thể ` +
-
-                                    `trang bị **cần khác** để tiếp tục câu.\n\n` +
-
-                                    `Xác nhận bắt đầu sửa?`
+                                    `✦ Xác nhận sửa ngay?`
 
                                 )
 
                                 .setFooter({
-
                                     text:
-                                        "Cần sẽ được sửa trong thời gian trên"
-
+                                        "✦ Fishing Adventure · Workshop"
                                 })
 
                         ],
@@ -1333,7 +1105,117 @@ module.exports = {
                         ]
 
                     });
+                }
 
+
+                // ==========================================
+                // BẮT ĐẦU SỬA THƯỜNG
+                // ==========================================
+
+                if (
+                    interaction.customId ===
+                    `repair_start_${message.author.id}`
+                ) {
+
+                    if (
+                        user.money <
+                        price
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                `❌ Bạn cần ${formatMoney(price)} ${emoji.money} để sửa.`,
+
+                            ephemeral:
+                                true
+
+                        });
+                    }
+
+                    const confirm =
+                        new ButtonBuilder()
+
+                            .setCustomId(
+                                `repair_confirm_${message.author.id}`
+                            )
+
+                            .setLabel(
+                                "Xác nhận"
+                            )
+
+                            .setEmoji(
+                                "✅"
+                            )
+
+                            .setStyle(
+                                ButtonStyle.Success
+                            );
+
+                    const back =
+                        new ButtonBuilder()
+
+                            .setCustomId(
+                                `repair_back_${message.author.id}`
+                            )
+
+                            .setLabel(
+                                "Quay lại"
+                            )
+
+                            .setEmoji(
+                                "↩️"
+                            )
+
+                            .setStyle(
+                                ButtonStyle.Secondary
+                            );
+
+                    return interaction.update({
+
+                        embeds: [
+
+                            new EmbedBuilder()
+
+                                .setColor("#9b7cff")
+
+                                .setTitle(
+                                    "🔧 `CONFIRM REPAIR`"
+                                )
+
+                                .setDescription(
+
+                                    `${base.emoji} ${base.name}\n\n` +
+
+                                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                                    `> 💸 Chi phí: ${formatMoney(price)} ${emoji.money}\n` +
+                                    `> ⏳ Thời gian: ${formatTime(repairSeconds)}\n\n` +
+
+                                    `💡 Bạn có thể trang bị cần khác ` +
+                                    `trong lúc chờ.\n\n` +
+
+                                    `✦ Xác nhận bắt đầu sửa?`
+
+                                )
+
+                                .setFooter({
+                                    text:
+                                        "✦ Fishing Adventure · Workshop"
+                                })
+
+                        ],
+
+                        components: [
+
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    confirm,
+                                    back
+                                )
+
+                        ]
+
+                    });
                 }
 
 
@@ -1357,20 +1239,17 @@ module.exports = {
                         ]
 
                     });
-
                 }
 
 
                 // ==========================================
-                // CHẤP NHẬN
+                // XÁC NHẬN SỬA THƯỜNG
                 // ==========================================
 
                 if (
                     interaction.customId ===
                     `repair_confirm_${message.author.id}`
                 ) {
-
-                    // Kiểm tra tiền lần cuối
 
                     if (
                         user.money <
@@ -1386,33 +1265,14 @@ module.exports = {
                                 true
 
                         });
-
                     }
-
-
-                    // ======================================
-                    // TRỪ TIỀN
-                    // ======================================
 
                     user.money -=
                         price;
 
-
-                    // ======================================
-                    // TÍNH THỜI GIAN
-                    // ======================================
-
                     const endAt =
                         Date.now() +
-                        (
-                            repairSeconds *
-                            1000
-                        );
-
-
-                    // ======================================
-                    // LƯU TRẠNG THÁI SỬA
-                    // ======================================
+                        repairSeconds * 1000;
 
                     user.repair = {
 
@@ -1424,21 +1284,12 @@ module.exports = {
 
                     };
 
-
-                    // LƯU CHANNEL
-                    // để sau này bot biết gửi thông báo ở đâu
-
                     user.repairChannel =
                         message.channel.id;
 
-
-                    // ======================================
-                    // THÁO CẦN ĐANG DÙNG
-                    // ======================================
-
+                    // Tháo cần đang dùng
                     if (
-                        user.can &&
-                        user.can.dangDung === id
+                        user.can?.dangDung === id
                     ) {
 
                         user.can.dangDung =
@@ -1446,40 +1297,102 @@ module.exports = {
 
                     }
 
-
                     save();
-
-
-                    // ======================================
-                    // TẠO TIMER
-                    // ======================================
 
                     setTimeout(
                         async () => {
 
                             await finishRepair(
-
                                 message.client,
-
                                 message.author.id
-
                             );
 
                         },
-
                         repairSeconds * 1000
-
                     );
-
 
                     collector.stop(
                         "repairing"
                     );
 
+                    return interaction.update({
 
-                    // ======================================
-                    // EMBED ĐANG SỬA
-                    // ======================================
+                        embeds: [
+
+                            createRepairingEmbed(
+                                message,
+                                base,
+                                rod,
+                                price,
+                                repairSeconds,
+                                quickPrice
+                            )
+
+                        ],
+
+                        components: []
+
+                    });
+                }
+
+
+                // ==========================================
+                // XÁC NHẬN SỬA NHANH
+                // ==========================================
+
+                if (
+                    interaction.customId ===
+                    `repair_quick_confirm_${message.author.id}`
+                ) {
+
+                    if (
+                        user.money <
+                        quickPrice
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Bạn không còn đủ tiền để sửa nhanh.",
+
+                            ephemeral:
+                                true
+
+                        });
+                    }
+
+                    user.money -=
+                        quickPrice;
+
+                    rod.maxUses =
+                        rod.maxUses ||
+                        base.uses ||
+                        1;
+
+                    rod.uses =
+                        rod.maxUses;
+
+                    rod.destroyed =
+                        false;
+
+                    // Nếu đang dùng cần này
+                    if (
+                        user.can?.dangDung === id
+                    ) {
+
+                        user.can.dangDung =
+                            null;
+
+                    }
+
+                    delete user.repair;
+                    delete user.repairChannel;
+
+                    save();
+
+                    collector.stop(
+                        "quick_repair"
+                    );
 
                     return interaction.update({
 
@@ -1487,64 +1400,39 @@ module.exports = {
 
                             new EmbedBuilder()
 
-                                .setColor(
-                                    "#f5a623"
-                                )
-
-                                .setAuthor({
-
-                                    name:
-                                        `${message.author.username} · Workshop`,
-
-                                    iconURL:
-                                        message.author.displayAvatarURL({
-                                            extension: "png",
-                                            size: 128
-                                        })
-
-                                })
+                                .setColor("#8affb2")
 
                                 .setTitle(
-                                    "🔧 Đang sửa cần"
+                                    "⚡ `QUICK REPAIR COMPLETE`"
                                 )
 
                                 .setDescription(
 
-                                    `${base.emoji} **${base.name}**\n\n` +
+                                    `*Cần câu đã được sửa nhanh thành công.*\n\n` +
 
-                                    `🎯 Độ bền: **${rod.uses}/${rod.maxUses}**\n\n` +
+                                    `${base.emoji} ${base.name}\n\n` +
 
-                                    `💸 Đã thanh toán: **${formatMoney(price)} ${emoji.money}**\n` +
+                                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                                    `> ⚡ Đã thanh toán: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+                                    `> ⏳ Thời gian: Hoàn tất ngay\n` +
+                                    `> 🔧 Trạng thái: Sẵn sàng\n\n` +
 
-                                    `⏳ Thời gian sửa: **${formatTime(
-                                        repairSeconds
-                                    )}**\n\n` +
-
-                                    `🔧 Cần đang được sửa...\n\n` +
-
-                                    `Bạn có thể trang bị **cần khác** ` +
-
-                                    `và tiếp tục câu cá.\n\n` +
-
-                                    `✨ Khi hoàn tất, cần sẽ tự động hồi ` +
-
-                                    `**${rod.maxUses}/${rod.maxUses}** độ bền.`
+                                    `✦ *Cần câu đã được phục hồi hoàn toàn.*`
 
                                 )
 
                                 .setFooter({
-
                                     text:
-                                        "Fishing Adventure · Workshop"
-
+                                        "✦ Fishing Adventure · Workshop"
                                 })
+
+                                .setTimestamp()
 
                         ],
 
                         components: []
 
                     });
-
                 }
 
             }
@@ -1552,7 +1440,7 @@ module.exports = {
 
 
         // ==================================================
-        // HẾT THỜI GIAN COLLECTOR
+        // COLLECTOR END
         // ==================================================
 
         collector.on(
@@ -1562,9 +1450,7 @@ module.exports = {
                 try {
 
                     await reply.edit({
-
                         components: []
-
                     });
 
                 } catch {}

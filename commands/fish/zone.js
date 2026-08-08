@@ -6,156 +6,91 @@ const {
     fishingZones
 } = require("../../config");
 
-
-// ======================
+// ======================================================
 // LẤY VÙNG HIỆN TẠI
-// ======================
+// ======================================================
 
-function getCurrentZone(){
+function getCurrentZone() {
 
     const now = new Date();
 
-
-    // Chủ nhật mở núi lửa
-
-    if(now.getDay() === 0){
-
+    // Chủ nhật → Núi lửa
+    if (now.getDay() === 0)
         return fishingZones.volcano;
 
-    }
-
-
-
-    // Đổi vùng mỗi 6 tiếng
-
     const zones = [
-
         fishingZones.tropical,
-
         fishingZones.cold,
-
         fishingZones.swamp,
-
         fishingZones.deep
-
     ];
 
-
-
     const index =
-
-    Math.floor(now.getHours() / 6);
-
-
+        Math.floor(now.getHours() / 6);
 
     return zones[index % zones.length];
-
 }
 
 
+// ======================================================
+// MODULE
+// ======================================================
 
 module.exports = {
 
-    name:"zone",
+    name: "zone",
 
-    aliases:[
-
+    aliases: [
         "vung",
-
         "khu"
-
     ],
 
+    async execute(message) {
 
+        const zone =
+            getCurrentZone();
 
-    async execute(message){
+        const now =
+            new Date();
 
-
-        const zone = getCurrentZone();
-
-
-
-        const now = new Date();
-
-
-
+        // Mốc đổi vùng tiếp theo
         const nextHour =
-
-        (Math.floor(now.getHours() / 6) + 1) * 6;
-
-
+            (Math.floor(now.getHours() / 6) + 1) * 6;
 
         const remain =
+            nextHour - now.getHours();
 
-        nextHour - now.getHours();
-
-
-
-        message.reply({
-
-            embeds:[
-
-                new EmbedBuilder()
+        const embed =
+            new EmbedBuilder()
 
                 .setColor("#7ddcff")
 
-                .setImage(zone.image)
-
                 .setTitle(
-
-                    "🌍 Khu vực câu cá hiện tại"
-
+                    "🌍 KHU VỰC CÂU CÁ"
                 )
 
                 .setDescription(
+                    `${zone.name}\n` +
+                    `${zone.description}\n\n` +
 
-`｡･:*˚:✧* ***Fishing Adventure*** *✧:˚*:･｡
+                    `🐟 Cá: ${zone.fish.length} loại\n` +
+                    `⏰ Đổi vùng: ${remain} giờ\n` +
+                    `🕐 Thời gian: <t:${Math.floor(Date.now() / 1000)}:R>`
+                )
 
-
-🌊 Vùng:
-
-${zone.name}
-
-
-📖 Mô tả:
-
-${zone.description}
-
-
-🐟 Cá có thể câu:
-
-${zone.fish.length} loại
-
-
-⏰ Đổi vùng sau:
-
-${remain} giờ
-
-
-📅 Thời gian:
-
-<t:${Math.floor(Date.now()/1000)}:R>
-
-
-⋆｡˚ ✨ Chúc bạn câu may mắn ✨ ˚｡⋆`
-
+                .setImage(
+                    zone.image
                 )
 
                 .setFooter({
-
                     text:
+                        "✦ Fishing Adventure"
+                });
 
-                    "୨୧ ✦ Fishing Adventure • Ocean Diary ✦ ୨୧"
-
-                })
-
-                .setTimestamp()
-
+        return message.reply({
+            embeds: [
+                embed
             ]
-
         });
-
-
     }
-
 };

@@ -16,6 +16,7 @@ const {
 } = require("../../data");
 
 module.exports = {
+
     name: "inventory",
 
     aliases: [
@@ -30,32 +31,80 @@ module.exports = {
                 message.author.id
             );
 
-        let bait = "";
-        let key = "";
+        // ==========================================
+        // MỒI
+        // ==========================================
+
+        let baitText = "";
 
         for (const id in baits) {
 
-            const x = baits[id];
+            const x =
+                baits[id];
 
-            bait +=
-                `${x.emoji} ${x.name} x${user.moi[id] || 0}\n`;
+            const amount =
+                user.moi?.[id] || 0;
+
+            if (amount <= 0)
+                continue;
+
+            baitText +=
+                `${x.emoji} ${x.name} x${amount}\n`;
         }
+
+        if (!baitText)
+            baitText = "Không có mồi";
+
+
+        // ==========================================
+        // CHÌA KHÓA
+        // ==========================================
+
+        let keyText = "";
 
         for (const id in keys) {
 
-            const x = keys[id];
+            const x =
+                keys[id];
 
-            key +=
-                `${x.emoji} ${x.name} x${user.keys[id] || 0}\n`;
+            const amount =
+                user.keys?.[id] || 0;
+
+            if (amount <= 0)
+                continue;
+
+            keyText +=
+                `${x.emoji} ${x.name} x${amount}\n`;
         }
+
+        if (!keyText)
+            keyText = "Không có chìa khóa";
+
+
+        // ==========================================
+        // BẢO HIỂM
+        // ==========================================
+
+        let insuranceText = "";
 
         for (const id in insurance) {
 
-            const x = insurance[id];
+            const x =
+                insurance[id];
 
-            key +=
-                `${x.emoji} ${x.name} x${user.insurance || 0}\n`;
+            const amount =
+                user.insurance?.[id] || 0;
+
+            if (amount <= 0)
+                continue;
+
+            insuranceText +=
+                `${x.emoji} ${x.name} x${amount}\n`;
         }
+
+        if (!insuranceText)
+            insuranceText = "Không có bảo hiểm";
+
 
         // ==========================================
         // CÁ
@@ -63,13 +112,17 @@ module.exports = {
 
         let fishText = "";
         let fishValue = 0;
+        let fishCount = 0;
 
         for (const fish of fishList) {
 
             const list =
-                user.fish[fish.id];
+                user.fish?.[fish.id];
 
-            if (!list || list.length === 0)
+            if (
+                !list ||
+                list.length === 0
+            )
                 continue;
 
             let weight = 0;
@@ -77,83 +130,99 @@ module.exports = {
             for (const w of list)
                 weight += w;
 
-            const value =
+            fishValue +=
                 Math.floor(
                     weight * fish.sell
                 );
 
-            fishValue += value;
+            fishCount +=
+                list.length;
 
-            // Chỉ hiện emoji + số lượng
-            // Ví dụ: 🐟 x001
             fishText +=
-                `${fish.emoji} x${String(list.length).padStart(3, "0")} | `;
+                `${fish.emoji} x${String(
+                    list.length
+                ).padStart(3, "0")} · `;
+
         }
 
-        // Xóa dấu | cuối cùng
         if (fishText) {
-            fishText =
-                fishText.slice(0, -3);
-        }
 
-        if (!fishText)
+            fishText =
+                fishText.slice(
+                    0,
+                    -3
+                );
+
+        } else {
+
             fishText =
                 "Chưa có cá nào";
 
+        }
+
+
         // ==========================================
-        // EMBED USER
+        // EMBED
         // ==========================================
 
-        const userEmbed =
+        const embed =
             new EmbedBuilder()
+
                 .setColor("#9b59ff")
+
                 .setAuthor({
-                    name: message.author.username,
+
+                    name:
+                        `${message.author.username} · Inventory`,
+
                     iconURL:
                         message.author.displayAvatarURL({
-                            dynamic: true,
-                            size: 256
+                            extension: "png",
+                            size: 128
                         })
-                });
 
-        // ==========================================
-        // EMBED KHO
-        // ==========================================
+                })
 
-        const inventoryEmbed =
-            new EmbedBuilder()
-                .setColor("#9b59ff")
                 .setTitle(
-                    "╭・🎒 KHO ĐỒ"
+                    "🎒 `INVENTORY`"
                 )
+
                 .setDescription(
-                    `╭・🐟 CÁ
-${fishText}
 
-╭・💰 GIÁ TRỊ CÁ
-${formatMoney(fishValue)} ${emoji.money}
+                    `*Kho đồ hiện tại của bạn.*\n\n` +
 
-╭・🪱 MỒI
-${bait}
+                    `🐟 Cá\n` +
+                    `${fishText}\n\n` +
 
-╭・🎟️ CHÌA KHÓA & BẢO HIỂM
-${key}
+                    `> 🐟 Số lượng cá: ${fishCount}\n` +
+                    `> 💰 Giá trị cá: ${formatMoney(fishValue)} ${emoji.money}\n\n` +
 
-╰・🎣 Fish System`
+                    `🪱 Mồi\n` +
+                    `${baitText}\n\n` +
+
+                    `🎟️ Chìa khóa\n` +
+                    `${keyText}\n\n` +
+
+                    `🛡️ Bảo hiểm\n` +
+                    `${insuranceText}`
+
                 )
-                .setFooter({
-                    text: "Quản lý vật phẩm"
-                });
 
-        // ==========================================
-        // GỬI 2 EMBED
-        // ==========================================
+                .setFooter({
+
+                    text:
+                        "✦ Fishing Adventure · Inventory"
+
+                });
 
         message.reply({
+
             embeds: [
-                userEmbed,
-                inventoryEmbed
+                embed
             ]
+
         });
+
     }
+
 };
