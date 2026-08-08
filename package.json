@@ -6,6 +6,8 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@vntk/dictionary": "^1.0.0",
+    "an-array-of-english-words": "^2.0.0",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5"
   }
