@@ -1,6 +1,6 @@
 {
   "398030689905278977": {
-    "money": 7600,
+    "money": 7900,
     "level": 1,
     "exp": 0,
     "can": {
@@ -59,11 +59,11 @@
     }
   },
   "743028655097380895": {
-    "money": 76300000,
+    "money": 74964753,
     "level": 1,
     "exp": 0,
     "can": {
-      "dangDung": "can_5",
+      "dangDung": "can_1",
       "danhSach": {
         "can_1": 1,
         "can_5": 1
@@ -72,7 +72,7 @@
     "moi": {
       "moithuong": 10,
       "moibac": 0,
-      "moivang": 264
+      "moivang": 262
     },
     "fish": {
       "cachep": [
@@ -116,7 +116,8 @@
         4.01,
         7.21,
         8.33,
-        3.99
+        3.99,
+        4.16
       ],
       "muc": [
         1.52,
@@ -232,7 +233,8 @@
         2.28,
         3.56,
         3.81,
-        4.88
+        4.88,
+        3.1
       ],
       "canoc": [
         4.98,
@@ -350,14 +352,14 @@
       "can_1": {
         "level": 4,
         "luck": 9,
-        "uses": 10,
+        "uses": 20,
         "maxUses": 20,
         "destroyed": false
       },
       "can_5": {
-        "level": 4,
-        "luck": 34,
-        "uses": 264,
+        "level": 5,
+        "luck": 36,
+        "uses": 500,
         "maxUses": 500,
         "destroyed": false
       }
@@ -527,6 +529,40 @@
     "inv": {},
     "daily": {
       "last": 1786166434153,
+      "streak": 1
+    },
+    "quest": {
+      "date": "",
+      "list": [],
+      "claim": false
+    },
+    "rodData": {},
+    "stats": {
+      "catch": 0,
+      "sell": 0,
+      "kg": 0
+    }
+  },
+  "755423975584039002": {
+    "money": 11000,
+    "level": 1,
+    "exp": 0,
+    "can": {
+      "dangDung": null,
+      "danhSach": {}
+    },
+    "moi": {
+      "moithuong": 10,
+      "moibac": 0,
+      "moivang": 0
+    },
+    "fish": {},
+    "keys": {},
+    "chests": {},
+    "insurance": 0,
+    "inv": {},
+    "daily": {
+      "last": 1786178848320,
       "streak": 1
     },
     "quest": {
