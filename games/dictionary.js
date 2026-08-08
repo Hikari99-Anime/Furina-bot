@@ -72,14 +72,14 @@ const viByFirstWord = groupBy(viPhrases, p => p.split(" ")[0]);
 
 
 
-function hasContinuation(entry,lang,used){
+function hasContinuation(entry,lang,isUsed){
 
     if(lang === "en"){
 
         const bucket =
         enByFirstLetter.get(entry[entry.length-1]) || [];
 
-        return bucket.some(w => !used.has(w));
+        return bucket.some(w => !isUsed(w));
 
     }
 
@@ -87,7 +87,7 @@ function hasContinuation(entry,lang,used){
     const bucket =
     viByFirstWord.get(entry.split(" ")[1]) || [];
 
-    return bucket.some(p => !used.has(p));
+    return bucket.some(p => !isUsed(p));
 
 }
 

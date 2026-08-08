@@ -36,12 +36,16 @@ Có bán cả vé bảo hiểm (bảo vệ cần khi cường hóa thất bại)
 \`${prefix}daily\` • \`${prefix}quest\` • \`${prefix}open\`
 
 👤 **Người chơi**
-\`${prefix}profile\` • \`${prefix}top\` • \`${prefix}givemoney @user <số tiền>\`
+\`${prefix}profile\` • \`${prefix}top\` • \`${prefix}gold\` • \`${prefix}givemoney @user <số tiền>\`
 
 🔗 **Mini-game**
 \`${prefix}noitu vi\` (nối từ tiếng Việt) • \`${prefix}noitu en\` (word chain tiếng Anh)
 Nối đúng: +300 xu · Ai nối được từ hết đường nối (dead-end): +1,000 xu, tự ra round mới
 Round tự đếm (reset mỗi 10), không tự dừng — admin dùng \`${prefix}noitu stop\` để dừng hẳn
+
+🎲 **Cờ bạc**
+\`${prefix}taixiu\` • \`${prefix}xidach <tiền cược>\` • \`${prefix}tdx n/s <tiền cược>\`
+Tung đồng xu 50/50: \`${prefix}tdx n 1000\` (ngửa) hoặc \`${prefix}tdx s 1000\` (sấp)
 
 💡 Dùng \`${prefix}shop\` để bắt đầu hành trình câu cá.
 `)
