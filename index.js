@@ -16,6 +16,9 @@ const {
 const PREFIX = prefix;
 
 
+const noitu = require("./games/noitugame");
+
+
 const {
     getUser
 } = require("./data");
@@ -275,6 +278,12 @@ async message=>{
 
 
 if(message.author.bot)
+
+return;
+
+
+
+if(await noitu.handleMessage(message))
 
 return;
 
