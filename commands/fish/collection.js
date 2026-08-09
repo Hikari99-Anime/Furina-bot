@@ -117,6 +117,7 @@ function getImage(image) {
 
     // Markdown:
     // [Tên](https://...)
+
     if (
         image.startsWith("[") &&
         image.includes("](")
@@ -134,6 +135,7 @@ function getImage(image) {
     }
 
     // URL bình thường
+
     if (
         /^https?:\/\/.+/i.test(
             image
@@ -293,6 +295,52 @@ function getZoneStatus(
 }
 
 // ======================================================
+// 📖 KIỂM TRA COLLECTION
+// ======================================================
+
+function hasCollected(
+    user,
+    fishId
+) {
+
+    // ----------------------------------------------
+    // DATA MỚI
+    // ----------------------------------------------
+
+    if (
+        user.collection &&
+        user.collection[fishId] === true
+    ) {
+
+        return true;
+    }
+
+    // ----------------------------------------------
+    // TƯƠNG THÍCH DATA CŨ
+    // ----------------------------------------------
+    /*
+     * Nếu người chơi đã bắt cá từ trước khi có
+     * hệ thống collection mới thì vẫn cho phép
+     * Collection nhận diện cá đó.
+     *
+     * Tuy nhiên sau khi sell cá cũ thì dữ liệu cũ
+     * sẽ không thể biết được nữa nếu chưa migrate.
+     */
+
+    const oldFish =
+        user.fish?.[
+            fishId
+        ];
+
+    return (
+        Array.isArray(
+            oldFish
+        ) &&
+        oldFish.length > 0
+    );
+}
+
+// ======================================================
 // MODULE
 // ======================================================
 
@@ -346,6 +394,13 @@ module.exports = {
 
             });
         }
+
+        // ==================================================
+        // 📖 ĐẢM BẢO COLLECTION
+        // ==================================================
+
+        user.collection =
+            user.collection || {};
 
         // ==================================================
         // 🐟 FISH LIST AN TOÀN
@@ -503,19 +558,14 @@ module.exports = {
                 total++;
 
                 // ------------------------------------------
-                // KIỂM TRA ĐÃ BẮT
+                // KIỂM TRA COLLECTION
                 // ------------------------------------------
 
-                const owned =
-                    user.fish?.[
-                        fishId
-                    ];
-
                 if (
-                    Array.isArray(
-                        owned
-                    ) &&
-                    owned.length > 0
+                    hasCollected(
+                        user,
+                        fishId
+                    )
                 ) {
 
                     caught++;
@@ -662,16 +712,15 @@ module.exports = {
 
                 totalFish++;
 
-                const owned =
-                    user.fish?.[
-                        fishId
-                    ];
+                // ------------------------------------------
+                // 📖 COLLECTION
+                // ------------------------------------------
 
                 const hasFish =
-                    Array.isArray(
-                        owned
-                    ) &&
-                    owned.length > 0;
+                    hasCollected(
+                        user,
+                        fishId
+                    );
 
                 if (
                     hasFish
@@ -835,15 +884,6 @@ module.exports = {
 
             const rows = [];
 
-            /*
-             * Discord:
-             *
-             * 5 button / row
-             * tối đa 5 ActionRow
-             *
-             * => tối đa 25 khu vực
-             */
-
             for (
                 let i = 0;
                 i < zoneIds.length &&
@@ -963,9 +1003,9 @@ module.exports = {
 
                 try {
 
-                    // ------------------------------------------
+                    // --------------------------------------
                     // 🔒 CHỈ CHỦ LỆNH
-                    // ------------------------------------------
+                    // --------------------------------------
 
                     if (
                         interaction.user.id !==
@@ -983,9 +1023,9 @@ module.exports = {
                         });
                     }
 
-                    // ------------------------------------------
+                    // --------------------------------------
                     // 🔙 NÚT TRANG CHỦ
-                    // ------------------------------------------
+                    // --------------------------------------
 
                     if (
                         interaction.customId ===
@@ -1007,39 +1047,39 @@ module.exports = {
                         });
                     }
 
-                    // ------------------------------------------
+                    // --------------------------------------
                     // PREFIX
-                    // ------------------------------------------
+                    // --------------------------------------
 
-                    const prefix =
+                    const buttonPrefix =
                         `collection_${message.author.id}_`;
 
-                    // ------------------------------------------
-                    // KHÔNG PHẢI BUTTON COLLECTION
-                    // ------------------------------------------
+                    // --------------------------------------
+                    // KHÔNG PHẢI COLLECTION
+                    // --------------------------------------
 
                     if (
                         !interaction.customId.startsWith(
-                            prefix
+                            buttonPrefix
                         )
                     ) {
 
                         return;
                     }
 
-                    // ------------------------------------------
+                    // --------------------------------------
                     // ZONE ID
-                    // ------------------------------------------
+                    // --------------------------------------
 
                     const zoneId =
                         interaction.customId.replace(
-                            prefix,
+                            buttonPrefix,
                             ""
                         );
 
-                    // ------------------------------------------
+                    // --------------------------------------
                     // CHECK ZONE
-                    // ------------------------------------------
+                    // --------------------------------------
 
                     if (
                         !safeZones[
@@ -1058,9 +1098,9 @@ module.exports = {
                         });
                     }
 
-                    // ------------------------------------------
+                    // --------------------------------------
                     // CREATE EMBED
-                    // ------------------------------------------
+                    // --------------------------------------
 
                     const embed =
                         zoneEmbed(
@@ -1080,9 +1120,9 @@ module.exports = {
                         });
                     }
 
-                    // ------------------------------------------
+                    // --------------------------------------
                     // UPDATE
-                    // ------------------------------------------
+                    // --------------------------------------
 
                     await interaction.update({
 
@@ -1125,7 +1165,6 @@ module.exports = {
                                     true
 
                             });
-
                         }
 
                     }

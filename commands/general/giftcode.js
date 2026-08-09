@@ -10,14 +10,17 @@ const {
     save
 } = require("../../data");
 
+
 // ======================================================
 // FILE GIFT CODE
 // ======================================================
 
-const filePath = path.join(
-    __dirname,
-    "../../giftcodes.json"
-);
+const filePath =
+    path.join(
+        __dirname,
+        "../../giftcodes.json"
+    );
+
 
 // ======================================================
 // CONFIG EMBED
@@ -27,9 +30,43 @@ const SEPARATOR =
     "୨୧ ───────── ୨୧";
 
 const FOOTER = {
+
     text:
         "✦ Furina-sama · Gift Code"
+
 };
+
+
+// ======================================================
+// OWNER CHECK
+// ======================================================
+
+function isAdmin(message) {
+
+    const OWNER_ID =
+        String(
+            process.env.OWNER_ID || ""
+        ).trim();
+
+
+    if (!OWNER_ID) {
+
+        console.error(
+            "❌ Chưa cấu hình OWNER_ID trong .env"
+        );
+
+        return false;
+
+    }
+
+
+    return (
+        message.author.id ===
+        OWNER_ID
+    );
+
+}
+
 
 // ======================================================
 // LOAD
@@ -37,20 +74,28 @@ const FOOTER = {
 
 function loadCodes() {
 
-    if (!fs.existsSync(filePath)) {
+    if (
+        !fs.existsSync(
+            filePath
+        )
+    ) {
 
         try {
 
             fs.writeFileSync(
+
                 filePath,
+
                 JSON.stringify(
                     {},
                     null,
                     2
                 )
+
             );
 
-        } catch (err) {
+        }
+        catch (err) {
 
             console.error(
                 "❌ Không tạo được giftcodes.json:",
@@ -63,6 +108,7 @@ function loadCodes() {
 
     }
 
+
     try {
 
         const raw =
@@ -71,15 +117,22 @@ function loadCodes() {
                 "utf8"
             );
 
-        if (!raw.trim()) {
+
+        if (
+            !raw.trim()
+        ) {
 
             return {};
 
         }
 
-        return JSON.parse(raw);
 
-    } catch (err) {
+        return JSON.parse(
+            raw
+        );
+
+    }
+    catch (err) {
 
         console.error(
             "❌ Lỗi đọc giftcodes.json:",
@@ -92,6 +145,7 @@ function loadCodes() {
 
 }
 
+
 // ======================================================
 // SAVE
 // ======================================================
@@ -101,17 +155,21 @@ function saveCodes(codes) {
     try {
 
         fs.writeFileSync(
+
             filePath,
+
             JSON.stringify(
                 codes,
                 null,
                 2
             )
+
         );
 
         return true;
 
-    } catch (err) {
+    }
+    catch (err) {
 
         console.error(
             "❌ Lỗi lưu giftcodes.json:",
@@ -124,20 +182,6 @@ function saveCodes(codes) {
 
 }
 
-// ======================================================
-// ADMIN
-// ======================================================
-
-function isAdmin(message) {
-
-    return (
-        message.member &&
-        message.member.permissions.has(
-            "Administrator"
-        )
-    );
-
-}
 
 // ======================================================
 // EMBED
@@ -177,6 +221,7 @@ function createEmbed(
 
 }
 
+
 // ======================================================
 // COMMAND
 // ======================================================
@@ -190,6 +235,7 @@ module.exports = {
         "gc"
     ],
 
+
     async execute(
         message,
         args
@@ -200,11 +246,14 @@ module.exports = {
             const codes =
                 loadCodes();
 
+
             // ==================================================
             // HELP
             // ==================================================
 
-            if (!args.length) {
+            if (
+                !args.length
+            ) {
 
                 return message.reply({
 
@@ -241,6 +290,7 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // ACTION
             // ==================================================
@@ -252,10 +302,9 @@ module.exports = {
                     .trim()
                     .toLowerCase();
 
+
             // ==================================================
             // ADD
-            //
-            // fgiftcode add FURINA2026 50000 100
             // ==================================================
 
             if (
@@ -276,7 +325,7 @@ module.exports = {
 
                                 "❌ KHÔNG CÓ QUYỀN",
 
-                                "Bạn cần quyền **Administrator** để tạo giftcode."
+                                "Chỉ **OWNER_ID** được cấu hình trong `.env` mới có thể tạo giftcode."
 
                             )
 
@@ -286,6 +335,7 @@ module.exports = {
 
                 }
 
+
                 const code =
                     String(
                         args[1] || ""
@@ -293,17 +343,22 @@ module.exports = {
                         .trim()
                         .toUpperCase();
 
+
                 const reward =
                     Number(
                         args[2]
                     );
 
+
                 const maxUses =
                     args[3] === undefined
+
                         ? 0
+
                         : Number(
                             args[3]
                         );
+
 
                 // ==================================================
                 // CHECK CODE
@@ -332,8 +387,9 @@ module.exports = {
 
                 }
 
+
                 // ==================================================
-                // CHECK CODE LENGTH
+                // CODE LENGTH
                 // ==================================================
 
                 if (
@@ -361,8 +417,9 @@ module.exports = {
 
                 }
 
+
                 // ==================================================
-                // CHECK REWARD
+                // REWARD
                 // ==================================================
 
                 if (
@@ -394,8 +451,9 @@ module.exports = {
 
                 }
 
+
                 // ==================================================
-                // CHECK LIMIT
+                // LIMIT
                 // ==================================================
 
                 if (
@@ -426,6 +484,7 @@ module.exports = {
 
                 }
 
+
                 // ==================================================
                 // DUPLICATE
                 // ==================================================
@@ -454,6 +513,7 @@ module.exports = {
 
                 }
 
+
                 // ==================================================
                 // CREATE
                 // ==================================================
@@ -476,6 +536,7 @@ module.exports = {
                         message.author.id
 
                 };
+
 
                 // ==================================================
                 // SAVE
@@ -506,6 +567,7 @@ module.exports = {
                     });
 
                 }
+
 
                 // ==================================================
                 // SUCCESS
@@ -543,10 +605,9 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // DELETE
-            //
-            // fgiftcode del CODE
             // ==================================================
 
             if (
@@ -569,7 +630,7 @@ module.exports = {
 
                                 "❌ KHÔNG CÓ QUYỀN",
 
-                                "Bạn cần quyền **Administrator**."
+                                "Chỉ **OWNER_ID** được cấu hình trong `.env` mới có thể xóa giftcode."
 
                             )
 
@@ -579,12 +640,14 @@ module.exports = {
 
                 }
 
+
                 const code =
                     String(
                         args[1] || ""
                     )
                         .trim()
                         .toUpperCase();
+
 
                 if (!code) {
 
@@ -607,6 +670,7 @@ module.exports = {
                     });
 
                 }
+
 
                 if (
                     !codes[code]
@@ -632,7 +696,9 @@ module.exports = {
 
                 }
 
+
                 delete codes[code];
+
 
                 if (
                     !saveCodes(
@@ -660,6 +726,7 @@ module.exports = {
 
                 }
 
+
                 return message.reply({
 
                     embeds: [
@@ -681,10 +748,9 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // LIST
-            //
-            // fgiftcode list
             // ==================================================
 
             if (
@@ -705,7 +771,7 @@ module.exports = {
 
                                 "❌ KHÔNG CÓ QUYỀN",
 
-                                "Bạn cần quyền **Administrator**."
+                                "Chỉ **OWNER_ID** được cấu hình trong `.env` mới có thể xem danh sách giftcode."
 
                             )
 
@@ -715,10 +781,12 @@ module.exports = {
 
                 }
 
+
                 const entries =
                     Object.entries(
                         codes
                     );
+
 
                 if (
                     !entries.length
@@ -744,7 +812,9 @@ module.exports = {
 
                 }
 
+
                 const lines = [];
+
 
                 for (
                     const [
@@ -764,23 +834,28 @@ module.exports = {
 
                     }
 
+
                     const reward =
                         Number(
                             gift.reward || 0
                         );
+
 
                     const maxUses =
                         Number(
                             gift.maxUses || 0
                         );
 
+
                     const used =
                         gift.used.length;
+
 
                     const limitText =
                         maxUses === 0
                             ? "∞"
                             : maxUses;
+
 
                     lines.push(
 
@@ -793,6 +868,7 @@ module.exports = {
                     );
 
                 }
+
 
                 return message.reply({
 
@@ -819,10 +895,9 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // INFO
-            //
-            // fgiftcode info CODE
             // ==================================================
 
             if (
@@ -843,7 +918,7 @@ module.exports = {
 
                                 "❌ KHÔNG CÓ QUYỀN",
 
-                                "Bạn cần quyền **Administrator**."
+                                "Chỉ **OWNER_ID** được cấu hình trong `.env` mới có thể xem thông tin giftcode."
 
                             )
 
@@ -853,12 +928,14 @@ module.exports = {
 
                 }
 
+
                 const code =
                     String(
                         args[1] || ""
                     )
                         .trim()
                         .toUpperCase();
+
 
                 if (!code) {
 
@@ -882,8 +959,10 @@ module.exports = {
 
                 }
 
+
                 const gift =
                     codes[code];
+
 
                 if (!gift) {
 
@@ -907,6 +986,7 @@ module.exports = {
 
                 }
 
+
                 if (
                     !Array.isArray(
                         gift.used
@@ -917,15 +997,18 @@ module.exports = {
 
                 }
 
+
                 const reward =
                     Number(
                         gift.reward || 0
                     );
 
+
                 const maxUses =
                     Number(
                         gift.maxUses || 0
                     );
+
 
                 return message.reply({
 
@@ -965,10 +1048,9 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // USE CODE
-            //
-            // fgiftcode FURINA2026
             // ==================================================
 
             const code =
@@ -978,8 +1060,10 @@ module.exports = {
                     .trim()
                     .toUpperCase();
 
+
             const gift =
                 codes[code];
+
 
             // ==================================================
             // NOT FOUND
@@ -1007,6 +1091,7 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // FIX OLD CODE
             // ==================================================
@@ -1021,13 +1106,16 @@ module.exports = {
 
             }
 
+
             if (
-                typeof gift.maxUses !== "number"
+                typeof gift.maxUses !==
+                "number"
             ) {
 
                 gift.maxUses = 0;
 
             }
+
 
             // ==================================================
             // ALREADY USED
@@ -1059,6 +1147,7 @@ module.exports = {
                 });
 
             }
+
 
             // ==================================================
             // CHECK LIMIT
@@ -1095,6 +1184,7 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // GET USER
             // ==================================================
@@ -1103,6 +1193,7 @@ module.exports = {
                 getUser(
                     message.author.id
                 );
+
 
             if (!user) {
 
@@ -1126,6 +1217,7 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // CHECK REWARD
             // ==================================================
@@ -1134,6 +1226,7 @@ module.exports = {
                 Number(
                     gift.reward
                 );
+
 
             if (
                 !Number.isSafeInteger(
@@ -1163,6 +1256,7 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // ADD MONEY
             // ==================================================
@@ -1172,9 +1266,11 @@ module.exports = {
                     user.money || 0
                 );
 
+
             user.money =
                 oldMoney +
                 reward;
+
 
             // ==================================================
             // MARK USED
@@ -1183,6 +1279,7 @@ module.exports = {
             gift.used.push(
                 message.author.id
             );
+
 
             // ==================================================
             // SAVE GIFT CODE
@@ -1197,12 +1294,14 @@ module.exports = {
                 user.money =
                     oldMoney;
 
+
                 gift.used =
                     gift.used.filter(
                         id =>
                             id !==
                             message.author.id
                     );
+
 
                 return message.reply({
 
@@ -1215,7 +1314,7 @@ module.exports = {
                             "❌ KHÔNG THỂ NHẬN THƯỞNG",
 
                             "Hệ thống không thể lưu giftcode.\n" +
-                            "Tiền của bạn **chưa bị trừ hoặc cộng**."
+                            "Tiền của bạn **chưa bị thay đổi**."
 
                         )
 
@@ -1225,11 +1324,13 @@ module.exports = {
 
             }
 
+
             // ==================================================
             // SAVE USER
             // ==================================================
 
             save();
+
 
             // ==================================================
             // REMAINING
@@ -1237,6 +1338,7 @@ module.exports = {
 
             const used =
                 gift.used.length;
+
 
             const remaining =
                 gift.maxUses === 0
@@ -1248,6 +1350,7 @@ module.exports = {
                         used,
                         0
                     );
+
 
             // ==================================================
             // SUCCESS
@@ -1304,6 +1407,7 @@ module.exports = {
             console.error(
                 err
             );
+
 
             return message.reply({
 

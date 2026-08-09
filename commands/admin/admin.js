@@ -1,440 +1,582 @@
 const {
-EmbedBuilder
-}=require("discord.js");
-
-
-const {
-emoji,
-formatMoney,
-baits,
-keys,
-fishList,
-rods,
-prefix
-}=require("../../config");
-
+    prefix,
+    emoji,
+    formatMoney,
+    baits,
+    keys,
+    fishList
+} = require("../../config");
 
 const {
-getUser,
-save
-}=require("../../data");
+    getUser,
+    save,
+    data
+} = require("../../data");
 
 
+// ======================================================
+// ADMIN COMMAND
+// ======================================================
 
-module.exports={
+module.exports = {
 
+    name: "admin",
 
-name:"admin",
+    async execute(
+        message,
+        args
+    ) {
 
+        try {
 
+            // ==================================================
+            // OWNER ID
+            // ==================================================
 
-async execute(message,args){
+            const OWNER_ID =
+                String(
+                    process.env.OWNER_ID || ""
+                ).trim();
 
 
+            if (!OWNER_ID) {
 
-const OWNER_ID=
-process.env.OWNER_ID;
+                return message.reply(
+                    "╰・❌ Chưa cấu hình OWNER_ID trong .env"
+                );
 
+            }
 
 
-if(!OWNER_ID)
+            // ==================================================
+            // CHECK OWNER
+            // ==================================================
 
-return message.reply(
-"╰・❌ Chưa cấu hình OWNER_ID trong .env"
-);
+            if (
+                message.author.id !==
+                OWNER_ID
+            ) {
 
+                return message.reply(
+                    "╰・❌ Bạn không có quyền sử dụng lệnh Admin."
+                );
 
+            }
 
-if(message.author.id!==OWNER_ID)
 
-return message.reply(
-"╰・❌ Bạn không có quyền"
-);
+            // ==================================================
+            // TYPE
+            // ==================================================
 
+            const type =
+                String(
+                    args[0] || ""
+                )
+                    .trim()
+                    .toLowerCase();
 
 
-const type=
-args[0];
+            // ==================================================
+            // HELP
+            // ==================================================
 
+            if (!type) {
 
+                return message.reply({
 
-const target=
-message.mentions.users.first();
+                    content:
 
+                        `╰・🛠️ **ADMIN PANEL**\n\n` +
 
+                        `💰 \`${prefix}admin addmoney @user 10000\`\n` +
 
-if(!type)
+                        `🎣 \`${prefix}admin addbait @user golden_bait 10\`\n` +
 
-return message.reply({
+                        `🔑 \`${prefix}admin addkey @user key_5 1\`\n` +
 
-content:
+                        `🐟 \`${prefix}admin addfish @user camap 5\`\n` +
 
-`
-╰・🛠️ Admin
+                        `♻️ \`${prefix}admin reset @user\``
 
-\`${prefix}admin addmoney @user 10000\`
+                });
 
-\`${prefix}admin addbait @user golden_bait 10\`
+            }
 
-\`${prefix}admin addkey @user key_5 1\`
 
-\`${prefix}admin addfish @user camap 5\`
+            // ==================================================
+            // TARGET
+            // ==================================================
 
-\`${prefix}admin reset @user\`
-`
+            const target =
+                message.mentions.users.first();
 
-});
 
+            if (!target) {
 
+                return message.reply(
+                    "╰・❌ Hãy tag người chơi."
+                );
 
+            }
 
 
-if(!target)
+            // ==================================================
+            // GET USER
+            // ==================================================
 
-return message.reply(
-"╰・❌ Hãy tag người chơi"
-);
+            const user =
+                getUser(
+                    target.id
+                );
 
 
+            if (!user) {
 
-const user=
-getUser(
-target.id
-);
+                return message.reply(
+                    "╰・❌ Không tìm thấy dữ liệu người chơi."
+                );
 
+            }
 
 
+            // ==================================================
+            // ADD MONEY
+            // ==================================================
 
+            if (
+                type === "addmoney"
+            ) {
 
-// ======================
-// CỘNG XU
-// ======================
+                const amount =
+                    Number(
+                        args[2]
+                    );
 
 
-if(type==="addmoney"){
+                if (
+                    !Number.isSafeInteger(
+                        amount
+                    ) ||
+                    amount <= 0
+                ) {
 
+                    return message.reply(
+                        "╰・❌ Số xu phải là số nguyên lớn hơn 0."
+                    );
 
+                }
 
-const amount=
-Number(args[2]);
 
+                const oldMoney =
+                    Number(
+                        user.money || 0
+                    );
 
 
-if(!amount)
+                user.money =
+                    oldMoney +
+                    amount;
 
-return message.reply(
-"╰・❌ Nhập số xu"
-);
 
+                save();
 
 
-user.money+=amount;
+                return message.reply({
 
+                    content:
 
-save();
+                        `╰・✅ **ĐÃ CỘNG XU**\n\n` +
 
+                        `👤 Người nhận: ${target}\n` +
 
+                        `💰 Số xu: **+${formatMoney(amount)} ${emoji.money}**\n` +
 
-return message.reply({
+                        `💵 Số dư mới: **${formatMoney(user.money)} ${emoji.money}**`
 
-content:
+                });
 
-`
-✅ Đã cộng
+            }
 
-${formatMoney(amount)} ${emoji.money}
 
-cho ${target}
-`
+            // ==================================================
+            // ADD BAIT
+            // ==================================================
 
-});
+            if (
+                type === "addbait"
+            ) {
 
+                const id =
+                    String(
+                        args[2] || ""
+                    )
+                        .trim();
 
 
-}
+                const amount =
+                    Number(
+                        args[3]
+                    );
 
 
+                if (
+                    !baits[id]
+                ) {
 
+                    return message.reply(
+                        "╰・❌ Sai ID mồi."
+                    );
 
+                }
 
 
-// ======================
-// THÊM MỒI
-// ======================
+                if (
+                    !Number.isSafeInteger(
+                        amount
+                    ) ||
+                    amount <= 0
+                ) {
 
+                    return message.reply(
+                        "╰・❌ Số lượng mồi phải là số nguyên lớn hơn 0."
+                    );
 
-if(type==="addbait"){
+                }
 
 
+                if (
+                    !user.moi ||
+                    typeof user.moi !== "object"
+                ) {
 
-const id=args[2];
+                    user.moi = {};
 
-const amount=
-Number(args[3]);
+                }
 
 
+                const oldAmount =
+                    Number(
+                        user.moi[id] || 0
+                    );
 
-if(!baits[id])
 
-return message.reply(
-"╰・❌ Sai ID mồi"
-);
+                user.moi[id] =
+                    oldAmount +
+                    amount;
 
 
+                save();
 
-user.moi[id]=
 
-(user.moi[id]||0)
+                return message.reply({
 
-+
+                    content:
 
-amount;
+                        `╰・✅ **ĐÃ THÊM MỒI**\n\n` +
 
+                        `👤 Người nhận: ${target}\n` +
 
+                        `${baits[id].emoji} Mồi: **${baits[id].name}**\n` +
 
-save();
+                        `📦 Số lượng: **+${amount}**\n` +
 
+                        `📦 Tổng hiện tại: **${user.moi[id]}**`
 
+                });
 
-return message.reply({
+            }
 
-content:
 
-`
-✅ Thêm ${amount}
+            // ==================================================
+            // ADD KEY
+            // ==================================================
 
-${baits[id].emoji} ${baits[id].name}
+            if (
+                type === "addkey"
+            ) {
 
-cho ${target}
-`
+                const id =
+                    String(
+                        args[2] || ""
+                    )
+                        .trim();
 
-});
 
+                const amount =
+                    Number(
+                        args[3]
+                    );
 
 
-}
+                if (
+                    !keys[id]
+                ) {
 
+                    return message.reply(
+                        "╰・❌ Sai ID key."
+                    );
 
+                }
 
 
+                if (
+                    !Number.isSafeInteger(
+                        amount
+                    ) ||
+                    amount <= 0
+                ) {
 
+                    return message.reply(
+                        "╰・❌ Số lượng key phải là số nguyên lớn hơn 0."
+                    );
 
+                }
 
-// ======================
-// THÊM KEY
-// ======================
 
+                if (
+                    !user.keys ||
+                    typeof user.keys !== "object"
+                ) {
 
-if(type==="addkey"){
+                    user.keys = {};
 
+                }
 
 
-const id=args[2];
+                const oldAmount =
+                    Number(
+                        user.keys[id] || 0
+                    );
 
-const amount=
-Number(args[3]);
 
+                user.keys[id] =
+                    oldAmount +
+                    amount;
 
 
-if(!keys[id])
+                save();
 
-return message.reply(
-"╰・❌ Sai ID key"
-);
 
+                return message.reply({
 
+                    content:
 
-user.keys[id]=
+                        `╰・✅ **ĐÃ THÊM KEY**\n\n` +
 
-(user.keys[id]||0)
+                        `👤 Người nhận: ${target}\n` +
 
-+
+                        `🔑 Key: **${keys[id].name}**\n` +
 
-amount;
+                        `📦 Số lượng: **+${amount}**\n` +
 
+                        `📦 Tổng hiện tại: **${user.keys[id]}**`
 
+                });
 
-save();
+            }
 
 
+            // ==================================================
+            // ADD FISH
+            // ==================================================
 
-return message.reply({
+            if (
+                type === "addfish"
+            ) {
 
-content:
+                const id =
+                    String(
+                        args[2] || ""
+                    )
+                        .trim();
 
-`
-✅ Thêm ${amount}
 
-${keys[id].emoji} ${keys[id].name}
+                const amount =
+                    Number(
+                        args[3]
+                    );
 
-cho ${target}
-`
 
-});
+                const fish =
+                    fishList.find(
+                        x =>
+                            x.id === id
+                    );
 
 
+                if (!fish) {
 
-}
+                    return message.reply(
+                        "╰・❌ Sai ID cá."
+                    );
 
+                }
 
 
+                if (
+                    !Number.isSafeInteger(
+                        amount
+                    ) ||
+                    amount <= 0
+                ) {
 
+                    return message.reply(
+                        "╰・❌ Số lượng cá phải là số nguyên lớn hơn 0."
+                    );
 
+                }
 
 
-// ======================
-// THÊM CÁ
-// ======================
+                if (
+                    !user.fish ||
+                    typeof user.fish !== "object"
+                ) {
 
+                    user.fish = {};
 
-if(type==="addfish"){
+                }
 
 
+                if (
+                    !Array.isArray(
+                        user.fish[id]
+                    )
+                ) {
 
-const id=args[2];
+                    user.fish[id] = [];
 
-const amount=
-Number(args[3]);
+                }
 
 
+                // Mặc định cá được thêm với cân nặng 10
+                for (
+                    let i = 0;
+                    i < amount;
+                    i++
+                ) {
 
-const fish=
-fishList.find(
-x=>x.id===id
-);
+                    user.fish[id].push(10);
 
+                }
 
 
-if(!fish)
+                save();
 
-return message.reply(
-"╰・❌ Sai ID cá"
-);
 
+                return message.reply({
 
+                    content:
 
-if(!user.fish[id])
+                        `╰・✅ **ĐÃ THÊM CÁ**\n\n` +
 
-user.fish[id]=[];
+                        `👤 Người nhận: ${target}\n` +
 
+                        `🐟 Cá: **${fish.name}**\n` +
 
+                        `📦 Số lượng: **x${amount}**\n` +
 
+                        `📦 Tổng hiện tại: **${user.fish[id].length} con**`
 
-for(let i=0;i<amount;i++){
+                });
 
+            }
 
-user.fish[id].push(10);
 
+            // ==================================================
+            // RESET
+            // ==================================================
 
-}
+            if (
+                type === "reset"
+            ) {
 
+                const fresh = {
 
+                    money: 5000,
 
+                    can: {
 
-save();
+                        dangDung: null,
 
+                        danhSach: {}
 
+                    },
 
-return message.reply({
+                    rodData: {},
 
-content:
+                    moi: {
 
-`
-✅ Thêm
+                        worm: 10
 
-🐟 ${fish.name}
+                    },
 
-x${amount}
+                    fish: {},
 
-cho ${target}
-`
+                    keys: {}
 
-});
+                };
 
 
+                data[target.id] =
+                    fresh;
 
-}
 
+                save();
 
 
+                return message.reply({
 
+                    content:
 
+                        `╰・♻️ **ĐÃ RESET DỮ LIỆU**\n\n` +
 
-// ======================
-// RESET
-// ======================
+                        `👤 Người chơi: ${target}\n\n` +
 
+                        `💰 Tiền: **5,000**\n` +
 
-if(type==="reset"){
+                        `🪱 Mồi worm: **10**\n` +
 
+                        `🎣 Cần câu: **Đã reset**\n` +
 
+                        `🐟 Cá: **Đã reset**\n` +
 
-const fresh={
+                        `🔑 Key: **Đã reset**`
 
+                });
 
-money:5000,
+            }
 
 
-can:{
+            // ==================================================
+            // UNKNOWN COMMAND
+            // ==================================================
 
-dangDung:null,
+            return message.reply({
 
-danhSach:{}
+                content:
 
-},
+                    `╰・❌ Lệnh Admin không tồn tại.\n\n` +
 
+                    `Dùng \`${prefix}admin\` để xem danh sách lệnh.`
 
-rodData:{},
+            });
 
+        }
 
-moi:{
+        catch (error) {
 
+            console.error(
+                "❌ ADMIN ERROR:",
+                error
+            );
 
-worm:10
 
+            return message.reply(
+                "╰・❌ Đã xảy ra lỗi khi thực hiện lệnh Admin."
+            );
 
-},
+        }
 
-
-fish:{},
-
-
-keys:{}
-
-
-};
-
-
-
-require("../../data")
-.data[target.id]=fresh;
-
-
-
-save();
-
-
-
-return message.reply({
-
-content:
-
-`
-♻️ Đã reset dữ liệu
-
-${target}
-`
-
-});
-
-
-
-}
-
-
-
-
-
-}
+    }
 
 };

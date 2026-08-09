@@ -113,6 +113,36 @@ module.exports = {
 
 
             // ==================================================
+            // HÀM LẤY USERNAME DISCORD
+            // ==================================================
+
+            const getUsername =
+                async userId => {
+
+                    try {
+
+                        const discordUser =
+                            await message.client.users.fetch(
+                                userId
+                            );
+
+                        return (
+                            discordUser.username ||
+                            discordUser.globalName ||
+                            `User ${userId}`
+                        );
+
+                    }
+                    catch {
+
+                        return `User ${userId}`;
+
+                    }
+
+                };
+
+
+            // ==================================================
             // BXH TIỀN
             // ==================================================
 
@@ -141,29 +171,41 @@ module.exports = {
                 );
 
 
-                const text =
-                    users
-                        .slice(0, 10)
-                        .map(
-                            (x, index) => {
+                const topUsers =
+                    users.slice(0, 10);
 
-                                const money =
-                                    Number(
-                                        x.user.money || 0
+
+                const text =
+                    (
+                        await Promise.all(
+
+                            topUsers.map(
+                                async (x, index) => {
+
+                                    const username =
+                                        await getUsername(
+                                            x.id
+                                        );
+
+                                    const money =
+                                        Number(
+                                            x.user.money || 0
+                                        );
+
+
+                                    return (
+
+                                        `${getRank(index)} **${escapeMarkdown(username)}**\n` +
+
+                                        `└ 💰 ${formatMoney(money)} ${emoji.money}`
+
                                     );
 
+                                }
+                            )
 
-                                return (
-
-                                    `${getRank(index)} <@${x.id}>\n` +
-
-                                    `└ 💰 ${formatMoney(money)} ${emoji.money}`
-
-                                );
-
-                            }
                         )
-                        .join("\n\n");
+                    ).join("\n\n");
 
 
                 return sendLeaderboard(
@@ -242,29 +284,41 @@ module.exports = {
                 );
 
 
-                const text =
-                    users
-                        .slice(0, 10)
-                        .map(
-                            (x, index) => {
+                const topUsers =
+                    users.slice(0, 10);
 
-                                const level =
-                                    getRodLevel(
-                                        x.user
+
+                const text =
+                    (
+                        await Promise.all(
+
+                            topUsers.map(
+                                async (x, index) => {
+
+                                    const username =
+                                        await getUsername(
+                                            x.id
+                                        );
+
+                                    const level =
+                                        getRodLevel(
+                                            x.user
+                                        );
+
+
+                                    return (
+
+                                        `${getRank(index)} **${escapeMarkdown(username)}**\n` +
+
+                                        `└ 🎣 Cần câu: +${level}`
+
                                     );
 
+                                }
+                            )
 
-                                return (
-
-                                    `${getRank(index)} <@${x.id}>\n` +
-
-                                    `└ 🎣 Cần câu: +${level}`
-
-                                );
-
-                            }
                         )
-                        .join("\n\n");
+                    ).join("\n\n");
 
 
                 return sendLeaderboard(
@@ -323,7 +377,8 @@ module.exports = {
                                 count +=
                                     list.length;
 
-                            } else if (
+                            }
+                            else if (
                                 typeof list === "number"
                             ) {
 
@@ -347,29 +402,41 @@ module.exports = {
                 );
 
 
-                const text =
-                    users
-                        .slice(0, 10)
-                        .map(
-                            (x, index) => {
+                const topUsers =
+                    users.slice(0, 10);
 
-                                const count =
-                                    getFishCount(
-                                        x.user
+
+                const text =
+                    (
+                        await Promise.all(
+
+                            topUsers.map(
+                                async (x, index) => {
+
+                                    const username =
+                                        await getUsername(
+                                            x.id
+                                        );
+
+                                    const count =
+                                        getFishCount(
+                                            x.user
+                                        );
+
+
+                                    return (
+
+                                        `${getRank(index)} **${escapeMarkdown(username)}**\n` +
+
+                                        `└ 🐟 ${count.toLocaleString()} con cá`
+
                                     );
 
+                                }
+                            )
 
-                                return (
-
-                                    `${getRank(index)} <@${x.id}>\n` +
-
-                                    `└ 🐟 ${count.toLocaleString()} con cá`
-
-                                );
-
-                            }
                         )
-                        .join("\n\n");
+                    ).join("\n\n");
 
 
                 return sendLeaderboard(
@@ -455,29 +522,41 @@ module.exports = {
                 );
 
 
-                const text =
-                    users
-                        .slice(0, 10)
-                        .map(
-                            (x, index) => {
+                const topUsers =
+                    users.slice(0, 10);
 
-                                const weight =
-                                    getWeight(
-                                        x.user
+
+                const text =
+                    (
+                        await Promise.all(
+
+                            topUsers.map(
+                                async (x, index) => {
+
+                                    const username =
+                                        await getUsername(
+                                            x.id
+                                        );
+
+                                    const weight =
+                                        getWeight(
+                                            x.user
+                                        );
+
+
+                                    return (
+
+                                        `${getRank(index)} **${escapeMarkdown(username)}**\n` +
+
+                                        `└ ⚖️ ${weight.toFixed(2)} KG`
+
                                     );
 
+                                }
+                            )
 
-                                return (
-
-                                    `${getRank(index)} <@${x.id}>\n` +
-
-                                    `└ ⚖️ ${weight.toFixed(2)} KG`
-
-                                );
-
-                            }
                         )
-                        .join("\n\n");
+                    ).join("\n\n");
 
 
                 return sendLeaderboard(
@@ -560,6 +639,18 @@ module.exports = {
     }
 
 };
+
+
+// ======================================================
+// ESCAPE MARKDOWN
+// ======================================================
+
+function escapeMarkdown(text) {
+
+    return String(text)
+        .replace(/([\\`*_{}[\]()#+\-.!|>])/g, "\\$1");
+
+}
 
 
 // ======================================================
