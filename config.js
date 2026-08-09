@@ -1,5 +1,6 @@
 // ==========================================
 // DISCORD FISHING BOT - CONFIG
+// BALANCED VERSION
 // ==========================================
 
 // ==========================================
@@ -11,18 +12,26 @@ const prefix = "f";
 const prefixes = [
     "f"
 ];
-// ======================================
+
+// ==========================================
 // ĐÁ CƯỜNG HÓA
-// ======================================
+// ==========================================
+
 const rateStone = {
     da_tang_rate: {
+        id: "da_tang_rate",
         name: "Đá tăng tỉ lệ",
         emoji: "🪨",
         price: 500000,
+
+        // Số lần sử dụng
         uses: 5,
+
+        // +5% luck khi câu
         rate: 5
     }
 };
+
 // ==========================================
 // EMOJI
 // ==========================================
@@ -57,7 +66,10 @@ const emoji = {
     rare: "🔵",
     epic: "🟣",
     legendary: "🟡",
-    mythical: "🔴"
+    mythical: "🔴",
+
+    trash: "🗑️",
+    boot: "🥾"
 };
 
 // ==========================================
@@ -71,13 +83,25 @@ function formatMoney(number) {
 }
 
 // ==========================================
+// RANDOM NUMBER
+// ==========================================
+
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomFloat(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// ==========================================
 // FISH LIST
 // ==========================================
 
 const fishList = [
 
     // ==========================================
-    // 🌴 BIỂN NHIỆT ĐỚI - ca1 -> ca15
+    // 🌴 BIỂN NHIỆT ĐỚI
     // ==========================================
 
     {
@@ -216,7 +240,7 @@ const fishList = [
         id: "ca13",
         name: "Cá mập",
         emoji: "🦈",
-        price: 10000,
+        price: 9000,
         rarity: "legendary",
         rate: 1.5,
         min: 10,
@@ -227,7 +251,7 @@ const fishList = [
         id: "ca14",
         name: "Cá rồng",
         emoji: "🐉",
-        price: 25000,
+        price: 22000,
         rarity: "legendary",
         rate: 0.8,
         min: 5,
@@ -238,16 +262,15 @@ const fishList = [
         id: "ca15",
         name: "Cá rồng vàng",
         emoji: "🐉",
-        price: 50000,
+        price: 40000,
         rarity: "mythical",
         rate: 0.3,
         min: 5,
         max: 50
     },
 
-
     // ==========================================
-    // ❄️ BIỂN BĂNG GIÁ - ca16 -> ca28
+    // ❄️ BIỂN BĂNG GIÁ
     // ==========================================
 
     {
@@ -364,7 +387,7 @@ const fishList = [
         id: "ca26",
         name: "Cá cực quang",
         emoji: "🐟",
-        price: 10000,
+        price: 9500,
         rarity: "legendary",
         rate: 2.5,
         min: 3,
@@ -375,7 +398,7 @@ const fishList = [
         id: "ca27",
         name: "Cá hoàng kim băng",
         emoji: "🐠",
-        price: 18000,
+        price: 16000,
         rarity: "legendary",
         rate: 1,
         min: 5,
@@ -386,16 +409,15 @@ const fishList = [
         id: "ca28",
         name: "Long Ngư Băng",
         emoji: "🐉",
-        price: 35000,
+        price: 30000,
         rarity: "mythical",
         rate: 0.4,
         min: 8,
         max: 40
     },
 
-
     // ==========================================
-    // 🐊 ĐẦM LẦY - ca29 -> ca41
+    // 🐊 ĐẦM LẦY
     // ==========================================
 
     {
@@ -501,7 +523,7 @@ const fishList = [
         id: "ca38",
         name: "Cá khổng lồ đầm lầy",
         emoji: "🐊",
-        price: 9000,
+        price: 8500,
         rarity: "epic",
         rate: 3.5,
         min: 5,
@@ -512,7 +534,7 @@ const fishList = [
         id: "ca39",
         name: "Cá ma",
         emoji: "👻",
-        price: 12000,
+        price: 11000,
         rarity: "legendary",
         rate: 2,
         min: 2,
@@ -523,7 +545,7 @@ const fishList = [
         id: "ca40",
         name: "Cá vua đầm lầy",
         emoji: "👑",
-        price: 20000,
+        price: 18000,
         rarity: "legendary",
         rate: 0.9,
         min: 5,
@@ -534,16 +556,15 @@ const fishList = [
         id: "ca41",
         name: "Thủy Quái Đầm Lầy",
         emoji: "🐲",
-        price: 40000,
+        price: 35000,
         rarity: "mythical",
         rate: 0.3,
         min: 10,
         max: 50
     },
 
-
     // ==========================================
-    // 🌊 VỰC SÂU - ca42 -> ca61
+    // 🌊 VỰC SÂU
     // ==========================================
 
     {
@@ -671,7 +692,7 @@ const fishList = [
         id: "ca53",
         name: "Cá khổng lồ",
         emoji: "🐋",
-        price: 18000,
+        price: 17000,
         rarity: "legendary",
         rate: 3,
         min: 10,
@@ -682,7 +703,7 @@ const fishList = [
         id: "ca54",
         name: "Cá quỷ biển",
         emoji: "😈",
-        price: 22000,
+        price: 21000,
         rarity: "legendary",
         rate: 2.5,
         min: 5,
@@ -693,7 +714,7 @@ const fishList = [
         id: "ca55",
         name: "Cá rồng biển",
         emoji: "🐉",
-        price: 28000,
+        price: 26000,
         rarity: "legendary",
         rate: 2,
         min: 5,
@@ -704,7 +725,7 @@ const fishList = [
         id: "ca56",
         name: "Cá thần biển",
         emoji: "🔱",
-        price: 35000,
+        price: 33000,
         rarity: "legendary",
         rate: 1.5,
         min: 8,
@@ -715,7 +736,7 @@ const fishList = [
         id: "ca57",
         name: "Kraken con",
         emoji: "🐙",
-        price: 45000,
+        price: 42000,
         rarity: "legendary",
         rate: 1,
         min: 10,
@@ -726,7 +747,7 @@ const fishList = [
         id: "ca58",
         name: "Cá tinh thể",
         emoji: "💎",
-        price: 55000,
+        price: 52000,
         rarity: "mythical",
         rate: 0.7,
         min: 3,
@@ -737,7 +758,7 @@ const fishList = [
         id: "ca59",
         name: "Cá hư không",
         emoji: "🌌",
-        price: 70000,
+        price: 65000,
         rarity: "mythical",
         rate: 0.5,
         min: 5,
@@ -748,7 +769,7 @@ const fishList = [
         id: "ca60",
         name: "Leviathan con",
         emoji: "🐲",
-        price: 90000,
+        price: 85000,
         rarity: "mythical",
         rate: 0.35,
         min: 15,
@@ -759,24 +780,22 @@ const fishList = [
         id: "ca61",
         name: "Vua Vực Sâu",
         emoji: "👑",
-        price: 120000,
+        price: 110000,
         rarity: "mythical",
         rate: 0.2,
         min: 20,
         max: 100
     },
 
-
     // ==========================================
-    // 🌋 NÚI LỬA - ca62 -> ca65
-    // ÍT CÁ, TOÀN CÁ HIẾM
+    // 🌋 NÚI LỬA
     // ==========================================
 
     {
         id: "ca62",
         name: "Cá dung nham",
         emoji: "🔥",
-        price: 30000,
+        price: 28000,
         rarity: "epic",
         rate: 3,
         min: 3,
@@ -787,7 +806,7 @@ const fishList = [
         id: "ca63",
         name: "Cá lửa",
         emoji: "🔥",
-        price: 60000,
+        price: 55000,
         rarity: "legendary",
         rate: 1.5,
         min: 5,
@@ -798,7 +817,7 @@ const fishList = [
         id: "ca64",
         name: "Cá rồng lửa",
         emoji: "🐉",
-        price: 120000,
+        price: 110000,
         rarity: "legendary",
         rate: 0.7,
         min: 8,
@@ -809,7 +828,7 @@ const fishList = [
         id: "ca65",
         name: "Phượng Hoàng Ngư",
         emoji: "🔥",
-        price: 300000,
+        price: 280000,
         rarity: "mythical",
         rate: 0.2,
         min: 15,
@@ -818,13 +837,141 @@ const fishList = [
 ];
 
 // ==========================================
+// TRASH / ITEMS
+// ==========================================
+
+// Ủng rách:
+// - Có thể câu được
+// - Không có giá trị
+// - Bán = 0 đồng
+// - Không nên cộng vào doanh thu
+const trashItems = {
+
+    torn_boot: {
+        id: "torn_boot",
+        name: "Ủng rách",
+        emoji: "🥾",
+        price: 0,
+        sellPrice: 0,
+        rarity: "common",
+        rate: 12,
+        min: 1,
+        max: 1
+    }
+};
+
+// ==========================================
 // FISH CONFIG
 // ==========================================
 
 const fishConfig = {
     list: fishList,
-    sellMultiplier: 1
+
+    // Giá bán = giá cá × cân nặng × multiplier
+    sellMultiplier: 1,
+
+    // Giới hạn an toàn
+    minSellPrice: 0,
+
+    // Có cho phép đồ rác xuất hiện không
+    trashEnabled: true,
+
+    trash: trashItems
 };
+
+// ==========================================
+// WEIGHTED RANDOM
+// ==========================================
+
+function weightedRandom(items, luck = 1) {
+
+    if (!Array.isArray(items) || items.length === 0) {
+        return null;
+    }
+
+    const validItems = items.filter(item =>
+        item &&
+        Number(item.rate) > 0
+    );
+
+    if (validItems.length === 0) {
+        return null;
+    }
+
+    // Luck chỉ tăng khả năng của item hiếm.
+    // Không làm common tăng vô hạn.
+    const rarityMultiplier = {
+        common: 1,
+        rare: 1 + ((luck - 1) * 0.75),
+        epic: 1 + ((luck - 1) * 1.25),
+        legendary: 1 + ((luck - 1) * 1.75),
+        mythical: 1 + ((luck - 1) * 2.25)
+    };
+
+    let totalWeight = 0;
+
+    const weighted = validItems.map(item => {
+
+        const rarityBonus =
+            rarityMultiplier[item.rarity] || 1;
+
+        const weight =
+            Number(item.rate) * rarityBonus;
+
+        totalWeight += weight;
+
+        return {
+            item,
+            weight
+        };
+    });
+
+    let random = Math.random() * totalWeight;
+
+    for (const entry of weighted) {
+
+        random -= entry.weight;
+
+        if (random <= 0) {
+            return entry.item;
+        }
+    }
+
+    return weighted[weighted.length - 1].item;
+}
+
+// ==========================================
+// PICK FISH
+// ==========================================
+
+function pickFish(fishIds, luck = 1) {
+
+    if (!Array.isArray(fishIds)) {
+        return null;
+    }
+
+    const availableFish = fishList.filter(fish =>
+        fishIds.includes(fish.id)
+    );
+
+    // Nếu không có cá
+    if (availableFish.length === 0) {
+        return null;
+    }
+
+    return weightedRandom(availableFish, luck);
+}
+
+// ==========================================
+// PICK TRASH
+// ==========================================
+
+function pickTrash(luck = 1) {
+
+    const trash = Object.values(trashItems);
+
+    return weightedRandom(trash, 1);
+}
 
 // ==========================================
 // RODS
@@ -832,7 +979,10 @@ const fishConfig = {
 
 const rods = {
 
+    // ======================================
     // CẦN 1
+    // ======================================
+
     wood: {
         id: "wood",
         name: "Cần câu gỗ",
@@ -844,7 +994,10 @@ const rods = {
         maxLevel: 15
     },
 
+    // ======================================
     // CẦN 2
+    // ======================================
+
     iron: {
         id: "iron",
         name: "Cần câu sắt",
@@ -856,7 +1009,10 @@ const rods = {
         maxLevel: 15
     },
 
+    // ======================================
     // CẦN 3
+    // ======================================
+
     gold: {
         id: "gold",
         name: "Cần câu vàng",
@@ -868,7 +1024,10 @@ const rods = {
         maxLevel: 15
     },
 
+    // ======================================
     // CẦN 4
+    // ======================================
+
     diamond: {
         id: "diamond",
         name: "Cần câu kim cương",
@@ -880,7 +1039,10 @@ const rods = {
         maxLevel: 15
     },
 
+    // ======================================
     // CẦN 5
+    // ======================================
+
     mythic: {
         id: "mythic",
         name: "Cần câu huyền thoại",
@@ -923,7 +1085,7 @@ const upgrade = {
 
     maxLevel: 15,
 
-    // Mỗi cấp upgrade cộng thêm 0.1 luck
+    // Mỗi cấp +0.1 luck
     luckPerLevel: 0.1,
 
     success: {
@@ -944,7 +1106,11 @@ const upgrade = {
         12: 15,
         13: 10,
         14: 5
-    }
+    },
+
+    // Không cho upgrade vượt quá cấp
+    minLevel: 0,
+    maxLevel: 15
 };
 
 // ==========================================
@@ -966,13 +1132,28 @@ const fishingZones = {
             "Vùng biển ấm áp với nhiều loài cá phổ biến.",
 
         fish: [
-            "ca1", "ca2", "ca3", "ca4", "ca5",
-            "ca6", "ca7", "ca8", "ca9", "ca10",
-            "ca11", "ca12", "ca13", "ca14", "ca15"
+            "ca1",
+            "ca2",
+            "ca3",
+            "ca4",
+            "ca5",
+            "ca6",
+            "ca7",
+            "ca8",
+            "ca9",
+            "ca10",
+            "ca11",
+            "ca12",
+            "ca13",
+            "ca14",
+            "ca15"
         ],
 
+        // Ủng rách có thể xuất hiện
+        trashRate: 8,
+
         image:
-            "https://media.discordapp.net/attachments/1534756360103788596/1535257413786140733/1000013743-Photoroom.png?ex=6a77c423&is=6a7672a3&hm=dc375cd21c4e9738f3684b2edae057a6595637fa74d184c42b504917e9296efd&=&format=webp&quality=lossless"
+            "https://media.discordapp.net/attachments/1534756360103788596/1535257413786140733/1000013743-Photoroom.png"
     },
 
     // ======================================
@@ -988,13 +1169,25 @@ const fishingZones = {
             "Vùng biển lạnh giá, nơi những loài cá đặc biệt sinh sống.",
 
         fish: [
-            "ca16", "ca17", "ca18", "ca19", "ca20",
-            "ca21", "ca22", "ca23", "ca24", "ca25",
-            "ca26", "ca27", "ca28"
+            "ca16",
+            "ca17",
+            "ca18",
+            "ca19",
+            "ca20",
+            "ca21",
+            "ca22",
+            "ca23",
+            "ca24",
+            "ca25",
+            "ca26",
+            "ca27",
+            "ca28"
         ],
 
+        trashRate: 7,
+
         image:
-            "https://media.discordapp.net/attachments/1534756360103788596/1535257294261067868/1000013742-Photoroom.png?ex=6a77c406&is=6a767286&hm=44d3063f48ce28204e91fbc94d330e5e41bd02151db84d99eac89da5518db792&=&format=webp&quality=lossless"
+            "https://media.discordapp.net/attachments/1534756360103788596/1535257294261067868/1000013742-Photoroom.png"
     },
 
     // ======================================
@@ -1010,13 +1203,25 @@ const fishingZones = {
             "Khu đầm lầy bí ẩn với những sinh vật kỳ lạ.",
 
         fish: [
-            "ca29", "ca30", "ca31", "ca32", "ca33",
-            "ca34", "ca35", "ca36", "ca37", "ca38",
-            "ca39", "ca40", "ca41"
+            "ca29",
+            "ca30",
+            "ca31",
+            "ca32",
+            "ca33",
+            "ca34",
+            "ca35",
+            "ca36",
+            "ca37",
+            "ca38",
+            "ca39",
+            "ca40",
+            "ca41"
         ],
 
+        trashRate: 12,
+
         image:
-            "https://media.discordapp.net/attachments/1534756360103788596/1535257149284941865/1000013741-Photoroom.png?ex=6a77c3e4&is=6a767264&hm=4c28d087cab666d4438d9ac7eafb5fd4c18f2d0a1e03a829414c6400c1232f81&=&format=webp&quality=lossless"
+            "https://media.discordapp.net/attachments/1534756360103788596/1535257149284941865/1000013741-Photoroom.png"
     },
 
     // ======================================
@@ -1032,14 +1237,32 @@ const fishingZones = {
             "Vùng nước sâu tối tăm, nơi những con cá quý hiếm ẩn mình.",
 
         fish: [
-            "ca42", "ca43", "ca44", "ca45", "ca46",
-            "ca47", "ca48", "ca49", "ca50", "ca51",
-            "ca52", "ca53", "ca54", "ca55", "ca56",
-            "ca57", "ca58", "ca59", "ca60", "ca61"
+            "ca42",
+            "ca43",
+            "ca44",
+            "ca45",
+            "ca46",
+            "ca47",
+            "ca48",
+            "ca49",
+            "ca50",
+            "ca51",
+            "ca52",
+            "ca53",
+            "ca54",
+            "ca55",
+            "ca56",
+            "ca57",
+            "ca58",
+            "ca59",
+            "ca60",
+            "ca61"
         ],
 
+        trashRate: 5,
+
         image:
-            "https://media.discordapp.net/attachments/1534756360103788596/1535256926739374100/1000013740-Photoroom.png?ex=6a77c3af&is=6a76722f&hm=4ad63161f5648382efef6153c48d7d133b8af2f1d67ff97136ba0f767f1d7d1d&=&format=webp&quality=lossless"
+            "https://media.discordapp.net/attachments/1534756360103788596/1535256926739374100/1000013740-Photoroom.png"
     },
 
     // ======================================
@@ -1055,11 +1278,16 @@ const fishingZones = {
             "Vùng biển nóng bỏng quanh núi lửa, chỉ xuất hiện vào Chủ Nhật.",
 
         fish: [
-            "ca62", "ca63", "ca64", "ca65"
+            "ca62",
+            "ca63",
+            "ca64",
+            "ca65"
         ],
 
+        trashRate: 3,
+
         image:
-            "https://media.discordapp.net/attachments/1534756360103788596/1535256789833093150/1000013739-Photoroom.png?ex=6a77c38e&is=6a76720e&hm=f24cf84970ed35aa15016fba5cebc67d07dbad78c80c4042c7bb95aa87835d92&=&format=webp&quality=lossless"
+            "https://media.discordapp.net/attachments/1534756360103788596/1535256789833093150/1000013739-Photoroom.png"
     }
 };
 
@@ -1220,8 +1448,15 @@ const insurance = {
 // ==========================================
 
 const sellConfig = {
+
+    // Giá bán = giá gốc × cân nặng × multiplier
     multiplier: 1,
-    minPrice: 1
+
+    // Cho phép bán 0 đồng
+    minPrice: 0,
+
+    // Ủng rách bán 0
+    trashSellPrice: 0
 };
 
 // ==========================================
@@ -1326,13 +1561,21 @@ const levelConfig = {
 
 const fishingConfig = {
 
+    // 5 giây / lần câu
     cooldown: 5000,
 
     minWeight: 0.5,
 
-    maxWeight: 20,
+    maxWeight: 100,
 
-    bonusChance: 5
+    // Chance bonus
+    bonusChance: 5,
+
+    // Chance bắt được đồ rác
+    trashChance: 8,
+
+    // Không cho cá vượt maxWeight
+    limitWeightByConfig: true
 };
 
 // ==========================================
@@ -1354,6 +1597,163 @@ const economyConfig = {
 };
 
 // ==========================================
+// SELL CALCULATION
+// ==========================================
+
+function calculateFishSellPrice(fish, weight) {
+
+    if (!fish) {
+        return 0;
+    }
+
+    // Đồ rác
+    if (fish.sellPrice !== undefined) {
+        return Math.max(
+            0,
+            Number(fish.sellPrice) || 0
+        );
+    }
+
+    const safeWeight = Math.max(
+        0,
+        Number(weight) || 0
+    );
+
+    const price =
+        Number(fish.price) *
+        safeWeight *
+        sellConfig.multiplier;
+
+    return Math.max(
+        sellConfig.minPrice,
+        Math.floor(price)
+    );
+}
+
+// ==========================================
+// SELL TRASH
+// ==========================================
+
+function calculateTrashSellPrice(item) {
+
+    if (!item) {
+        return 0;
+    }
+
+    // Ủng rách = 0 đồng
+    if (item.id === "torn_boot") {
+        return 0;
+    }
+
+    return Math.max(
+        0,
+        Number(item.sellPrice) || 0
+    );
+}
+
+// ==========================================
+// GENERATE FISH WEIGHT
+// ==========================================
+
+function generateFishWeight(fish) {
+
+    if (!fish) {
+        return 0;
+    }
+
+    const min =
+        Math.max(
+            fishingConfig.minWeight,
+            Number(fish.min) || fishingConfig.minWeight
+        );
+
+    const max =
+        Math.min(
+            fishingConfig.maxWeight,
+            Number(fish.max) || fishingConfig.maxWeight
+        );
+
+    if (max <= min) {
+        return Number(min.toFixed(1));
+    }
+
+    return Number(
+        randomFloat(min, max).toFixed(1)
+    );
+}
+
+// ==========================================
+// GET FISH RESULT
+// ==========================================
+
+function generateFishingResult(zoneId, luck = 1) {
+
+    const zone = fishingZones[zoneId];
+
+    if (!zone) {
+        return {
+            type: "error",
+            item: null,
+            weight: 0,
+            price: 0
+        };
+    }
+
+    // Kiểm tra đồ rác trước
+    const trashChance =
+        Number(zone.trashRate) ||
+        fishingConfig.trashChance;
+
+    if (
+        fishingConfig.trashEnabled &&
+        Math.random() * 100 < trashChance
+    ) {
+
+        const trash = pickTrash();
+
+        if (trash) {
+            return {
+                type: "trash",
+                item: trash,
+                weight: 1,
+                price: calculateTrashSellPrice(trash)
+            };
+        }
+    }
+
+    // Câu cá
+    const fish = pickFish(
+        zone.fish,
+        Math.max(1, Number(luck) || 1)
+    );
+
+    if (!fish) {
+        return {
+            type: "error",
+            item: null,
+            weight: 0,
+            price: 0
+        };
+    }
+
+    const weight =
+        generateFishWeight(fish);
+
+    const price =
+        calculateFishSellPrice(
+            fish,
+            weight
+        );
+
+    return {
+        type: "fish",
+        item: fish,
+        weight,
+        price
+    };
+}
+
+// ==========================================
 // COMPATIBILITY ALIASES
 // ==========================================
 
@@ -1361,6 +1761,103 @@ const rodList = rods;
 const baitList = baits;
 const keyList = keys;
 const chestList = chests;
+
+// ==========================================
+// CONFIG VALIDATION
+// ==========================================
+
+function validateConfig() {
+
+    const errors = [];
+
+    // ------------------------------
+    // FISH
+    // ------------------------------
+
+    for (const fish of fishList) {
+
+        if (!fish.id) {
+            errors.push("Fish thiếu id");
+        }
+
+        if (!fish.name) {
+            errors.push(
+                `${fish.id || "unknown"} thiếu name`
+            );
+        }
+
+        if (Number(fish.price) < 0) {
+            errors.push(
+                `${fish.id} có price < 0`
+            );
+        }
+
+        if (Number(fish.rate) <= 0) {
+            errors.push(
+                `${fish.id} có rate <= 0`
+            );
+        }
+
+        if (Number(fish.min) > Number(fish.max)) {
+            errors.push(
+                `${fish.id} min > max`
+            );
+        }
+    }
+
+    // ------------------------------
+    // ZONES
+    // ------------------------------
+
+    for (const zone of Object.values(fishingZones)) {
+
+        if (!Array.isArray(zone.fish)) {
+            errors.push(
+                `${zone.id} thiếu danh sách fish`
+            );
+
+            continue;
+        }
+
+        for (const fishId of zone.fish) {
+
+            const exists =
+                fishList.some(
+                    fish => fish.id === fishId
+                );
+
+            if (!exists) {
+                errors.push(
+                    `${zone.id}: không tìm thấy ${fishId}`
+                );
+            }
+        }
+    }
+
+    // ------------------------------
+    // RODS
+    // ------------------------------
+
+    for (const rod of Object.values(rods)) {
+
+        if (rod.price < 0) {
+            errors.push(
+                `${rod.id} có giá < 0`
+            );
+        }
+
+        if (rod.uses <= 0) {
+            errors.push(
+                `${rod.id} uses <= 0`
+            );
+        }
+    }
+
+    return {
+        valid: errors.length === 0,
+        errors
+    };
+}
 
 // ==========================================
 // EXPORT
@@ -1377,10 +1874,26 @@ module.exports = {
 
     // Utility
     formatMoney,
+    randomInt,
+    randomFloat,
 
     // Fish
     fishList,
     fishConfig,
+
+    // Trash
+    trashItems,
+
+    // Fishing random
+    weightedRandom,
+    pickFish,
+    pickTrash,
+    generateFishWeight,
+    generateFishingResult,
+
+    // Sell
+    calculateFishSellPrice,
+    calculateTrashSellPrice,
 
     // Rods
     rods,
@@ -1429,6 +1942,9 @@ module.exports = {
     // Economy
     economyConfig,
 
-    // Ratestone
-    rateStone
+    // Rate stone
+    rateStone,
+
+    // Validation
+    validateConfig
 };
