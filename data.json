@@ -1,763 +1,38 @@
 {
   "398030689905278977": {
-    "money": 500000,
+    "money": 900,
     "level": 1,
     "exp": 0,
     "can": {
-      "dangDung": "can_5",
+      "dangDung": "wood",
       "danhSach": {
-        "can_3": 1,
-        "can_5": 1
+        "wood": 1
       }
     },
     "moi": {
-      "moithuong": 10,
+      "moithuong": 0,
       "moibac": 0,
-      "moivang": 800
+      "moivang": 0,
+      "worm": 10
     },
     "fish": {
-      "caro": [],
-      "thanthoai": [],
-      "cachep": [],
-      "muc": [],
-      "canoc": [],
-      "camap": []
-    },
-    "keys": {},
-    "chests": {},
-    "inv": {},
-    "insurance": 10,
-    "daily": {
-      "last": 1786120962912,
-      "streak": 1
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {
-      "can_3": {
-        "level": 1,
-        "luck": 8,
-        "uses": 100,
-        "maxUses": 100,
-        "destroyed": false
-      },
-      "can_5": {
-        "level": 7,
-        "luck": 34,
-        "uses": 500,
-        "maxUses": 500,
-        "destroyed": false
-      }
-    },
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "743028655097380895": {
-    "money": 49916974320,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": "mythic",
-      "danhSach": {
-        "can_1": 1,
-        "can_5": 1,
-        "wood": true,
-        "iron": true,
-        "gold": true,
-        "diamond": true,
-        "legendary": true,
-        "mythic": 1
-      }
-    },
-    "moi": {
-      "moithuong": 9,
-      "moibac": 0,
-      "moivang": 16,
-      "golden_bait": 40
-    },
-    "fish": {
-      "cachep": [
-        5.68,
-        9.55,
-        6.75,
-        5.21,
-        7.72,
-        9.08,
-        7.08,
-        7,
-        7.84,
-        5.23,
-        6.33,
-        5.43,
-        6.78,
-        7,
-        1.2,
-        8.39,
-        9.04,
-        8.84,
-        2.09,
-        4.08,
-        9.21,
-        4.84,
-        1.66,
-        2.28,
-        6.25,
-        3.86,
-        7.6,
-        4.6,
-        5.37,
-        7.52,
-        3.33,
-        2.56,
-        8.36,
-        5.51,
-        1.38,
-        1.88,
-        8.47,
-        4.01,
-        7.21,
-        8.33,
-        3.99,
-        4.16
+      "ca13": [
+        10.04,
+        28.32,
+        29.68,
+        15.07,
+        14.18,
+        48.87
       ],
-      "muc": [
-        1.52,
-        2.99,
-        3.8,
-        2.83,
-        0.89,
-        4.18,
-        4.81,
-        0.68,
-        4.83,
-        1.17,
-        2.95,
-        1.31,
-        3.37,
-        3.66,
-        1.85,
-        1.83,
-        4.67,
-        4.2,
-        1.6,
-        2.18,
-        4.16,
-        1.48,
-        0.74,
-        4.37,
-        4.82,
-        3.77,
-        1.57,
-        2.94,
-        0.89,
-        4.85,
-        3.85,
-        3.87,
-        3.95,
-        2.01,
-        0.94,
-        0.84,
-        0.64,
-        4.09,
-        2.34,
-        3.89,
-        4.3,
-        0.79,
-        3.74,
-        0.55,
-        2.05,
-        1.73,
-        2.98,
-        3.57,
-        1.71,
-        3.76
+      "ca14": [
+        7.17,
+        10.73
       ],
-      "caro": [
-        1.66,
-        4.96,
-        1.77,
-        3.66,
-        1.75,
-        1.93,
-        4.84,
-        0.35,
-        4.32,
-        3.03,
-        4.74,
-        4.43,
-        4.83,
-        1.44,
-        1.33,
-        3.16,
-        1.06,
-        0.36,
-        1.85,
-        0.9,
-        2.12,
-        1.76,
-        1.58,
-        1.91,
-        1.87,
-        4.54,
-        4.75,
-        1.17,
-        3.76,
-        3.37,
-        0.61,
-        3.58,
-        4.46,
-        3.17,
-        0.79,
-        1.66,
-        0.5,
-        1.7,
-        1.97,
-        3.98,
-        0.25,
-        4.87,
-        0.4,
-        3.22,
-        2.58,
-        4.54,
-        2.29,
-        1.69,
-        2.08,
-        4.06,
-        0.32,
-        3.01,
-        3.78,
-        2.28,
-        4.5,
-        2.92,
-        1.54,
-        3.17,
-        2.28,
-        3.56,
-        3.81,
-        4.88,
-        3.1
-      ],
-      "canoc": [
-        4.98,
-        12.82,
-        12.04,
-        8.46,
-        13.58,
-        2.33,
-        6.31,
-        3.03,
-        12.82,
-        1.84,
-        7.81,
-        8.96,
-        8.3,
-        13.19,
-        4.59,
-        10.62,
-        3.4,
-        4.49,
-        11.92,
-        13.54,
-        2.1,
-        10.46,
-        6.8,
-        8.06,
-        9.72,
-        13.43,
-        10,
-        7.09,
-        5.54,
-        6.76,
-        1.95
-      ],
-      "camap": [
-        35.73,
-        82.07,
-        156.89,
-        122.12,
-        78.73,
-        43.78,
-        183.53,
-        71.05,
-        46.9,
-        126.04,
-        83.54
-      ],
-      "cabuom": [],
-      "cahe": [
-        0.19,
-        0.21,
-        1.08,
-        0.11,
-        1.22,
-        0.97,
-        0.11,
-        2.38,
-        1.3,
-        2.25,
-        0.55,
-        2.81,
-        2.67,
-        1.04,
-        2.43,
-        2.24,
-        2.35,
-        2,
-        2.44,
-        2.69,
-        1.07,
-        2.2,
-        0.65,
-        1.83,
-        1.06,
-        2.95,
-        2.08
-      ],
-      "caduoikiem": [
-        9.73,
-        19.67,
-        24.34,
-        19.05,
-        24.99,
-        24.73,
-        7.33,
-        17.71,
-        29.86,
-        18.55
-      ],
-      "canhietdoi": [
-        14.97,
-        47.76,
-        34.42
-      ],
-      "camu": [
-        58.8
-      ],
-      "ca11": [
-        6.06,
-        6.09,
-        2.91,
-        1.62,
-        6.18,
-        6.25,
-        6.98,
-        5.65,
-        5.72,
-        3.16,
-        1.38,
-        5.92,
-        5.84,
-        5.63,
-        2.26
-      ],
-      "ca10": [
-        14.27,
-        13.53,
-        14.63,
-        13.49,
-        4.91,
-        4.91,
-        10.07,
-        8.61,
-        11.58,
-        11.74,
-        8.33,
-        7.23,
-        7.67,
-        11.86,
-        12.33,
-        5.1,
-        14.39,
-        13.56,
-        10.45,
-        12.72,
-        9.73,
-        10.52,
-        12.08,
-        14.56,
-        6.5,
-        9.98,
-        12.52
-      ],
-      "ca12": [
-        4.47,
-        6.41,
-        4.55,
-        5.84,
-        8.32,
-        8.93,
-        8.24,
-        6.49,
-        9,
-        4.1
+      "ca15": [
+        42.09,
+        6.18
       ]
     },
-    "keys": {
-      "key_5": 1
-    },
-    "chests": {},
-    "inv": {},
-    "insurance": 39,
-    "daily": {
-      "last": 1786121406897,
-      "streak": 1
-    },
-    "quest": {
-      "date": "2026-08-08",
-      "quests": [
-        {
-          "id": "fish_1786191519465_npa3llf7ee",
-          "type": "fish",
-          "target": 34,
-          "reward": 9370,
-          "title": "🌊 Càn quét đại dương",
-          "description": "Bắt 34 con cá",
-          "emoji": "🐟",
-          "claimed": true
-        },
-        {
-          "id": "rod_1786191519488_recof0cpfgn",
-          "type": "rod",
-          "target": 5,
-          "reward": 10000,
-          "title": "🎣 Tân binh cường hóa",
-          "description": "Có một cần câu đạt +5",
-          "emoji": "🎣",
-          "claimed": true
-        },
-        {
-          "id": "money_1786191519489_h7rgsayyp7q",
-          "type": "money",
-          "target": 35733,
-          "reward": 5960,
-          "title": "💰 Tích lũy tài sản",
-          "description": "Có ít nhất 35.733 xu",
-          "emoji": "💰",
-          "claimed": true
-        },
-        {
-          "id": "specific_1786191519489_8468xq56hkm",
-          "type": "specific",
-          "fishId": "whale",
-          "target": 5,
-          "reward": 4079,
-          "title": "🐋 Thợ săn Cá voi",
-          "description": "Bắt 5 Cá voi",
-          "emoji": "🐋"
-        },
-        {
-          "id": "mixed_1786191519501_zqdof85upo",
-          "type": "mixed",
-          "target": 16,
-          "reward": 11335,
-          "title": "🌊 Chuyến câu hoàn hảo",
-          "description": "Bắt 16 con cá và đạt ít nhất 24 KG",
-          "kgTarget": 24,
-          "emoji": "🌊",
-          "claimed": true
-        }
-      ],
-      "completed": 4,
-      "list": [],
-      "claim": false,
-      "claimed": [
-        "rod_1786191519488_recof0cpfgn",
-        "money_1786191519489_h7rgsayyp7q",
-        "mixed_1786191519501_zqdof85upo",
-        "fish_1786191519465_npa3llf7ee"
-      ]
-    },
-    "rodData": {
-      "can_1": {
-        "level": 4,
-        "luck": 9,
-        "uses": 20,
-        "maxUses": 20,
-        "destroyed": false
-      },
-      "can_5": {
-        "level": 5,
-        "luck": 36,
-        "uses": 500,
-        "maxUses": 500,
-        "destroyed": false
-      },
-      "wood": {
-        "level": 2,
-        "luck": 1.1,
-        "uses": 0,
-        "maxUses": 20,
-        "destroyed": true
-      },
-      "iron": {
-        "level": 1,
-        "luck": 1.2,
-        "uses": 100,
-        "maxUses": 100,
-        "destroyed": false
-      },
-      "gold": {
-        "level": 1,
-        "luck": 1.5,
-        "uses": 100,
-        "maxUses": 100,
-        "destroyed": false
-      },
-      "diamond": {
-        "level": 1,
-        "luck": 2,
-        "uses": 100,
-        "maxUses": 100,
-        "destroyed": false
-      },
-      "legendary": {
-        "level": 1,
-        "luck": 2.5,
-        "uses": 100,
-        "maxUses": 100
-      },
-      "mythic": {
-        "level": 10,
-        "luck": 6.2,
-        "uses": 0,
-        "maxUses": 500,
-        "destroyed": true
-      }
-    },
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    },
-    "items": {}
-  },
-  "1148615485399764992": {
-    "money": 500000,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": "can_1",
-      "danhSach": {
-        "can_1": 1
-      }
-    },
-    "moi": {
-      "moithuong": 10,
-      "moibac": 0,
-      "moivang": 10
-    },
-    "fish": {
-      "muc": [
-        2.41,
-        4.27,
-        4.73,
-        1.53,
-        2.32
-      ],
-      "canoc": [
-        11.85,
-        10.2,
-        5.29
-      ],
-      "camap": [
-        168.91,
-        183.02
-      ]
-    },
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 1786118250926,
-      "streak": 1
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {
-      "can_1": {
-        "level": 0,
-        "luck": 1,
-        "uses": 10,
-        "maxUses": 20,
-        "destroyed": false
-      }
-    },
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "592277089999388702": {
-    "money": 500000,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": "can_1",
-      "danhSach": {
-        "can_1": 1
-      }
-    },
-    "moi": {
-      "moithuong": 10,
-      "moibac": 0,
-      "moivang": 0
-    },
-    "fish": {},
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 1786122987370,
-      "streak": 1
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {
-      "can_1": {
-        "level": 0,
-        "luck": 1,
-        "uses": 20,
-        "maxUses": 20,
-        "destroyed": false
-      }
-    },
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "934279092314996747": {
-    "money": 506000,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": null,
-      "danhSach": {}
-    },
-    "moi": {
-      "moithuong": 10,
-      "moibac": 0,
-      "moivang": 0
-    },
-    "fish": {},
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 1786123206655,
-      "streak": 1
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {},
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "1243204049927671913": {
-    "money": 511000,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": null,
-      "danhSach": {}
-    },
-    "moi": {
-      "moithuong": 10,
-      "moibac": 0,
-      "moivang": 0
-    },
-    "fish": {},
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 1786166434153,
-      "streak": 1
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {},
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "755423975584039002": {
-    "money": 11000,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": null,
-      "danhSach": {}
-    },
-    "moi": {
-      "moithuong": 10,
-      "moibac": 0,
-      "moivang": 0
-    },
-    "fish": {},
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 1786178848320,
-      "streak": 1
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {},
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "867667224088936478": {
-    "money": 5300,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": null,
-      "danhSach": {}
-    },
-    "moi": {
-      "moithuong": 10,
-      "moibac": 0,
-      "moivang": 0
-    },
-    "fish": {},
     "keys": {},
     "chests": {},
     "insurance": 0,
@@ -771,104 +46,114 @@
       "list": [],
       "claim": false
     },
-    "rodData": {},
+    "rodData": {
+      "wood": {
+        "level": 0,
+        "luck": 1,
+        "uses": 10,
+        "maxUses": 20,
+        "destroyed": false
+      }
+    },
     "stats": {
       "catch": 0,
       "sell": 0,
       "kg": 0
     }
   },
-  "648015392115261460": {
-    "money": 8900,
+  "743028655097380895": {
+    "money": 16535950,
     "level": 1,
     "exp": 0,
     "can": {
-      "dangDung": "wood",
+      "dangDung": "mythic",
       "danhSach": {
-        "wood": 1
+        "wood": 1,
+        "mythic": 1
       }
     },
     "moi": {
       "moithuong": 0,
       "moibac": 0,
       "moivang": 0,
-      "golden_bait": 10,
-      "worm": 11
+      "worm": 0,
+      "golden_bait": 1
     },
-    "fish": {
-      "ca11": [],
-      "ca12": [],
-      "ca10": []
-    },
+    "fish": {},
     "keys": {},
     "chests": {},
-    "insurance": 1,
+    "insurance": 0,
     "inv": {},
     "daily": {
-      "last": 1786199919467,
+      "last": 1786262655114,
       "streak": 1
     },
     "quest": {
-      "date": "2026-08-08",
+      "date": "2026-08-09",
       "quests": [
         {
-          "id": "fish_marathon_1786200089859_l3qq4lws1f",
-          "templateId": "fish_marathon",
-          "type": "fish",
-          "target": 91,
-          "reward": 14406,
-          "title": "🏃 Marathon câu cá",
-          "emoji": "🏃",
+          "id": "rare_6_1786262660329_xbi24vf05z",
+          "templateId": "rare_6",
+          "type": "specific_rarity",
+          "target": 4,
+          "reward": 25342,
+          "title": "👑 Đại săn cá quý",
+          "emoji": "👑",
           "claimed": false,
-          "description": "Bắt 91 con cá"
+          "fishId": "ca21",
+          "fishName": "Cá trắng",
+          "fishEmoji": "🐟",
+          "description": "Bắt 4 Cá trắng"
         },
         {
-          "id": "kg_master_1786200089859_be7efo7w5a4",
+          "id": "legendary_3_1786262660329_6w6bc756jxb",
+          "templateId": "legendary_3",
+          "type": "specific_rarity",
+          "target": 1,
+          "reward": 49874,
+          "title": "🌌 Săn Mythical",
+          "emoji": "🌌",
+          "claimed": false,
+          "fishId": "ca59",
+          "fishName": "Cá hư không",
+          "fishEmoji": "🌌",
+          "description": "Bắt 1 Cá hư không"
+        },
+        {
+          "id": "specific_9_1786262660329_q7xry06wlda",
+          "templateId": "specific_9",
+          "type": "specific",
+          "target": 8,
+          "reward": 11180,
+          "title": "👀 Con mắt đại dương",
+          "emoji": "👀",
+          "claimed": false,
+          "fishId": "ca29",
+          "fishName": "Cá bùn",
+          "fishEmoji": "🐟",
+          "description": "Bắt 8 Cá bùn"
+        },
+        {
+          "id": "kg_master_1786262660329_nomv3bshs5",
           "templateId": "kg_master",
           "type": "kg",
-          "target": 202,
-          "reward": 22853,
+          "target": 166,
+          "reward": 21718,
           "title": "👑 Đại sư săn cá",
           "emoji": "👑",
           "claimed": false,
-          "description": "Câu đủ 202 KG cá"
+          "description": "Câu đủ 166 KG cá"
         },
         {
-          "id": "rare_2_1786200089859_a14sgj46s24",
-          "templateId": "rare_2",
-          "type": "specific_rarity",
-          "target": 2,
-          "reward": 16529,
-          "title": "✨ Săn cá quý",
-          "emoji": "✨",
+          "id": "kg_easy_1786262660329_v014b7ich9g",
+          "templateId": "kg_easy",
+          "type": "kg",
+          "target": 21,
+          "reward": 4355,
+          "title": "⚖️ Mẻ cá đầu tiên",
+          "emoji": "⚖️",
           "claimed": false,
-          "fishId": "ca25",
-          "fishName": "Cá ma băng",
-          "fishEmoji": "👻",
-          "description": "Bắt 2 Cá ma băng"
-        },
-        {
-          "id": "mixed_4_1786200089860_gc6kuetive8",
-          "templateId": "mixed_4",
-          "type": "mixed",
-          "target": 57,
-          "reward": 25866,
-          "title": "👑 Bá chủ biển cả",
-          "emoji": "👑",
-          "claimed": false,
-          "kgTarget": 125.4,
-          "description": "Bắt 57 cá · 125.4 KG"
-        },
-        {
-          "id": "fish_big_1786200089860_eoy9urru11i",
-          "templateId": "fish_big",
-          "type": "fish",
-          "target": 67,
-          "reward": 10683,
-          "title": "⚓ Đội trưởng đánh cá",
-          "emoji": "⚓",
-          "claimed": false,
-          "description": "Bắt 67 con cá"
+          "description": "Câu đủ 21 KG cá"
         }
       ],
       "completed": 0,
@@ -878,10 +163,17 @@
     },
     "rodData": {
       "wood": {
-        "level": 5,
-        "luck": 1.5000000000000004,
+        "level": 3,
+        "luck": 1.3,
         "uses": 20,
         "maxUses": 20,
+        "destroyed": false
+      },
+      "mythic": {
+        "level": 0,
+        "luck": 5,
+        "uses": 480,
+        "maxUses": 500,
         "destroyed": false
       }
     },
@@ -889,6 +181,9 @@
       "catch": 0,
       "sell": 0,
       "kg": 0
+    },
+    "items": {
+      "da_rate": 1
     }
   }
 }
