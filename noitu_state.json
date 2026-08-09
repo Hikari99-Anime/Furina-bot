@@ -1,0 +1,63 @@
+{
+  "roundSlot": {
+    "vi": 0,
+    "en": 0
+  },
+  "usedHistory": {
+    "vi": [
+      [
+        "bà xơ"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "en": [
+      [
+        "emerald",
+        "day",
+        "year",
+        "roll",
+        "leaf",
+        "face",
+        "ea"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ]
+  },
+  "games": [
+    {
+      "channelId": "1508430174415360172",
+      "lang": "en",
+      "current": "ea",
+      "chainLength": 7,
+      "lastUser": "743028655097380895",
+      "scores": {
+        "398030689905278977": 3,
+        "743028655097380895": 3
+      }
+    },
+    {
+      "channelId": "1529187492694065434",
+      "lang": "vi",
+      "current": "bà xơ",
+      "chainLength": 1,
+      "lastUser": null,
+      "scores": {}
+    }
+  ]
+}

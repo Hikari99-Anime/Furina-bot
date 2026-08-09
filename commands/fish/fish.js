@@ -379,22 +379,14 @@ function getBaitName(
     baitID
 ) {
 
-    const names = {
+    const info =
+        baits?.[baitID];
 
-        moithuong:
-            "🪱 Mồi thường",
-
-        moibac:
-            "🦐 Mồi bạc",
-
-        moivang:
-            "✨ Mồi vàng"
-
-    };
+    if (!info)
+        return "🪱 Mồi";
 
     return (
-        names[baitID] ||
-        "🪱 Mồi"
+        `${info.emoji || "🪱"} ${info.name}`
     );
 }
 
@@ -406,24 +398,8 @@ function getBaitEmoji(
     baitID
 ) {
 
-    const emojis = {
-
-        moithuong:
-            baits?.worm?.emoji ||
-            "🪱",
-
-        moibac:
-            baits?.shrimp?.emoji ||
-            "🦐",
-
-        moivang:
-            baits?.golden_bait?.emoji ||
-            "✨"
-
-    };
-
     return (
-        emojis[baitID] ||
+        baits?.[baitID]?.emoji ||
         "🪱"
     );
 }
@@ -454,101 +430,53 @@ function createBaitButtons(
     ownerID
 ) {
 
-    const normal =
-        getBaitCount(
-            user,
-            "moithuong"
-        );
-
-    const silver =
-        getBaitCount(
-            user,
-            "moibac"
-        );
-
-    const golden =
-        getBaitCount(
-            user,
-            "moivang"
-        );
-
     const row =
-        new ActionRowBuilder()
-            .addComponents(
+        new ActionRowBuilder();
 
-                new ButtonBuilder()
+    const baitIds =
+        Object.keys(baits || {});
 
-                    .setCustomId(
-                        `fishbait_${ownerID}_moithuong`
-                    )
+    for (
+        const baitID of baitIds
+    ) {
 
-                    .setLabel(
-                        `Mồi thường (${normal})`
-                    )
+        const info =
+            baits[baitID];
 
-                    .setEmoji(
-                        getBaitEmoji(
-                            "moithuong"
-                        )
-                    )
-
-                    .setStyle(
-                        ButtonStyle.Primary
-                    )
-
-                    .setDisabled(
-                        normal <= 0
-                    ),
-
-                new ButtonBuilder()
-
-                    .setCustomId(
-                        `fishbait_${ownerID}_moibac`
-                    )
-
-                    .setLabel(
-                        `Mồi bạc (${silver})`
-                    )
-
-                    .setEmoji(
-                        getBaitEmoji(
-                            "moibac"
-                        )
-                    )
-
-                    .setStyle(
-                        ButtonStyle.Secondary
-                    )
-
-                    .setDisabled(
-                        silver <= 0
-                    ),
-
-                new ButtonBuilder()
-
-                    .setCustomId(
-                        `fishbait_${ownerID}_moivang`
-                    )
-
-                    .setLabel(
-                        `Mồi vàng (${golden})`
-                    )
-
-                    .setEmoji(
-                        getBaitEmoji(
-                            "moivang"
-                        )
-                    )
-
-                    .setStyle(
-                        ButtonStyle.Success
-                    )
-
-                    .setDisabled(
-                        golden <= 0
-                    )
-
+        const count =
+            getBaitCount(
+                user,
+                baitID
             );
+
+        row.addComponents(
+
+            new ButtonBuilder()
+
+                .setCustomId(
+                    `fishbait_${ownerID}_${baitID}`
+                )
+
+                .setLabel(
+                    `${info.name} (${count})`
+                )
+
+                .setEmoji(
+                    info.emoji ||
+                    "🪱"
+                )
+
+                .setStyle(
+                    ButtonStyle.Primary
+                )
+
+                .setDisabled(
+                    count <= 0
+                )
+
+        );
+
+    }
 
     return row;
 }
@@ -961,28 +889,29 @@ module.exports = {
         user.moi =
             user.moi || {};
 
-        const normalBait =
-            getBaitCount(
-                user,
-                "moithuong"
-            );
+        const baitIds =
+            Object.keys(baits || {});
 
-        const silverBait =
-            getBaitCount(
-                user,
-                "moibac"
-            );
+        const baitCounts = {};
 
-        const goldenBait =
-            getBaitCount(
-                user,
-                "moivang"
-            );
+        let totalBait = 0;
 
-        const totalBait =
-            normalBait +
-            silverBait +
-            goldenBait;
+        for (
+            const id of baitIds
+        ) {
+
+            const count =
+                getBaitCount(
+                    user,
+                    id
+                );
+
+            baitCounts[id] =
+                count;
+
+            totalBait +=
+                count;
+        }
 
         // ==================================================
         // KHÔNG CÓ MỒI
@@ -1015,11 +944,14 @@ module.exports = {
 
                             `Bạn không còn mồi.\n\n` +
 
-                            `🪱 Mồi thường: **0**\n` +
-                            `🦐 Mồi bạc: **0**\n` +
-                            `✨ Mồi vàng: **0**\n\n` +
+                            baitIds
+                                .map(
+                                    id =>
+                                        `${getBaitEmoji(id)} ${baits[id].name}: **0**`
+                                )
+                                .join("\n") +
 
-                            `💡 Hãy mua thêm mồi rồi thử lại.`
+                            `\n\n💡 Hãy mua thêm mồi rồi thử lại.`
                         )
 
                         .setFooter({
@@ -1124,11 +1056,14 @@ module.exports = {
 
                     `🎣 Số lần câu: **${amount}**\n\n` +
 
-                    `🪱 Mồi thường: **${normalBait}**\n` +
-                    `🦐 Mồi bạc: **${silverBait}**\n` +
-                    `✨ Mồi vàng: **${goldenBait}**\n\n` +
+                    baitIds
+                        .map(
+                            id =>
+                                `${getBaitEmoji(id)} ${baits[id].name}: **${baitCounts[id]}**`
+                        )
+                        .join("\n") +
 
-                    `👇 **Chọn loại mồi muốn sử dụng:**`
+                    `\n\n👇 **Chọn loại mồi muốn sử dụng:**`
                 )
 
                 .setFooter({
@@ -1468,13 +1403,14 @@ module.exports = {
 
         const caughtSummary = {};
 
-        const baitUsed = {
+        const baitUsed = {};
 
-            moithuong: 0,
-            moibac: 0,
-            moivang: 0
+        for (
+            const id of baitIds
+        ) {
 
-        };
+            baitUsed[id] = 0;
+        }
 
         let actualCaught = 0;
 

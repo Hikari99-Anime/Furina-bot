@@ -4,6 +4,7 @@ const {
 
 const {
     rods,
+    baits,
     emoji,
     rodTitles,
     formatMoney
@@ -72,6 +73,19 @@ module.exports = {
         }
 
         // ======================
+        // MỒI
+        // ======================
+
+        const baitText =
+            Object.keys(baits || {})
+                .map(
+                    id =>
+                        `${baits[id].emoji || "🪱"} ${user.moi?.[id] || 0}`
+                )
+                .join(" · ") ||
+            "-";
+
+        // ======================
         // EMBED
         // ======================
 
@@ -95,10 +109,7 @@ module.exports = {
 
                     `🐟 Cá đã bắt: ${totalFish}\n` +
 
-                    `🎒 Mồi: ` +
-                    `🪱 ${user.moi?.moithuong || 0} · ` +
-                    `🦐 ${user.moi?.moibac || 0} · ` +
-                    `✨ ${user.moi?.moivang || 0}`
+                    `🎒 Mồi: ${baitText}`
                 )
                 .setFooter({
                     text: "✦ Fishing Adventure"

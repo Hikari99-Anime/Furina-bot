@@ -1,3 +1,7 @@
+const fs = require("fs");
+const path = require("path");
+
+
 const {
     EmbedBuilder
 } = require("discord.js");
@@ -43,6 +47,142 @@ const usedHistory = {
     en: Array.from({length:MAX_ROUND},() => new Set())
 
 };
+
+
+// ======================================================
+// LƯU / KHÔI PHỤC VÁN ĐANG CHƠI
+//
+// games (Map) chỉ tồn tại trong RAM nên mỗi lần bot restart
+// (kể cả khi restart để áp dụng code khác) ván đang chơi sẽ
+// mất trắng. File này lưu lại đủ dữ liệu để khôi phục ván
+// (trừ đối tượng channel — cần fetch lại bằng client khi bot
+// khởi động xong, xem restoreGames()).
+// ======================================================
+
+const STATE_FILE = path.join(__dirname,"..","noitu_state.json");
+
+
+function saveState(){
+
+    try{
+
+        const state = {
+
+            roundSlot,
+
+            usedHistory: {
+
+                vi: usedHistory.vi.map(slot => Array.from(slot)),
+
+                en: usedHistory.en.map(slot => Array.from(slot))
+
+            },
+
+            games: Array.from(games.entries()).map(
+                ([channelId,game]) => ({
+
+                    channelId,
+                    lang: game.lang,
+                    current: game.current,
+                    chainLength: game.chainLength,
+                    lastUser: game.lastUser,
+                    scores: Object.fromEntries(game.scores)
+
+                })
+            )
+
+        };
+
+        fs.writeFileSync(
+            STATE_FILE,
+            JSON.stringify(state,null,2)
+        );
+
+    } catch(err){
+
+        console.log("❌ Lỗi lưu trạng thái nối từ:",err);
+
+    }
+
+}
+
+
+async function restoreGames(client){
+
+    if(!fs.existsSync(STATE_FILE))
+        return;
+
+    let state;
+
+    try{
+
+        state = JSON.parse(
+            fs.readFileSync(STATE_FILE,"utf8")
+        );
+
+    } catch{
+
+        return;
+
+    }
+
+    if(state.roundSlot){
+
+        roundSlot.vi = state.roundSlot.vi || 0;
+        roundSlot.en = state.roundSlot.en || 0;
+
+    }
+
+    if(state.usedHistory){
+
+        if(Array.isArray(state.usedHistory.vi))
+            usedHistory.vi =
+            state.usedHistory.vi.map(arr => new Set(arr));
+
+        if(Array.isArray(state.usedHistory.en))
+            usedHistory.en =
+            state.usedHistory.en.map(arr => new Set(arr));
+
+    }
+
+    if(!Array.isArray(state.games))
+        return;
+
+    for(const entry of state.games){
+
+        try{
+
+            const channel =
+                await client.channels.fetch(entry.channelId);
+
+            if(!channel || !channel.isTextBased())
+                continue;
+
+            games.set(entry.channelId,{
+
+                lang: entry.lang,
+                channel,
+                current: entry.current,
+                chainLength: entry.chainLength,
+                lastUser: entry.lastUser,
+                scores: new Map(Object.entries(entry.scores || {}))
+
+            });
+
+            console.log(
+                `✅ Khôi phục ván nối từ (${entry.lang}) ở channel ${entry.channelId}`
+            );
+
+        } catch{
+
+            // Channel không còn truy cập được → bỏ qua ván này
+            continue;
+
+        }
+
+    }
+
+}
 
 
 
@@ -151,6 +291,8 @@ function createGame(lang,channel,starter){
 
     games.set(channel.id,game);
 
+    saveState();
+
     return game;
 
 }
@@ -171,6 +313,8 @@ function stopGame(channelId){
 
     usedHistory[game.lang] =
     Array.from({length:MAX_ROUND},() => new Set());
+
+    saveState();
 
     return true;
 
@@ -276,8 +420,13 @@ async function handleMessage(message){
 
     if(!result.ok){
 
-        if(result.close)
+        if(result.close){
+
+            message.react("❌").catch(()=>{});
+
             notifyAndDelete(message,result.reason);
+
+        }
 
         return result.close;
 
@@ -315,6 +464,8 @@ async function handleMessage(message){
 
         save();
 
+        saveState();
+
         await message.react("✅").catch(()=>{});
 
         return true;
@@ -340,6 +491,8 @@ async function handleMessage(message){
     const nextStarter = pickStarter(game.lang);
 
     startRound(game,nextStarter);
+
+    saveState();
 
 
     await game.channel.send({
@@ -389,6 +542,7 @@ module.exports = {
     stopGame,
     getRoundCount,
     pickStarter,
-    handleMessage
+    handleMessage,
+    restoreGames
 
 };

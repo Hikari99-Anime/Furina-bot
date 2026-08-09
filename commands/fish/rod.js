@@ -61,26 +61,55 @@ function getRodData(user, id) {
     rod.luck =
         Number(rod.luck) || base.luck || 1;
 
-    rod.maxUses =
-        Number(rod.maxUses) ||
-        base.uses ||
-        1;
+    // Đồng bộ độ bền tối đa với config hiện tại
+    // (tránh cần cũ bị kẹt ở maxUses lỗi thời khi config thay đổi)
+    const configMaxUses =
+        Math.max(
+            1,
+            Number(base.uses) || 1
+        );
+
+    const oldMaxUses =
+        Number(rod.maxUses) || 0;
+
+    let currentUses =
+        Number(rod.uses);
+
+    if (
+        !Number.isFinite(
+            currentUses
+        )
+    ) {
+
+        currentUses =
+            configMaxUses;
+    }
+
+    if (
+        oldMaxUses > 0 &&
+        oldMaxUses !== configMaxUses
+    ) {
+
+        currentUses =
+            currentUses >= oldMaxUses
+                ? configMaxUses
+                : Math.min(
+                    currentUses,
+                    configMaxUses
+                );
+    }
 
     rod.uses =
         Math.max(
             0,
-            Number(rod.uses) || 0
+            Math.min(
+                currentUses,
+                configMaxUses
+            )
         );
 
-    if (
-        rod.uses >
-        rod.maxUses
-    ) {
-
-        rod.uses =
-            rod.maxUses;
-
-    }
+    rod.maxUses =
+        configMaxUses;
 
     if (
         typeof rod.destroyed !==
@@ -93,6 +122,23 @@ function getRodData(user, id) {
     }
 
     return rod;
+}
+
+
+// ======================================================
+// SẮP XẾP THEO THỨ TỰ CẤU HÌNH (THẤP → CAO)
+// ======================================================
+
+function sortRodIds(ids) {
+
+    const order =
+        Object.keys(rods);
+
+    return [...ids].sort(
+        (a, b) =>
+            order.indexOf(a) -
+            order.indexOf(b)
+    );
 }
 
 
@@ -179,10 +225,12 @@ function createRodEmbed(
 ) {
 
     const list =
-        Object.keys(
-            user.can?.danhSach || {}
-        ).filter(
-            id => rods[id]
+        sortRodIds(
+            Object.keys(
+                user.can?.danhSach || {}
+            ).filter(
+                id => rods[id]
+            )
         );
 
     let text = "";
@@ -300,10 +348,12 @@ module.exports = {
         // ==================================================
 
         const list =
-            Object.keys(
-                user.can.danhSach
-            ).filter(
-                id => rods[id]
+            sortRodIds(
+                Object.keys(
+                    user.can.danhSach
+                ).filter(
+                    id => rods[id]
+                )
             );
 
 

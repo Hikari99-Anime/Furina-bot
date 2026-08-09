@@ -74,7 +74,7 @@ content:
 
 \`${prefix}admin addmoney @user 10000\`
 
-\`${prefix}admin addbait @user moivang 10\`
+\`${prefix}admin addbait @user golden_bait 10\`
 
 \`${prefix}admin addkey @user key_5 1\`
 
@@ -390,13 +390,7 @@ rodData:{},
 moi:{
 
 
-moithuong:10,
-
-
-moibac:0,
-
-
-moivang:0
+worm:10
 
 
 },

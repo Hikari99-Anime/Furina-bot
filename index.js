@@ -6,6 +6,7 @@ const {
     insurance,
     rods,
     baits,
+    rateStone,
     emoji,
     formatMoney,
     prefix
@@ -207,7 +208,18 @@ client.once(
 
     "ready",
 
-    () => {
+    async () => {
+
+        await noitu
+            .restoreGames(client)
+            .catch(err => {
+
+                console.log(
+                    "❌ Lỗi khôi phục ván nối từ:",
+                    err
+                );
+
+            });
 
         console.log("==============================");
 
@@ -814,6 +826,95 @@ client.on(
 
                         components:
                             rows,
+
+                        ephemeral: true
+
+                    });
+
+                }
+
+
+                // ==============================
+                // RATE STONE SHOP
+                // ==============================
+
+                if (
+                    interaction.customId ===
+                    "shop_stone"
+                ) {
+
+                    const stoneIds =
+                        Object.keys(rateStone);
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#A78BFA")
+
+                            .setTitle(
+                                "╭・🪨 RATE STONE MARKET"
+                            )
+
+                            .setDescription(
+
+                                stoneIds
+                                    .map(sid => {
+
+                                        const s =
+                                            rateStone[sid];
+
+                                        return (
+                                            `${s.emoji} **${s.name}**\n` +
+                                            `💰 ${formatMoney(s.price)} ${emoji.money} · 🪨 ${s.uses} lượt · 📈 +${s.rate}%/lượt`
+                                        );
+
+                                    })
+                                    .join(
+                                        "\n\n━━━━━━━━━━━━\n\n"
+                                    )
+
+                            );
+
+
+                    const row =
+                        new ActionRowBuilder();
+
+
+                    for (
+                        const sid of stoneIds
+                    ) {
+
+                        row.addComponents(
+
+                            new ButtonBuilder()
+
+                                .setCustomId(
+                                    `buy_${sid}`
+                                )
+
+                                .setLabel(
+                                    rateStone[sid].name
+                                )
+
+                                .setStyle(
+                                    ButtonStyle.Secondary
+                                )
+
+                        );
+
+                    }
+
+
+                    return interaction.reply({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components: [
+                            row
+                        ],
 
                         ephemeral: true
 

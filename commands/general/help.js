@@ -78,8 +78,7 @@ async execute(message) {
             .setDescription(
                 `🛒 CỬA HÀNG\n\n` +
 
-                `${prefix}shop · Xem cửa hàng\n` +
-                `${prefix}buy [id] · Mua vật phẩm\n\n` +
+                `${prefix}shop · Xem cửa hàng, bấm nút để mua vật phẩm\n\n` +
 
                 `🎒 KHO ĐỒ\n\n` +
 

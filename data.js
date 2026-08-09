@@ -128,21 +128,15 @@ function createUser() {
         // ==================================================
 
         /*
-         * User mới chỉ được:
+         * User mới chỉ được 10 mồi giun (worm).
          *
-         * 10 mồi thường
-         *
-         * Không có mồi bạc
-         * Không có mồi vàng
+         * Dùng chung key với config.baits (worm/shrimp/fish_food/golden_bait)
+         * để khớp với mồi mua ở shop và hiển thị ở inventory.
          */
 
         moi: {
 
-            moithuong: 10,
-
-            moibac: 0,
-
-            moivang: 0
+            worm: 10
 
         },
 
@@ -356,20 +350,26 @@ function getUser(userID) {
 
         user.moi = {
 
-            moithuong: 10,
-
-            moibac: 0,
-
-            moivang: 0
+            worm: 10
 
         };
 
     }
 
 
+    // ==================================================
+    // MIGRATE MỒI CŨ (moithuong/moibac/moivang)
+    // SANG HỆ MỒI MỚI DÙNG CHUNG VỚI SHOP
+    // (worm/shrimp/golden_bait)
+    // ==================================================
+
     if (
-        typeof user.moi.moithuong !== "number"
+        Number(user.moi.moithuong) > 0
     ) {
+
+        user.moi.worm =
+            (Number(user.moi.worm) || 0) +
+            Number(user.moi.moithuong);
 
         user.moi.moithuong = 0;
 
@@ -377,8 +377,12 @@ function getUser(userID) {
 
 
     if (
-        typeof user.moi.moibac !== "number"
+        Number(user.moi.moibac) > 0
     ) {
+
+        user.moi.shrimp =
+            (Number(user.moi.shrimp) || 0) +
+            Number(user.moi.moibac);
 
         user.moi.moibac = 0;
 
@@ -386,8 +390,12 @@ function getUser(userID) {
 
 
     if (
-        typeof user.moi.moivang !== "number"
+        Number(user.moi.moivang) > 0
     ) {
+
+        user.moi.golden_bait =
+            (Number(user.moi.golden_bait) || 0) +
+            Number(user.moi.moivang);
 
         user.moi.moivang = 0;
 

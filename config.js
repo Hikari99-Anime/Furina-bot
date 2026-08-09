@@ -966,9 +966,9 @@ const fishingZones = {
             "Vùng biển ấm áp với nhiều loài cá phổ biến.",
 
         fish: [
-            "ca1",
-            "ca2",
-            "ca3"
+            "ca1", "ca2", "ca3", "ca4", "ca5",
+            "ca6", "ca7", "ca8", "ca9", "ca10",
+            "ca11", "ca12", "ca13", "ca14", "ca15"
         ],
 
         image:
@@ -988,9 +988,9 @@ const fishingZones = {
             "Vùng biển lạnh giá, nơi những loài cá đặc biệt sinh sống.",
 
         fish: [
-            "ca4",
-            "ca5",
-            "ca6"
+            "ca16", "ca17", "ca18", "ca19", "ca20",
+            "ca21", "ca22", "ca23", "ca24", "ca25",
+            "ca26", "ca27", "ca28"
         ],
 
         image:
@@ -1010,9 +1010,9 @@ const fishingZones = {
             "Khu đầm lầy bí ẩn với những sinh vật kỳ lạ.",
 
         fish: [
-            "ca7",
-            "ca8",
-            "ca9"
+            "ca29", "ca30", "ca31", "ca32", "ca33",
+            "ca34", "ca35", "ca36", "ca37", "ca38",
+            "ca39", "ca40", "ca41"
         ],
 
         image:
@@ -1032,9 +1032,10 @@ const fishingZones = {
             "Vùng nước sâu tối tăm, nơi những con cá quý hiếm ẩn mình.",
 
         fish: [
-            "ca10",
-            "ca11",
-            "ca12"
+            "ca42", "ca43", "ca44", "ca45", "ca46",
+            "ca47", "ca48", "ca49", "ca50", "ca51",
+            "ca52", "ca53", "ca54", "ca55", "ca56",
+            "ca57", "ca58", "ca59", "ca60", "ca61"
         ],
 
         image:
@@ -1054,9 +1055,7 @@ const fishingZones = {
             "Vùng biển nóng bỏng quanh núi lửa, chỉ xuất hiện vào Chủ Nhật.",
 
         fish: [
-            "ca13",
-            "ca14",
-            "ca15"
+            "ca62", "ca63", "ca64", "ca65"
         ],
 
         image:

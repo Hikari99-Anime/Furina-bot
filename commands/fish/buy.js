@@ -1,20 +1,14 @@
 const {
-    EmbedBuilder
-} = require("discord.js");
-
-const {
     rods,
     baits,
     keys,
     insurance,
     rateStone,
     emoji,
-    formatMoney,
-    prefix
+    formatMoney
 } = require("../../config");
 
 const {
-    getUser,
     save
 } = require("../../data");
 
@@ -163,11 +157,17 @@ function purchase(
             user.can.danhSach &&
             user.can.danhSach[id];
 
+        const rodDataCu =
+            user.rodData &&
+            user.rodData[id];
+
         const daGay =
             daSoHuu &&
-            user.rodData &&
-            user.rodData[id] &&
-            user.rodData[id].destroyed;
+            rodDataCu &&
+            (
+                rodDataCu.destroyed ||
+                Number(rodDataCu.uses) <= 0
+            );
 
         if (
             daSoHuu &&
@@ -177,7 +177,7 @@ function purchase(
             return {
                 ok: false,
                 reason:
-                    "╰・❌ Bạn đã sở hữu cần này rồi"
+                    "╰・❌ Bạn đã sở hữu cần này rồi, chỉ có thể mua lại khi cần bị hỏng (độ bền = 0)"
             };
         }
     }
@@ -254,30 +254,55 @@ function purchase(
         user.can.danhSach[id] =
             1;
 
-        user.rodData[id] = {
+        const rodDataCu =
+            user.rodData[id];
 
-            level:
-                0,
+        if (
+            rodDataCu
+        ) {
 
-            luck:
-                Number(
-                    item.luck
-                ) || 1,
-
-            uses:
+            // Mua lại cần đã hỏng: giữ nguyên cấp độ & luck, chỉ hồi độ bền
+            rodDataCu.uses =
                 Number(
                     item.uses
-                ) || 1,
+                ) || 1;
 
-            maxUses:
+            rodDataCu.maxUses =
                 Number(
                     item.uses
-                ) || 1,
+                ) || 1;
 
-            destroyed:
-                false
+            rodDataCu.destroyed =
+                false;
 
-        };
+        } else {
+
+            // Chưa từng sở hữu: khởi tạo mặc định
+            user.rodData[id] = {
+
+                level:
+                    0,
+
+                luck:
+                    Number(
+                        item.luck
+                    ) || 1,
+
+                uses:
+                    Number(
+                        item.uses
+                    ) || 1,
+
+                maxUses:
+                    Number(
+                        item.uses
+                    ) || 1,
+
+                destroyed:
+                    false
+
+            };
+        }
 
         if (
             !user.can.dangDung
@@ -361,61 +386,21 @@ function purchase(
         type === "rateStone"
     ) {
 
+        // Dùng chung ô lưu trữ với commands/fish/upgrade.js (RATE_STONE_ID = "da_rate")
         if (
-            !user.rateStone
+            !user.items
         ) {
 
-            user.rateStone = {
-
-                count:
-                    0,
-
-                uses:
-                    0
-
-            };
+            user.items = {};
         }
 
-        // Nếu data cũ chỉ là số
-        if (
-            typeof user.rateStone ===
-            "number"
-        ) {
-
-            user.rateStone = {
-
-                count:
-                    Number(
-                        user.rateStone
-                    ) || 0,
-
-                uses:
-                    0
-
-            };
-        }
-
-        user.rateStone.count =
+        user.items.da_rate =
             (
                 Number(
-                    user.rateStone.count
+                    user.items.da_rate
                 ) || 0
             ) +
             amount;
-
-        // Nếu chưa có đá đang dùng
-        // thì viên đầu tiên có 5 lượt
-        if (
-            Number(
-                user.rateStone.uses
-            ) <= 0
-        ) {
-
-            user.rateStone.uses =
-                Number(
-                    item.uses
-                ) || 5;
-        }
     }
 
     // ==================================================
@@ -444,143 +429,14 @@ function purchase(
 
 // ======================================================
 // MODULE
+//
+// Không còn là lệnh gõ tay (fbuy/fb) — mua vật phẩm giờ
+// chỉ thực hiện qua nút bấm trong fshop. purchase() vẫn
+// được export vì index.js (xử lý nút bấm shop) cần dùng.
 // ======================================================
 
 module.exports = {
 
-    name:
-        "buy",
+    purchase
 
-    aliases: [
-        "b"
-    ],
-
-    purchase,
-
-    async execute(
-        message,
-        args
-    ) {
-
-        const user =
-            getUser(
-                message.author.id
-            );
-
-        const id =
-            args?.[0];
-
-        const amount =
-            Number(
-                args?.[1] || 1
-            );
-
-        // ==================================================
-        // NO ID
-        // ==================================================
-
-        if (
-            !id
-        ) {
-
-            return message.reply({
-
-                content:
-                    `╰・❌ Dùng: ${prefix}buy <id> <số lượng>`
-
-            });
-        }
-
-        // ==================================================
-        // PURCHASE
-        // ==================================================
-
-        const result =
-            purchase(
-                user,
-                id,
-                amount
-            );
-
-        if (
-            !result.ok
-        ) {
-
-            return message.reply(
-                result.reason
-            );
-        }
-
-        const {
-            item,
-            type,
-            price
-        } =
-            result;
-
-        // ==================================================
-        // EXTRA TEXT
-        // ==================================================
-
-        let extraText =
-            "";
-
-        if (
-            type ===
-            "rateStone"
-        ) {
-
-            extraText =
-                `\n🪨 Mỗi viên có **5 lượt**` +
-                `\n📈 Mỗi lượt tăng **+5% tỉ lệ**`;
-        }
-
-        // ==================================================
-        // EMBED
-        // ==================================================
-
-        const embed =
-            new EmbedBuilder()
-
-                .setColor(
-                    "#9affb0"
-                )
-
-                .setTitle(
-                    "╭・🛒 Mua thành công"
-                )
-
-                .setDescription(
-
-                    `${item.emoji} ${item.name}\n\n` +
-
-                    `╭・📦 Số lượng: x${amount}\n` +
-
-                    `╭・💸 Đã trả: ${formatMoney(
-                        price
-                    )} ${emoji.money}\n` +
-
-                    `╰・💰 Số dư: ${formatMoney(
-                        user.money
-                    )} ${emoji.money}` +
-
-                    extraText
-
-                )
-
-                .setFooter({
-
-                    text:
-                        "✦ Fishing Adventure"
-
-                });
-
-        return message.reply({
-
-            embeds: [
-                embed
-            ]
-
-        });
-    }
 };
