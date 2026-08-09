@@ -6,7 +6,8 @@ const {
 } = require("discord.js");
 
 const {
-    emoji
+    emoji,
+    formatMoney
 } = require("../../config");
 
 const {

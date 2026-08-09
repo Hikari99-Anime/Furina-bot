@@ -14,7 +14,6 @@ const filePath = path.join(
 
 let data = {};
 
-
 // ======================================================
 // LOAD DATA
 // ======================================================
@@ -43,7 +42,6 @@ if (fs.existsSync(filePath)) {
     }
 
 }
-
 
 // ======================================================
 // SAVE DATA
@@ -77,7 +75,6 @@ function save() {
 
 }
 
-
 // ======================================================
 // TẠO USER MỚI
 // ======================================================
@@ -86,33 +83,11 @@ function createUser() {
 
     return {
 
-        // ==================================================
-        // 💰 TIỀN
-        // ==================================================
-
         money: 10000,
-
-
-        // ==================================================
-        // ⭐ LEVEL
-        // ==================================================
 
         level: 1,
 
         exp: 0,
-
-
-        // ==================================================
-        // 🎣 CẦN CÂU
-        // ==================================================
-
-        /*
-         * User mới KHÔNG có cần.
-         *
-         * Muốn câu cá:
-         * 1. Mua cần
-         * 2. Trang bị cần
-         */
 
         can: {
 
@@ -122,79 +97,21 @@ function createUser() {
 
         },
 
-
-        // ==================================================
-        // 🪱 MỒI
-        // ==================================================
-
-        /*
-         * User mới chỉ được 10 mồi giun (worm).
-         *
-         * Dùng chung key với config.baits (worm/shrimp/fish_food/golden_bait)
-         * để khớp với mồi mua ở shop và hiển thị ở inventory.
-         */
-
         moi: {
 
             worm: 10
 
         },
 
-
-        // ==================================================
-        // 🐟 CÁ
-        // ==================================================
-
-        /*
-         * Chưa có cá.
-         */
-
         fish: {},
-
-
-        // ==================================================
-        // 🗝️ CHÌA KHÓA
-        // ==================================================
-
-        /*
-         * Chưa có key.
-         */
 
         keys: {},
 
-
-        // ==================================================
-        // 🎁 RƯƠNG
-        // ==================================================
-
-        /*
-         * Chưa có rương.
-         */
-
         chests: {},
-
-
-        // ==================================================
-        // 🛡️ BẢO HIỂM
-        // ==================================================
-
-        /*
-         * Chưa có bảo hiểm.
-         */
 
         insurance: 0,
 
-
-        // ==================================================
-        // 🎒 INVENTORY
-        // ==================================================
-
         inv: {},
-
-
-        // ==================================================
-        // 🎁 DAILY
-        // ==================================================
 
         daily: {
 
@@ -203,11 +120,6 @@ function createUser() {
             streak: 0
 
         },
-
-
-        // ==================================================
-        // 📜 QUEST
-        // ==================================================
 
         quest: {
 
@@ -219,26 +131,7 @@ function createUser() {
 
         },
 
-
-        // ==================================================
-        // 🎣 DỮ LIỆU CẦN
-        // ==================================================
-
-        /*
-         * Rất quan trọng:
-         *
-         * Không tự tạo cần gỗ ở đây.
-         *
-         * Khi mua cần thì command shop/rod
-         * mới tạo dữ liệu rodData.
-         */
-
         rodData: {},
-
-
-        // ==================================================
-        // 📊 STATS
-        // ==================================================
 
         stats: {
 
@@ -254,16 +147,11 @@ function createUser() {
 
 }
 
-
 // ======================================================
 // GET USER
 // ======================================================
 
 function getUser(userID) {
-
-    // ==================================================
-    // USER CHƯA TỒN TẠI
-    // ==================================================
 
     if (!data[userID]) {
 
@@ -274,10 +162,8 @@ function getUser(userID) {
 
     }
 
-
     const user =
         data[userID];
-
 
     // ==================================================
     // FIX MONEY
@@ -292,7 +178,6 @@ function getUser(userID) {
 
     }
 
-
     // ==================================================
     // FIX LEVEL
     // ==================================================
@@ -305,7 +190,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.exp !== "number"
     ) {
@@ -313,7 +197,6 @@ function getUser(userID) {
         user.exp = 0;
 
     }
-
 
     // ==================================================
     // FIX CẦN
@@ -331,7 +214,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.can.danhSach !== "object" ||
         user.can.danhSach === null
@@ -340,7 +222,6 @@ function getUser(userID) {
         user.can.danhSach = {};
 
     }
-
 
     // ==================================================
     // FIX MỒI
@@ -356,11 +237,8 @@ function getUser(userID) {
 
     }
 
-
     // ==================================================
-    // MIGRATE MỒI CŨ (moithuong/moibac/moivang)
-    // SANG HỆ MỒI MỚI DÙNG CHUNG VỚI SHOP
-    // (worm/shrimp/golden_bait)
+    // MIGRATE MỒI CŨ
     // ==================================================
 
     if (
@@ -375,7 +253,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         Number(user.moi.moibac) > 0
     ) {
@@ -387,7 +264,6 @@ function getUser(userID) {
         user.moi.moibac = 0;
 
     }
-
 
     if (
         Number(user.moi.moivang) > 0
@@ -401,7 +277,6 @@ function getUser(userID) {
 
     }
 
-
     // ==================================================
     // FIX FISH
     // ==================================================
@@ -411,7 +286,6 @@ function getUser(userID) {
         user.fish = {};
 
     }
-
 
     // ==================================================
     // FIX KEYS
@@ -423,7 +297,6 @@ function getUser(userID) {
 
     }
 
-
     // ==================================================
     // FIX CHESTS
     // ==================================================
@@ -433,7 +306,6 @@ function getUser(userID) {
         user.chests = {};
 
     }
-
 
     // ==================================================
     // FIX INSURANCE
@@ -447,7 +319,6 @@ function getUser(userID) {
 
     }
 
-
     // ==================================================
     // FIX INVENTORY
     // ==================================================
@@ -457,7 +328,6 @@ function getUser(userID) {
         user.inv = {};
 
     }
-
 
     // ==================================================
     // FIX ROD DATA
@@ -469,16 +339,9 @@ function getUser(userID) {
 
     }
 
-
     // ==================================================
     // KIỂM TRA CẦN ĐANG DÙNG
     // ==================================================
-
-    /*
-     * Nếu user đang trang bị một cần
-     * nhưng rodData bị mất thì tạo lại
-     * theo config của cần đó.
-     */
 
     if (
         user.can.dangDung &&
@@ -489,7 +352,6 @@ function getUser(userID) {
             rods?.[
                 user.can.dangDung
             ];
-
 
         if (base) {
 
@@ -520,33 +382,18 @@ function getUser(userID) {
 
         } else {
 
-            /*
-             * Cần không còn tồn tại trong config
-             * thì bỏ trang bị.
-             */
-
             user.can.dangDung =
                 null;
 
         }
 
-
         save();
 
     }
 
-
     // ==================================================
     // FIX DAILY
     // ==================================================
-
-    /*
-     * Data cũ có thể có:
-     *
-     * daily: 1785944117863
-     *
-     * Chuyển về format mới.
-     */
 
     if (
         typeof user.daily === "number"
@@ -563,7 +410,6 @@ function getUser(userID) {
 
     }
 
-
     if (!user.daily) {
 
         user.daily = {
@@ -576,7 +422,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.daily.last !== "number"
     ) {
@@ -585,7 +430,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.daily.streak !== "number"
     ) {
@@ -593,7 +437,6 @@ function getUser(userID) {
         user.daily.streak = 0;
 
     }
-
 
     // ==================================================
     // FIX QUEST
@@ -613,7 +456,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.quest.date !== "string"
     ) {
@@ -621,7 +463,6 @@ function getUser(userID) {
         user.quest.date = "";
 
     }
-
 
     if (
         !Array.isArray(
@@ -633,7 +474,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.quest.claim !== "boolean"
     ) {
@@ -641,7 +481,6 @@ function getUser(userID) {
         user.quest.claim = false;
 
     }
-
 
     // ==================================================
     // FIX STATS
@@ -661,7 +500,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.stats.catch !== "number"
     ) {
@@ -669,7 +507,6 @@ function getUser(userID) {
         user.stats.catch = 0;
 
     }
-
 
     if (
         typeof user.stats.sell !== "number"
@@ -679,7 +516,6 @@ function getUser(userID) {
 
     }
 
-
     if (
         typeof user.stats.kg !== "number"
     ) {
@@ -688,15 +524,9 @@ function getUser(userID) {
 
     }
 
-
-    // ==================================================
-    // RETURN
-    // ==================================================
-
     return user;
 
 }
-
 
 // ======================================================
 // EXPORT
