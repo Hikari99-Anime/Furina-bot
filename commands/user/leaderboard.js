@@ -1,198 +1,662 @@
-const {EmbedBuilder}=require("discord.js");
-const fs=require("fs");
+const {
+    EmbedBuilder
+} = require("discord.js");
 
+const {
+    emoji,
+    formatMoney,
+    prefix
+} = require("../../config");
 
-module.exports={
+const {
+    data
+} = require("../../data");
 
+module.exports = {
 
-name:"leaderboard",
+    name: "leaderboard",
 
+    aliases: [
+        "top",
+        "bxh"
+    ],
 
+    async execute(message, args) {
 
-async execute(message,args,client){
+        try {
 
+            // ==================================================
+            // LOẠI BXH
+            // ==================================================
 
+            const type =
+                String(args[0] || "money")
+                    .trim()
+                    .toLowerCase();
 
-const data=JSON.parse(
 
-fs.readFileSync(
+            // ==================================================
+            // LẤY TOÀN BỘ USER
+            // ==================================================
 
-"data.json",
+            const users = [];
 
-"utf8"
 
-)
+            for (
+                const guildId in data
+            ) {
 
-);
+                const guildData =
+                    data[guildId];
 
+                if (
+                    !guildData ||
+                    typeof guildData !== "object"
+                ) {
+                    continue;
+                }
 
 
+                for (
+                    const userId in guildData
+                ) {
 
+                    const user =
+                        guildData[userId];
 
-let users=[];
+                    if (
+                        !user ||
+                        typeof user !== "object"
+                    ) {
+                        continue;
+                    }
 
 
+                    users.push({
 
+                        id: userId,
 
-for(const id in data){
+                        user: user
 
+                    });
 
-users.push({
+                }
 
-id:id,
+            }
 
-money:data[id].money || 0,
 
-fish:Object.values(
+            // ==================================================
+            // KHÔNG CÓ DỮ LIỆU
+            // ==================================================
 
-data[id].fish || {}
+            if (!users.length) {
 
-).reduce(
+                return message.reply({
 
-(a,b)=>a+b.length,
+                    embeds: [
 
-0
+                        createEmbed(
 
-)
+                            "#A7D8F5",
 
-});
+                            "🏆 BẢNG XẾP HẠNG",
 
+                            "Hiện chưa có dữ liệu người chơi."
 
-}
+                        )
 
+                    ]
 
+                });
 
+            }
 
-users.sort(
 
-(a,b)=>b.money-a.money
+            // ==================================================
+            // BXH TIỀN
+            // ==================================================
 
-);
+            if (
+                type === "money" ||
+                type === "coin" ||
+                type === "xu"
+            ) {
 
+                users.sort(
+                    (a, b) => {
 
+                        const moneyA =
+                            Number(
+                                a.user.money || 0
+                            );
 
+                        const moneyB =
+                            Number(
+                                b.user.money || 0
+                            );
 
+                        return moneyB - moneyA;
 
-let text="";
+                    }
+                );
 
 
+                const text =
+                    users
+                        .slice(0, 10)
+                        .map(
+                            (x, index) => {
 
-const top=users.slice(0,10);
+                                const money =
+                                    Number(
+                                        x.user.money || 0
+                                    );
 
 
+                                return (
 
-for(
-let i=0;
-i<top.length;
-i++
-){
+                                    `${getRank(index)} <@${x.id}>\n` +
 
+                                    `└ 💰 ${formatMoney(money)} ${emoji.money}`
 
+                                );
 
-let member;
+                            }
+                        )
+                        .join("\n\n");
 
 
+                return sendLeaderboard(
 
-try{
+                    message,
 
+                    "#FFD86B",
 
-member=await message.guild.members.fetch(
+                    "💰 BẢNG XẾP HẠNG ĐẠI GIA",
 
-top[i].id
+                    text
 
-);
+                );
 
+            }
 
-}catch{
 
+            // ==================================================
+            // BXH CƯỜNG HÓA
+            // ==================================================
 
-continue;
+            if (
+                type === "rod" ||
+                type === "can"
+            ) {
 
+                const getRodLevel =
+                    user => {
 
-}
+                        let level = 0;
 
 
+                        const rods =
+                            user.rodData || {};
 
 
-let medal="";
+                        if (
+                            typeof rods !== "object"
+                        ) {
+                            return 0;
+                        }
 
 
+                        for (
+                            const rodId in rods
+                        ) {
 
-if(i===0) medal="🥇";
+                            const rod =
+                                rods[rodId];
 
-else if(i===1) medal="🥈";
 
-else if(i===2) medal="🥉";
+                            const rodLevel =
+                                Number(
+                                    rod?.level || 0
+                                );
 
-else medal=`${i+1}.`;
 
+                            level =
+                                Math.max(
+                                    level,
+                                    rodLevel
+                                );
 
+                        }
 
 
-text+=
+                        return level;
 
-`${medal} ${member.user.username} | 💰 ${top[i].money} xu | 🐟 ${top[i].fish} cá\n`;
+                    };
 
 
+                users.sort(
+                    (a, b) =>
+                        getRodLevel(b.user) -
+                        getRodLevel(a.user)
+                );
 
-}
 
+                const text =
+                    users
+                        .slice(0, 10)
+                        .map(
+                            (x, index) => {
 
+                                const level =
+                                    getRodLevel(
+                                        x.user
+                                    );
 
 
+                                return (
 
-if(!text){
+                                    `${getRank(index)} <@${x.id}>\n` +
 
-text="Chưa có dữ liệu";
+                                    `└ 🎣 Cần câu: +${level}`
 
-}
+                                );
 
+                            }
+                        )
+                        .join("\n\n");
 
 
+                return sendLeaderboard(
 
-const embed=new EmbedBuilder()
+                    message,
 
+                    "#89DDFF",
 
-.setColor("#ffd700")
+                    "🎣 BẢNG XẾP HẠNG CƯỜNG HÓA",
 
+                    text
 
-.setTitle("🏆 BẢNG XẾP HẠNG NGƯỜI CHƠI")
+                );
 
+            }
 
-.setDescription(
 
-`
+            // ==================================================
+            // BXH SỐ CÁ
+            // ==================================================
 
-${text}
+            if (
+                type === "fish" ||
+                type === "ca"
+            ) {
 
-`
+                const getFishCount =
+                    user => {
 
-)
+                        let count = 0;
 
 
+                        const fish =
+                            user.fish || {};
 
-.setFooter({
 
-text:"Top 10 Fishing Players"
+                        if (
+                            typeof fish !== "object"
+                        ) {
+                            return 0;
+                        }
 
-})
 
+                        for (
+                            const fishId in fish
+                        ) {
 
-.setTimestamp();
+                            const list =
+                                fish[fishId];
 
 
+                            if (
+                                Array.isArray(list)
+                            ) {
 
+                                count +=
+                                    list.length;
 
-message.channel.send({
+                            } else if (
+                                typeof list === "number"
+                            ) {
 
-embeds:[embed]
+                                count +=
+                                    list;
 
-});
+                            }
 
+                        }
 
 
-}
+                        return count;
 
+                    };
 
+
+                users.sort(
+                    (a, b) =>
+                        getFishCount(b.user) -
+                        getFishCount(a.user)
+                );
+
+
+                const text =
+                    users
+                        .slice(0, 10)
+                        .map(
+                            (x, index) => {
+
+                                const count =
+                                    getFishCount(
+                                        x.user
+                                    );
+
+
+                                return (
+
+                                    `${getRank(index)} <@${x.id}>\n` +
+
+                                    `└ 🐟 ${count.toLocaleString()} con cá`
+
+                                );
+
+                            }
+                        )
+                        .join("\n\n");
+
+
+                return sendLeaderboard(
+
+                    message,
+
+                    "#8AFFB2",
+
+                    "🐟 BẢNG XẾP HẠNG NGƯ DÂN",
+
+                    text
+
+                );
+
+            }
+
+
+            // ==================================================
+            // BXH CÂN NẶNG
+            // ==================================================
+
+            if (
+                type === "kg" ||
+                type === "weight" ||
+                type === "weightfish"
+            ) {
+
+                const getWeight =
+                    user => {
+
+                        let weight = 0;
+
+
+                        const fish =
+                            user.fish || {};
+
+
+                        if (
+                            typeof fish !== "object"
+                        ) {
+                            return 0;
+                        }
+
+
+                        for (
+                            const fishId in fish
+                        ) {
+
+                            const list =
+                                fish[fishId];
+
+
+                            if (
+                                Array.isArray(list)
+                            ) {
+
+                                for (
+                                    const value
+                                    of list
+                                ) {
+
+                                    weight +=
+                                        Number(
+                                            value
+                                        ) || 0;
+
+                                }
+
+                            }
+
+                        }
+
+
+                        return weight;
+
+                    };
+
+
+                users.sort(
+                    (a, b) =>
+                        getWeight(b.user) -
+                        getWeight(a.user)
+                );
+
+
+                const text =
+                    users
+                        .slice(0, 10)
+                        .map(
+                            (x, index) => {
+
+                                const weight =
+                                    getWeight(
+                                        x.user
+                                    );
+
+
+                                return (
+
+                                    `${getRank(index)} <@${x.id}>\n` +
+
+                                    `└ ⚖️ ${weight.toFixed(2)} KG`
+
+                                );
+
+                            }
+                        )
+                        .join("\n\n");
+
+
+                return sendLeaderboard(
+
+                    message,
+
+                    "#C4B5FD",
+
+                    "⚖️ BẢNG XẾP HẠNG CÂN NẶNG",
+
+                    text
+
+                );
+
+            }
+
+
+            // ==================================================
+            // SAI LOẠI
+            // ==================================================
+
+            return message.reply({
+
+                embeds: [
+
+                    createEmbed(
+
+                        "#EF4444",
+
+                        "❌ KHÔNG TÌM THẤY BXH",
+
+                        `Bạn có thể sử dụng:\n\n` +
+
+                        `💰 \`${prefix}top money\` · BXH tiền\n` +
+
+                        `🎣 \`${prefix}top rod\` · BXH cường hóa\n` +
+
+                        `🐟 \`${prefix}top fish\` · BXH số cá\n` +
+
+                        `⚖️ \`${prefix}top kg\` · BXH cân nặng`
+
+                    )
+
+                ]
+
+            });
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ LEADERBOARD ERROR:",
+                error
+            );
+
+
+            return message.reply({
+
+                embeds: [
+
+                    createEmbed(
+
+                        "#EF4444",
+
+                        "❌ KHÔNG THỂ HIỂN THỊ BXH",
+
+                        "Đã xảy ra lỗi khi lấy dữ liệu bảng xếp hạng.\n\n" +
+
+                        "Vui lòng kiểm tra console của bot."
+
+                    )
+
+                ]
+
+            });
+
+        }
+
+    }
 
 };
+
+
+// ======================================================
+// EMBED
+// ======================================================
+
+function createEmbed(
+    color,
+    title,
+    description
+) {
+
+    return new EmbedBuilder()
+
+        .setColor(color)
+
+        .setTitle(title)
+
+        .setDescription(
+
+            `୨୧ ───────── ୨୧\n\n` +
+
+            description +
+
+            `\n\n୨୧ ───────── ୨୧`
+
+        )
+
+        .setFooter({
+
+            text:
+                "✦ Fishing Adventure"
+
+        })
+
+        .setTimestamp();
+
+}
+
+
+// ======================================================
+// GỬI LEADERBOARD
+// ======================================================
+
+function sendLeaderboard(
+    message,
+    color,
+    title,
+    text
+) {
+
+    return message.reply({
+
+        embeds: [
+
+            createEmbed(
+
+                color,
+
+                title,
+
+                text ||
+                "Chưa có dữ liệu."
+
+            )
+
+        ]
+
+    });
+
+}
+
+
+// ======================================================
+// RANK
+// ======================================================
+
+function getRank(index) {
+
+    if (index === 0) {
+
+        return "🥇";
+
+    }
+
+    if (index === 1) {
+
+        return "🥈";
+
+    }
+
+    if (index === 2) {
+
+        return "🥉";
+
+    }
+
+    return `\`${index + 1}.\``;
+
+}

@@ -19,6 +19,22 @@ const {
 
 const MAX_QUEST_PER_DAY = 5;
 
+const COLORS = {
+    primary: "#9b59ff",
+    info: "#7ddcff",
+    success: "#57F287",
+    warning: "#ffd166",
+    error: "#ff6b81",
+    danger: "#ff4d67"
+};
+
+const FOOTER = {
+    text: "✦ Fishing Adventure · Quest"
+};
+
+const SEPARATOR =
+    "\n\n୨୧ ───────── ୨୧\n\n";
+
 // ==========================================
 // RANDOM
 // ==========================================
@@ -29,7 +45,6 @@ function random(min, max) {
         Math.random() *
         (max - min + 1)
     ) + min;
-
 }
 
 // ==========================================
@@ -46,7 +61,6 @@ function questId(type) {
             .toString(36)
             .slice(2)
     );
-
 }
 
 // ==========================================
@@ -59,7 +73,6 @@ function isRealFish(fish) {
         fish &&
         fish.isFish !== false
     );
-
 }
 
 // ==========================================
@@ -74,12 +87,8 @@ function randomFish() {
                 isRealFish(fish)
         );
 
-    if (
-        !availableFish.length
-    ) {
-
+    if (!availableFish.length) {
         return null;
-
     }
 
     return availableFish[
@@ -88,16 +97,13 @@ function randomFish() {
             availableFish.length - 1
         )
     ];
-
 }
 
 // ==========================================
 // RANDOM CÁ THEO RARITY
 // ==========================================
 
-function randomFishByRarity(
-    rarities
-) {
+function randomFishByRarity(rarities) {
 
     const fishes =
         fishList.filter(
@@ -110,12 +116,8 @@ function randomFishByRarity(
                 )
         );
 
-    if (
-        !fishes.length
-    ) {
-
+    if (!fishes.length) {
         return null;
-
     }
 
     return fishes[
@@ -124,7 +126,6 @@ function randomFishByRarity(
             fishes.length - 1
         )
     ];
-
 }
 
 // ==========================================
@@ -139,222 +140,112 @@ const QUEST_TYPES = [
 
     {
         id: "fish_easy",
-
         type: "fish",
-
-        target:
-            () => random(10, 20),
-
-        reward:
-            () => random(2500, 4500),
-
-        title:
-            "🎣 Ngư dân chăm chỉ",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "🐟"
+        target: () => random(10, 20),
+        reward: () => random(2500, 4500),
+        title: "🎣 Ngư dân chăm chỉ",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "🐟"
     },
 
     {
         id: "fish_normal",
-
         type: "fish",
-
-        target:
-            () => random(20, 35),
-
-        reward:
-            () => random(4000, 6500),
-
-        title:
-            "🐟 Tay câu chuyên nghiệp",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "🐟"
+        target: () => random(20, 35),
+        reward: () => random(4000, 6500),
+        title: "🐟 Tay câu chuyên nghiệp",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "🐟"
     },
 
     {
         id: "fish_many",
-
         type: "fish",
-
-        target:
-            () => random(30, 60),
-
-        reward:
-            () => random(6500, 10000),
-
-        title:
-            "🌊 Càn quét đại dương",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "🌊"
+        target: () => random(30, 60),
+        reward: () => random(6500, 10000),
+        title: "🌊 Càn quét đại dương",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "🌊"
     },
 
     {
         id: "fish_big",
-
         type: "fish",
-
-        target:
-            () => random(50, 80),
-
-        reward:
-            () => random(9000, 14000),
-
-        title:
-            "⚓ Đội trưởng đánh cá",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "⚓"
+        target: () => random(50, 80),
+        reward: () => random(9000, 14000),
+        title: "⚓ Đội trưởng đánh cá",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "⚓"
     },
 
     {
         id: "fish_master",
-
         type: "fish",
-
-        target:
-            () => random(80, 120),
-
-        reward:
-            () => random(14000, 20000),
-
-        title:
-            "👑 Vua ngư dân",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "👑"
+        target: () => random(80, 120),
+        reward: () => random(14000, 20000),
+        title: "👑 Vua ngư dân",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "👑"
     },
 
     {
         id: "fish_speed",
-
         type: "fish",
-
-        target:
-            () => random(15, 25),
-
-        reward:
-            () => random(3500, 5500),
-
-        title:
-            "⚡ Câu nhanh",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "⚡"
+        target: () => random(15, 25),
+        reward: () => random(3500, 5500),
+        title: "⚡ Câu nhanh",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "⚡"
     },
 
     {
         id: "fish_hard",
-
         type: "fish",
-
-        target:
-            () => random(40, 70),
-
-        reward:
-            () => random(8000, 13000),
-
-        title:
-            "🔥 Không ngừng nghỉ",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "🔥"
+        target: () => random(40, 70),
+        reward: () => random(8000, 13000),
+        title: "🔥 Không ngừng nghỉ",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "🔥"
     },
 
     {
         id: "fish_marathon",
-
         type: "fish",
-
-        target:
-            () => random(60, 100),
-
-        reward:
-            () => random(12000, 18000),
-
-        title:
-            "🏃 Marathon câu cá",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "🏃"
+        target: () => random(60, 100),
+        reward: () => random(12000, 18000),
+        title: "🏃 Marathon câu cá",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "🏃"
     },
 
     {
         id: "fish_pro",
-
         type: "fish",
-
-        target:
-            () => random(100, 150),
-
-        reward:
-            () => random(18000, 25000),
-
-        title:
-            "🎖️ Ngư thủ kỳ cựu",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "🎖️"
+        target: () => random(100, 150),
+        reward: () => random(18000, 25000),
+        title: "🎖️ Ngư thủ kỳ cựu",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "🎖️"
     },
 
     {
         id: "fish_legend",
-
         type: "fish",
-
-        target:
-            () => random(150, 200),
-
-        reward:
-            () => random(25000, 35000),
-
-        title:
-            "🏆 Huyền thoại biển cả",
-
-        description:
-            target =>
-                `Bắt ${target} con cá`,
-
-        emoji:
-            "🏆"
+        target: () => random(150, 200),
+        reward: () => random(25000, 35000),
+        title: "🏆 Huyền thoại biển cả",
+        description: target =>
+            `Bắt ${target} con cá`,
+        emoji: "🏆"
     },
 
     // ======================================
@@ -363,178 +254,90 @@ const QUEST_TYPES = [
 
     {
         id: "kg_easy",
-
         type: "kg",
-
-        target:
-            () => random(20, 40),
-
-        reward:
-            () => random(3000, 5000),
-
-        title:
-            "⚖️ Mẻ cá đầu tiên",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "⚖️"
+        target: () => random(20, 40),
+        reward: () => random(3000, 5000),
+        title: "⚖️ Mẻ cá đầu tiên",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "⚖️"
     },
 
     {
         id: "kg_normal",
-
         type: "kg",
-
-        target:
-            () => random(40, 70),
-
-        reward:
-            () => random(5000, 8000),
-
-        title:
-            "⚖️ Thợ săn khổng lồ",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "⚖️"
+        target: () => random(40, 70),
+        reward: () => random(5000, 8000),
+        title: "⚖️ Thợ săn khổng lồ",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "⚖️"
     },
 
     {
         id: "kg_big",
-
         type: "kg",
-
-        target:
-            () => random(70, 100),
-
-        reward:
-            () => random(8000, 12000),
-
-        title:
-            "🐋 Săn cá lớn",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "🐋"
+        target: () => random(70, 100),
+        reward: () => random(8000, 12000),
+        title: "🐋 Săn cá lớn",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "🐋"
     },
 
     {
         id: "kg_heavy",
-
         type: "kg",
-
-        target:
-            () => random(100, 150),
-
-        reward:
-            () => random(12000, 18000),
-
-        title:
-            "💪 Cần thủ lực lưỡng",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "💪"
+        target: () => random(100, 150),
+        reward: () => random(12000, 18000),
+        title: "💪 Cần thủ lực lưỡng",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "💪"
     },
 
     {
         id: "kg_master",
-
         type: "kg",
-
-        target:
-            () => random(150, 220),
-
-        reward:
-            () => random(18000, 25000),
-
-        title:
-            "👑 Đại sư săn cá",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "👑"
+        target: () => random(150, 220),
+        reward: () => random(18000, 25000),
+        title: "👑 Đại sư săn cá",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "👑"
     },
 
     {
         id: "kg_beast",
-
         type: "kg",
-
-        target:
-            () => random(200, 300),
-
-        reward:
-            () => random(25000, 35000),
-
-        title:
-            "🐉 Quái vật đại dương",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "🐉"
+        target: () => random(200, 300),
+        reward: () => random(25000, 35000),
+        title: "🐉 Quái vật đại dương",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "🐉"
     },
 
     {
         id: "kg_giant",
-
         type: "kg",
-
-        target:
-            () => random(300, 450),
-
-        reward:
-            () => random(35000, 50000),
-
-        title:
-            "🌊 Sóng thần",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "🌊"
+        target: () => random(300, 450),
+        reward: () => random(35000, 50000),
+        title: "🌊 Sóng thần",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "🌊"
     },
 
     {
         id: "kg_ultimate",
-
         type: "kg",
-
-        target:
-            () => random(450, 600),
-
-        reward:
-            () => random(50000, 70000),
-
-        title:
-            "🏆 Bá chủ đại dương",
-
-        description:
-            target =>
-                `Câu đủ ${target} KG cá`,
-
-        emoji:
-            "🏆"
+        target: () => random(450, 600),
+        reward: () => random(50000, 70000),
+        title: "🏆 Bá chủ đại dương",
+        description: target =>
+            `Câu đủ ${target} KG cá`,
+        emoji: "🏆"
     },
 
     // ======================================
@@ -543,252 +346,122 @@ const QUEST_TYPES = [
 
     {
         id: "specific_1",
-
         type: "specific",
-
-        target:
-            () => random(2, 4),
-
-        reward:
-            () => random(4000, 7000),
-
-        title:
-            "🎯 Thợ săn mục tiêu",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🎯"
+        target: () => random(2, 4),
+        reward: () => random(4000, 7000),
+        title: "🎯 Thợ săn mục tiêu",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🎯"
     },
 
     {
         id: "specific_2",
-
         type: "specific",
-
-        target:
-            () => random(3, 5),
-
-        reward:
-            () => random(5000, 8000),
-
-        title:
-            "🐟 Truy tìm cá",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🐟"
+        target: () => random(3, 5),
+        reward: () => random(5000, 8000),
+        title: "🐟 Truy tìm cá",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🐟"
     },
 
     {
         id: "specific_3",
-
         type: "specific",
-
-        target:
-            () => random(4, 6),
-
-        reward:
-            () => random(6000, 10000),
-
-        title:
-            "🔎 Theo dấu con mồi",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🔎"
+        target: () => random(4, 6),
+        reward: () => random(6000, 10000),
+        title: "🔎 Theo dấu con mồi",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🔎"
     },
 
     {
         id: "specific_4",
-
         type: "specific",
-
-        target:
-            () => random(5, 8),
-
-        reward:
-            () => random(8000, 12000),
-
-        title:
-            "🎣 Chuyên gia mục tiêu",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🎣"
+        target: () => random(5, 8),
+        reward: () => random(8000, 12000),
+        title: "🎣 Chuyên gia mục tiêu",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🎣"
     },
 
     {
         id: "specific_5",
-
         type: "specific",
-
-        target:
-            () => random(6, 10),
-
-        reward:
-            () => random(10000, 15000),
-
-        title:
-            "🔥 Săn đến cùng",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🔥"
+        target: () => random(6, 10),
+        reward: () => random(10000, 15000),
+        title: "🔥 Săn đến cùng",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🔥"
     },
 
     {
         id: "specific_6",
-
         type: "specific",
-
-        target:
-            () => random(8, 12),
-
-        reward:
-            () => random(12000, 18000),
-
-        title:
-            "💎 Kho báu sống",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "💎"
+        target: () => random(8, 12),
+        reward: () => random(12000, 18000),
+        title: "💎 Kho báu sống",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "💎"
     },
 
     {
         id: "specific_7",
-
         type: "specific",
-
-        target:
-            () => random(2, 3),
-
-        reward:
-            () => random(7000, 11000),
-
-        title:
-            "🏹 Xạ thủ đại dương",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🏹"
+        target: () => random(2, 3),
+        reward: () => random(7000, 11000),
+        title: "🏹 Xạ thủ đại dương",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🏹"
     },
 
     {
         id: "specific_8",
-
         type: "specific",
-
-        target:
-            () => random(3, 5),
-
-        reward:
-            () => random(9000, 14000),
-
-        title:
-            "⭐ Mục tiêu vàng",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "⭐"
+        target: () => random(3, 5),
+        reward: () => random(9000, 14000),
+        title: "⭐ Mục tiêu vàng",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "⭐"
     },
 
     {
         id: "specific_9",
-
         type: "specific",
-
-        target:
-            () => random(5, 8),
-
-        reward:
-            () => random(11000, 17000),
-
-        title:
-            "👀 Con mắt đại dương",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "👀"
+        target: () => random(5, 8),
+        reward: () => random(11000, 17000),
+        title: "👀 Con mắt đại dương",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "👀"
     },
 
     {
         id: "specific_10",
-
         type: "specific",
-
-        target:
-            () => random(8, 12),
-
-        reward:
-            () => random(15000, 22000),
-
-        title:
-            "👑 Thợ săn chuyên nghiệp",
-
-        fish:
-            () => randomFish(),
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "👑"
+        target: () => random(8, 12),
+        reward: () => random(15000, 22000),
+        title: "👑 Thợ săn chuyên nghiệp",
+        fish: () => randomFish(),
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "👑"
     },
 
     // ======================================
@@ -797,152 +470,74 @@ const QUEST_TYPES = [
 
     {
         id: "rare_1",
-
         type: "specific_rarity",
-
-        rarities:
-            ["rare"],
-
-        target:
-            () => random(1, 2),
-
-        reward:
-            () => random(9000, 14000),
-
-        title:
-            "💎 Săn cá hiếm",
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "💎"
+        rarities: ["rare"],
+        target: () => random(1, 2),
+        reward: () => random(9000, 14000),
+        title: "💎 Săn cá hiếm",
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "💎"
     },
 
     {
         id: "rare_2",
-
         type: "specific_rarity",
-
-        rarities:
-            ["rare", "epic"],
-
-        target:
-            () => random(1, 2),
-
-        reward:
-            () => random(10000, 17000),
-
-        title:
-            "✨ Săn cá quý",
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "✨"
+        rarities: ["rare", "epic"],
+        target: () => random(1, 2),
+        reward: () => random(10000, 17000),
+        title: "✨ Săn cá quý",
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "✨"
     },
 
     {
         id: "rare_3",
-
         type: "specific_rarity",
-
-        rarities:
-            ["epic"],
-
-        target:
-            () => 1,
-
-        reward:
-            () => random(14000, 22000),
-
-        title:
-            "💜 Thợ săn Epic",
-
-        description:
-            (target, fish) =>
-                `Bắt 1 ${fish.name}`,
-
-        emoji:
-            "💜"
+        rarities: ["epic"],
+        target: () => 1,
+        reward: () => random(14000, 22000),
+        title: "💜 Thợ săn Epic",
+        description: (target, fish) =>
+            `Bắt 1 ${fish.name}`,
+        emoji: "💜"
     },
 
     {
         id: "rare_4",
-
         type: "specific_rarity",
-
-        rarities:
-            ["rare", "epic"],
-
-        target:
-            () => random(2, 3),
-
-        reward:
-            () => random(18000, 26000),
-
-        title:
-            "💎 Bộ sưu tập quý",
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "💎"
+        rarities: ["rare", "epic"],
+        target: () => random(2, 3),
+        reward: () => random(18000, 26000),
+        title: "💎 Bộ sưu tập quý",
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "💎"
     },
 
     {
         id: "rare_5",
-
         type: "specific_rarity",
-
-        rarities:
-            ["epic"],
-
-        target:
-            () => random(1, 2),
-
-        reward:
-            () => random(20000, 30000),
-
-        title:
-            "🌟 Báu vật biển sâu",
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🌟"
+        rarities: ["epic"],
+        target: () => random(1, 2),
+        reward: () => random(20000, 30000),
+        title: "🌟 Báu vật biển sâu",
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🌟"
     },
 
     {
         id: "rare_6",
-
         type: "specific_rarity",
-
-        rarities:
-            ["rare", "epic"],
-
-        target:
-            () => random(3, 4),
-
-        reward:
-            () => random(25000, 35000),
-
-        title:
-            "👑 Đại săn cá quý",
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "👑"
+        rarities: ["rare", "epic"],
+        target: () => random(3, 4),
+        reward: () => random(25000, 35000),
+        title: "👑 Đại săn cá quý",
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "👑"
     },
 
     // ======================================
@@ -951,102 +546,50 @@ const QUEST_TYPES = [
 
     {
         id: "legendary_1",
-
         type: "specific_rarity",
-
-        rarities:
-            ["legendary"],
-
-        target:
-            () => 1,
-
-        reward:
-            () => random(22000, 35000),
-
-        title:
-            "👑 Săn cá huyền thoại",
-
-        description:
-            (target, fish) =>
-                `Bắt 1 ${fish.name}`,
-
-        emoji:
-            "👑"
+        rarities: ["legendary"],
+        target: () => 1,
+        reward: () => random(22000, 35000),
+        title: "👑 Săn cá huyền thoại",
+        description: (target, fish) =>
+            `Bắt 1 ${fish.name}`,
+        emoji: "👑"
     },
 
     {
         id: "legendary_2",
-
         type: "specific_rarity",
-
-        rarities:
-            ["legendary", "mythical"],
-
-        target:
-            () => 1,
-
-        reward:
-            () => random(30000, 45000),
-
-        title:
-            "🔥 Sinh vật truyền thuyết",
-
-        description:
-            (target, fish) =>
-                `Bắt 1 ${fish.name}`,
-
-        emoji:
-            "🔥"
+        rarities: ["legendary", "mythical"],
+        target: () => 1,
+        reward: () => random(30000, 45000),
+        title: "🔥 Sinh vật truyền thuyết",
+        description: (target, fish) =>
+            `Bắt 1 ${fish.name}`,
+        emoji: "🔥"
     },
 
     {
         id: "legendary_3",
-
         type: "specific_rarity",
-
-        rarities:
-            ["mythical"],
-
-        target:
-            () => 1,
-
-        reward:
-            () => random(40000, 60000),
-
-        title:
-            "🌌 Săn Mythical",
-
-        description:
-            (target, fish) =>
-                `Bắt 1 ${fish.name}`,
-
-        emoji:
-            "🌌"
+        rarities: ["mythical"],
+        target: () => 1,
+        reward: () => random(40000, 60000),
+        title: "🌌 Săn Mythical",
+        description: (target, fish) =>
+            `Bắt 1 ${fish.name}`,
+        emoji: "🌌"
     },
 
     {
         id: "legendary_4",
-
         type: "specific_rarity",
-
-        rarities:
-            ["legendary", "mythical"],
-
-        target:
-            () => 2,
-
-        reward:
-            () => random(50000, 75000),
-
-        title:
-            "🏆 Thợ săn truyền thuyết",
-
-        description:
-            (target, fish) =>
-                `Bắt ${target} ${fish.name}`,
-
-        emoji:
-            "🏆"
+        rarities: ["legendary", "mythical"],
+        target: () => 2,
+        reward: () => random(50000, 75000),
+        title: "🏆 Thợ săn truyền thuyết",
+        description: (target, fish) =>
+            `Bắt ${target} ${fish.name}`,
+        emoji: "🏆"
     },
 
     // ======================================
@@ -1055,90 +598,46 @@ const QUEST_TYPES = [
 
     {
         id: "money_1",
-
         type: "money",
-
-        target:
-            () => random(15000, 25000),
-
-        reward:
-            () => random(3000, 5000),
-
-        title:
-            "💰 Tích lũy tài sản",
-
-        description:
-            target =>
-                `Có ít nhất ${formatMoney(target)} xu`,
-
-        emoji:
-            emoji.money
+        target: () => random(15000, 25000),
+        reward: () => random(3000, 5000),
+        title: "💰 Tích lũy tài sản",
+        description: target =>
+            `Có ít nhất ${formatMoney(target)} xu`,
+        emoji: emoji.money
     },
 
     {
         id: "money_2",
-
         type: "money",
-
-        target:
-            () => random(25000, 50000),
-
-        reward:
-            () => random(5000, 8000),
-
-        title:
-            "💵 Túi tiền đầy",
-
-        description:
-            target =>
-                `Có ít nhất ${formatMoney(target)} xu`,
-
-        emoji:
-            emoji.money
+        target: () => random(25000, 50000),
+        reward: () => random(5000, 8000),
+        title: "💵 Túi tiền đầy",
+        description: target =>
+            `Có ít nhất ${formatMoney(target)} xu`,
+        emoji: emoji.money
     },
 
     {
         id: "money_3",
-
         type: "money",
-
-        target:
-            () => random(50000, 100000),
-
-        reward:
-            () => random(8000, 14000),
-
-        title:
-            "🤑 Đại gia ngư dân",
-
-        description:
-            target =>
-                `Có ít nhất ${formatMoney(target)} xu`,
-
-        emoji:
-            "🤑"
+        target: () => random(50000, 100000),
+        reward: () => random(8000, 14000),
+        title: "🤑 Đại gia ngư dân",
+        description: target =>
+            `Có ít nhất ${formatMoney(target)} xu`,
+        emoji: "🤑"
     },
 
     {
         id: "money_4",
-
         type: "money",
-
-        target:
-            () => random(100000, 200000),
-
-        reward:
-            () => random(15000, 25000),
-
-        title:
-            "💎 Tài sản khổng lồ",
-
-        description:
-            target =>
-                `Có ít nhất ${formatMoney(target)} xu`,
-
-        emoji:
-            "💎"
+        target: () => random(100000, 200000),
+        reward: () => random(15000, 25000),
+        title: "💎 Tài sản khổng lồ",
+        description: target =>
+            `Có ít nhất ${formatMoney(target)} xu`,
+        emoji: "💎"
     },
 
     // ======================================
@@ -1147,90 +646,46 @@ const QUEST_TYPES = [
 
     {
         id: "rod_1",
-
         type: "rod",
-
-        target:
-            () => 3,
-
-        reward:
-            () => 5000,
-
-        title:
-            "🎣 Nâng cấp đầu tiên",
-
-        description:
-            () =>
-                "Có một cần câu đạt +3",
-
-        emoji:
-            "🎣"
+        target: () => 3,
+        reward: () => 5000,
+        title: "🎣 Nâng cấp đầu tiên",
+        description: () =>
+            "Có một cần câu đạt +3",
+        emoji: "🎣"
     },
 
     {
         id: "rod_2",
-
         type: "rod",
-
-        target:
-            () => 5,
-
-        reward:
-            () => 10000,
-
-        title:
-            "⭐ Tân binh cường hóa",
-
-        description:
-            () =>
-                "Có một cần câu đạt +5",
-
-        emoji:
-            "⭐"
+        target: () => 5,
+        reward: () => 10000,
+        title: "⭐ Tân binh cường hóa",
+        description: () =>
+            "Có một cần câu đạt +5",
+        emoji: "⭐"
     },
 
     {
         id: "rod_3",
-
         type: "rod",
-
-        target:
-            () => 10,
-
-        reward:
-            () => 25000,
-
-        title:
-            "🔥 Bậc thầy cường hóa",
-
-        description:
-            () =>
-                "Có một cần câu đạt +10",
-
-        emoji:
-            "🔥"
+        target: () => 10,
+        reward: () => 25000,
+        title: "🔥 Bậc thầy cường hóa",
+        description: () =>
+            "Có một cần câu đạt +10",
+        emoji: "🔥"
     },
 
     {
         id: "rod_4",
-
         type: "rod",
-
-        target:
-            () => 15,
-
-        reward:
-            () => 40000,
-
-        title:
-            "👑 Đại sư cần câu",
-
-        description:
-            () =>
-                "Có một cần câu đạt +15",
-
-        emoji:
-            "👑"
+        target: () => 15,
+        reward: () => 40000,
+        title: "👑 Đại sư cần câu",
+        description: () =>
+            "Có một cần câu đạt +15",
+        emoji: "👑"
     },
 
     // ======================================
@@ -1239,122 +694,62 @@ const QUEST_TYPES = [
 
     {
         id: "mixed_1",
-
         type: "mixed",
-
-        target:
-            () => random(10, 20),
-
-        kg:
-            target =>
-                Number(
-                    (
-                        target * 1.5
-                    ).toFixed(1)
-                ),
-
-        reward:
-            () => random(8000, 15000),
-
-        title:
-            "🌊 Chuyến câu hoàn hảo",
-
-        description:
-            (target, kg) =>
-                `Bắt ${target} cá · ${kg} KG`,
-
-        emoji:
-            "🌊"
+        target: () => random(10, 20),
+        kg: target =>
+            Number(
+                (target * 1.5).toFixed(1)
+            ),
+        reward: () => random(8000, 15000),
+        title: "🌊 Chuyến câu hoàn hảo",
+        description: (target, kg) =>
+            `Bắt ${target} cá · ${kg} KG`,
+        emoji: "🌊"
     },
 
     {
         id: "mixed_2",
-
         type: "mixed",
-
-        target:
-            () => random(20, 30),
-
-        kg:
-            target =>
-                Number(
-                    (
-                        target * 1.8
-                    ).toFixed(1)
-                ),
-
-        reward:
-            () => random(12000, 20000),
-
-        title:
-            "⚓ Mẻ cá bội thu",
-
-        description:
-            (target, kg) =>
-                `Bắt ${target} cá · ${kg} KG`,
-
-        emoji:
-            "⚓"
+        target: () => random(20, 30),
+        kg: target =>
+            Number(
+                (target * 1.8).toFixed(1)
+            ),
+        reward: () => random(12000, 20000),
+        title: "⚓ Mẻ cá bội thu",
+        description: (target, kg) =>
+            `Bắt ${target} cá · ${kg} KG`,
+        emoji: "⚓"
     },
 
     {
         id: "mixed_3",
-
         type: "mixed",
-
-        target:
-            () => random(30, 40),
-
-        kg:
-            target =>
-                Number(
-                    (
-                        target * 2
-                    ).toFixed(1)
-                ),
-
-        reward:
-            () => random(18000, 28000),
-
-        title:
-            "🔥 Đại chiến đại dương",
-
-        description:
-            (target, kg) =>
-                `Bắt ${target} cá · ${kg} KG`,
-
-        emoji:
-            "🔥"
+        target: () => random(30, 40),
+        kg: target =>
+            Number(
+                (target * 2).toFixed(1)
+            ),
+        reward: () => random(18000, 28000),
+        title: "🔥 Đại chiến đại dương",
+        description: (target, kg) =>
+            `Bắt ${target} cá · ${kg} KG`,
+        emoji: "🔥"
     },
 
     {
         id: "mixed_4",
-
         type: "mixed",
-
-        target:
-            () => random(40, 60),
-
-        kg:
-            target =>
-                Number(
-                    (
-                        target * 2.2
-                    ).toFixed(1)
-                ),
-
-        reward:
-            () => random(25000, 40000),
-
-        title:
-            "👑 Bá chủ biển cả",
-
-        description:
-            (target, kg) =>
-                `Bắt ${target} cá · ${kg} KG`,
-
-        emoji:
-            "👑"
+        target: () => random(40, 60),
+        kg: target =>
+            Number(
+                (target * 2.2).toFixed(1)
+            ),
+        reward: () => random(25000, 40000),
+        title: "👑 Bá chủ biển cả",
+        description: (target, kg) =>
+            `Bắt ${target} cá · ${kg} KG`,
+        emoji: "👑"
     }
 ];
 
@@ -1784,9 +1179,7 @@ function isCompleted(
     quest
 ) {
 
-    if (
-        !quest
-    ) {
+    if (!quest) {
         return false;
     }
 
@@ -1915,7 +1308,11 @@ function checkDaily(user) {
                 [],
 
             completed:
-                0
+                0,
+
+            claimed:
+                []
+
         };
     }
 
@@ -1938,8 +1335,7 @@ function checkDaily(user) {
             user.quest.quests =
                 user.quest.list;
 
-        }
-        else {
+        } else {
 
             user.quest.quests =
                 [];
@@ -1980,6 +1376,7 @@ function checkDaily(user) {
 
             claimed:
                 []
+
         };
 
         save();
@@ -2118,9 +1515,7 @@ function formatProgress(
 // NHẬN THƯỞNG QUEST
 // ==========================================
 
-function claimCompletedQuests(
-    user
-) {
+function claimCompletedQuests(user) {
 
     const quests =
         user.quest?.quests || [];
@@ -2141,9 +1536,7 @@ function claimCompletedQuests(
         const quest of quests
     ) {
 
-        if (
-            !quest
-        ) {
+        if (!quest) {
             continue;
         }
 
@@ -2220,6 +1613,29 @@ function claimCompletedQuests(
 }
 
 // ==========================================
+// TẠO EMBED
+// ==========================================
+
+function createEmbed({
+    color = COLORS.primary,
+    title = null,
+    description = ""
+}) {
+
+    const embed =
+        new EmbedBuilder()
+            .setColor(color)
+            .setDescription(description)
+            .setFooter(FOOTER);
+
+    if (title) {
+        embed.setTitle(title);
+    }
+
+    return embed;
+}
+
+// ==========================================
 // COMMAND
 // ==========================================
 
@@ -2244,6 +1660,29 @@ module.exports = {
             getUser(
                 message.author.id
             );
+
+        if (!user) {
+
+            return message.reply({
+
+                embeds: [
+
+                    createEmbed({
+
+                        color:
+                            COLORS.error,
+
+                        title:
+                            "❌ Không tìm thấy người chơi",
+
+                        description:
+                            "Không thể tải dữ liệu người chơi của bạn."
+                    })
+
+                ]
+
+            });
+        }
 
         // ==================================
         // DAILY
@@ -2274,27 +1713,44 @@ module.exports = {
                 const item of rewards
             ) {
 
+                const rewardDescription =
+
+                    `🎉 Hoàn thành nhiệm vụ!` +
+
+                    SEPARATOR +
+
+                    `${item.quest.emoji || "🎯"} ${item.quest.title}\n` +
+
+                    `✅ ${item.quest.description}` +
+
+                    SEPARATOR +
+
+                    `🎁 Nhận được: ${formatMoney(
+                        item.reward
+                    )} ${emoji.money}`;
+
                 const rewardEmbed =
                     new EmbedBuilder()
 
                         .setColor(
-                            "#57F287"
+                            COLORS.success
                         )
 
-                        .setTitle(
-                            "🎉 HOÀN THÀNH NHIỆM VỤ"
-                        )
+                        .setAuthor({
+
+                            name:
+                                `${message.author.username} · Quest`,
+
+                            iconURL:
+                                message.author.displayAvatarURL({
+                                    extension: "png",
+                                    size: 128
+                                })
+
+                        })
 
                         .setDescription(
-
-                            `**${item.quest.title}**\n\n` +
-
-                            `✅ ${item.quest.description}\n` +
-
-                            `🎁 Nhận được **${formatMoney(
-                                item.reward
-                            )} ${emoji.money}**`
-
+                            rewardDescription
                         )
 
                         .setFooter({
@@ -2375,7 +1831,7 @@ module.exports = {
 
                         return (
 
-                            `${status} **${index + 1}. ${quest.title}**\n` +
+                            `${status} ${index + 1}. ${quest.title}\n` +
 
                             `${quest.emoji || "🎯"} ${quest.description}\n` +
 
@@ -2388,7 +1844,7 @@ module.exports = {
                     }
                 )
                 .join(
-                    "\n\n"
+                    SEPARATOR
                 );
 
         // ==================================
@@ -2401,17 +1857,28 @@ module.exports = {
                 .setColor(
                     completedCount ===
                     MAX_QUEST_PER_DAY
-                        ? "#57F287"
-                        : "#7ddcff"
+                        ? COLORS.success
+                        : COLORS.info
                 )
 
-                .setTitle(
-                    "📜 QUEST DAY"
-                )
+                .setAuthor({
+
+                    name:
+                        `${message.author.username} · Quest`,
+
+                    iconURL:
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 128
+                        })
+
+                })
 
                 .setDescription(
 
-                    `🎯 Hoàn thành: **${completedCount}/${MAX_QUEST_PER_DAY}**\n\n` +
+                    `🎯 Hoàn thành: ${completedCount}/${MAX_QUEST_PER_DAY}` +
+
+                    SEPARATOR +
 
                     (
                         questText ||
@@ -2423,12 +1890,12 @@ module.exports = {
                 .setFooter({
 
                     text:
-                        "✦ 5 nhiệm vụ random mỗi ngày · Tự động nhận thưởng"
+                        "✦ Fishing Adventure · 5 nhiệm vụ random mỗi ngày"
 
                 });
 
         // ==================================
-        // THÔNG BÁO FULL QUEST
+        // FULL QUEST
         // ==================================
 
         if (
@@ -2439,9 +1906,13 @@ module.exports = {
 
             embed.setDescription(
 
-                `🏆 **ĐÃ HOÀN THÀNH TOÀN BỘ ${MAX_QUEST_PER_DAY} QUEST!**\n\n` +
+                `🏆 ĐÃ HOÀN THÀNH TOÀN BỘ ${MAX_QUEST_PER_DAY} QUEST!` +
 
-                `💰 Đã tự động nhận toàn bộ phần thưởng.\n\n` +
+                SEPARATOR +
+
+                `💰 Đã tự động nhận toàn bộ phần thưởng.` +
+
+                SEPARATOR +
 
                 questText
 
@@ -2459,7 +1930,5 @@ module.exports = {
             ]
 
         });
-
     }
-
 };

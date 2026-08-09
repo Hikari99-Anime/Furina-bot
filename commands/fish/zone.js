@@ -7,6 +7,68 @@ const {
 } = require("../../config");
 
 // ======================================================
+// DIVIDER
+// ======================================================
+
+const DIVIDER =
+    "୨୧ ───────── ୨୧";
+
+// ======================================================
+// FOOTER
+// ======================================================
+
+const FOOTER =
+    "✦ Fishing Adventure · Fishing Zone";
+
+// ======================================================
+// LỜI CHÚC / TEXT THEO VÙNG
+// ======================================================
+
+const ZONE_QUOTES = {
+
+    tropical:
+        "Hãy tận hưởng những con sóng dịu dàng này.",
+
+    cold:
+        "Giữ ấm nhé, những chú cá nơi đây rất đáng giá.",
+
+    swamp:
+        "Cẩn thận với đầm lầy... nơi này luôn ẩn chứa điều bất ngờ.",
+
+    deep:
+        "Biển sâu đang chờ đợi những ngư dân gan dạ.",
+
+    volcano:
+        "Furina chúc phúc cho chuyến câu của bạn giữa biển lửa."
+
+};
+
+// ======================================================
+// LẤY KEY VÙNG
+// ======================================================
+
+function getZoneKey(zone) {
+
+    if (!zone) {
+        return "tropical";
+    }
+
+    for (
+        const key of Object.keys(fishingZones || {})
+    ) {
+
+        if (
+            fishingZones[key] === zone
+        ) {
+
+            return key;
+        }
+    }
+
+    return "tropical";
+}
+
+// ======================================================
 // LẤY VÙNG HIỆN TẠI
 // ======================================================
 
@@ -15,19 +77,39 @@ function getCurrentZone() {
     const now =
         new Date();
 
-    // Chủ nhật → Núi lửa
+    // Chủ nhật → Volcano
     if (
-        now.getDay() === 0
+        now.getDay() === 0 &&
+        fishingZones.volcano
     ) {
+
         return fishingZones.volcano;
     }
 
     const zones = [
+
         fishingZones.tropical,
         fishingZones.cold,
         fishingZones.swamp,
         fishingZones.deep
-    ];
+
+    ].filter(Boolean);
+
+    if (
+        zones.length === 0
+    ) {
+
+        return null;
+    }
+
+    /*
+     * Mỗi vùng hoạt động 6 giờ:
+     *
+     * 00:00 → Tropical
+     * 06:00 → Cold
+     * 12:00 → Swamp
+     * 18:00 → Deep
+     */
 
     const index =
         Math.floor(
@@ -40,7 +122,7 @@ function getCurrentZone() {
 }
 
 // ======================================================
-// THỜI GIAN ĐỔI VÙNG
+// THỜI GIAN ĐẾN LẦN ĐỔI TIẾP
 // ======================================================
 
 function getNextChange() {
@@ -48,54 +130,53 @@ function getNextChange() {
     const now =
         new Date();
 
-    const nextHour =
+    const next =
+        new Date(now);
+
+    next.setHours(
         (
             Math.floor(
                 now.getHours() / 6
             ) + 1
-        ) * 6;
+        ) * 6,
+        0,
+        0,
+        0
+    );
 
-    let hours =
-        nextHour -
-        now.getHours();
+    /*
+     * Chủ nhật là vùng đặc biệt.
+     * Vẫn hiển thị thời gian đổi theo chu kỳ 6 giờ.
+     */
 
-    let minutes =
-        60 -
-        now.getMinutes();
+    const diff =
+        Math.max(
+            0,
+            next.getTime() -
+            now.getTime()
+        );
 
-    if (
-        now.getMinutes() === 0
-    ) {
-        minutes = 0;
-    }
+    const totalMinutes =
+        Math.floor(
+            diff / 60000
+        );
 
-    if (
-        minutes === 60
-    ) {
-        minutes = 0;
-        hours++;
-    }
+    const hours =
+        Math.floor(
+            totalMinutes / 60
+        );
 
-    if (
-        hours >= 24
-    ) {
-        hours -= 24;
-    }
-
-    if (
-        hours === 0 &&
-        minutes === 0
-    ) {
-        return "Sắp đổi";
-    }
+    const minutes =
+        totalMinutes % 60;
 
     if (
-        hours > 0
+        hours <= 0
     ) {
-        return `${hours} giờ ${minutes} phút`;
+
+        return `${minutes} phút`;
     }
 
-    return `${minutes} phút`;
+    return `${hours} giờ ${minutes} phút`;
 }
 
 // ======================================================
@@ -113,6 +194,10 @@ module.exports = {
 
     async execute(message) {
 
+        // ==================================================
+        // ZONE
+        // ==================================================
+
         const zone =
             getCurrentZone();
 
@@ -121,8 +206,14 @@ module.exports = {
             return message.reply(
                 "❌ Không tìm thấy khu vực câu cá."
             );
-
         }
+
+        // ==================================================
+        // DATA
+        // ==================================================
+
+        const zoneKey =
+            getZoneKey(zone);
 
         const fishCount =
             Array.isArray(zone.fish)
@@ -132,68 +223,81 @@ module.exports = {
         const nextChange =
             getNextChange();
 
+        const nowTimestamp =
+            Math.floor(
+                Date.now() / 1000
+            );
+
+        const quote =
+            ZONE_QUOTES[zoneKey] ||
+            "Chúc bạn có một chuyến câu thật may mắn.";
+
         // ==================================================
-        // EMBED THÔNG TIN
+        // EMBED
         // ==================================================
 
-        const infoEmbed =
+        const embed =
             new EmbedBuilder()
 
-                .setColor("#7ddcff")
+                .setColor(
+                    zone.color ||
+                    "#7DDCFF"
+                )
 
                 .setTitle(
-                    "🌍 `FISHING ZONE`"
+                    `${DIVIDER}`
                 )
 
                 .setDescription(
 
-                    `${zone.name}\n` +
-                    `${zone.description}\n\n` +
+                    `🌊 **${zone.name || "FISHING ZONE"}**\n` +
 
-                    `🐟 Cá: ${fishCount} loại\n` +
-                    `⏰ Đổi vùng: ${nextChange}\n` +
-                    `🕐 Hiện tại: <t:${Math.floor(Date.now() / 1000)}:R>\n\n` +
+                    (
+                        zone.description
+                            ? `*${zone.description}*\n\n`
+                            : "\n"
+                    ) +
 
-                    `✦ *Hãy chọn thời điểm thích hợp để câu cá.*`
+                    `🐟 Cá: **${fishCount} loại**\n` +
+
+                    `⏰ Đổi vùng: **${nextChange}**\n` +
+
+                    `🕐 Hiện tại: <t:${nowTimestamp}:R>\n\n` +
+
+                    `*“${quote}”*\n\n` +
+
+                    `${DIVIDER}`
 
                 )
 
                 .setFooter({
                     text:
-                        "✦ Fishing Adventure · Fishing Zone"
+                        FOOTER
                 })
 
                 .setTimestamp();
 
         // ==================================================
-        // EMBED ẢNH
+        // ẢNH
         // ==================================================
-
-        const imageEmbed =
-            new EmbedBuilder()
-                .setColor("#7ddcff");
 
         if (
             zone.image
         ) {
 
-            imageEmbed.setImage(
+            embed.setImage(
                 zone.image
             );
-
         }
 
         // ==================================================
-        // GỬI
+        // REPLY
         // ==================================================
 
         return message.reply({
 
             embeds: [
-
-                infoEmbed,
-                imageEmbed
-
+                embed
             ]
 
         });

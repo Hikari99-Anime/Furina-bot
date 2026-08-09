@@ -20,6 +20,18 @@ const filePath = path.join(
 );
 
 // ======================================================
+// CONFIG EMBED
+// ======================================================
+
+const SEPARATOR =
+    "୨୧ ───────── ୨୧";
+
+const FOOTER = {
+    text:
+        "✦ Furina-sama · Gift Code"
+};
+
+// ======================================================
 // LOAD
 // ======================================================
 
@@ -31,7 +43,11 @@ function loadCodes() {
 
             fs.writeFileSync(
                 filePath,
-                JSON.stringify({}, null, 2)
+                JSON.stringify(
+                    {},
+                    null,
+                    2
+                )
             );
 
         } catch (err) {
@@ -135,20 +151,27 @@ function createEmbed(
 
     return new EmbedBuilder()
 
-        .setColor(color)
-
-        .setTitle(title)
-
-        .setDescription(
-            `୨୧ ───────── ୨୧\n\n` +
-            description +
-            `\n\n୨୧ ───────── ୨୧`
+        .setColor(
+            color
         )
 
-        .setFooter({
-            text:
-                "✦ Furina-sama · Gift Code"
-        })
+        .setTitle(
+            title
+        )
+
+        .setDescription(
+
+            `${SEPARATOR}\n\n` +
+
+            description +
+
+            `\n\n${SEPARATOR}`
+
+        )
+
+        .setFooter(
+            FOOTER
+        )
 
         .setTimestamp();
 
@@ -223,7 +246,9 @@ module.exports = {
             // ==================================================
 
             const action =
-                String(args[0])
+                String(
+                    args[0]
+                )
                     .trim()
                     .toLowerCase();
 
@@ -231,12 +256,15 @@ module.exports = {
             // ADD
             //
             // fgiftcode add FURINA2026 50000 100
-            //
             // ==================================================
 
-            if (action === "add") {
+            if (
+                action === "add"
+            ) {
 
-                if (!isAdmin(message)) {
+                if (
+                    !isAdmin(message)
+                ) {
 
                     return message.reply({
 
@@ -259,17 +287,23 @@ module.exports = {
                 }
 
                 const code =
-                    String(args[1] || "")
+                    String(
+                        args[1] || ""
+                    )
                         .trim()
                         .toUpperCase();
 
                 const reward =
-                    Number(args[2]);
+                    Number(
+                        args[2]
+                    );
 
                 const maxUses =
                     args[3] === undefined
                         ? 0
-                        : Number(args[3]);
+                        : Number(
+                            args[3]
+                        );
 
                 // ==================================================
                 // CHECK CODE
@@ -332,7 +366,9 @@ module.exports = {
                 // ==================================================
 
                 if (
-                    !Number.isSafeInteger(reward) ||
+                    !Number.isSafeInteger(
+                        reward
+                    ) ||
                     reward <= 0
                 ) {
 
@@ -363,7 +399,9 @@ module.exports = {
                 // ==================================================
 
                 if (
-                    !Number.isSafeInteger(maxUses) ||
+                    !Number.isSafeInteger(
+                        maxUses
+                    ) ||
                     maxUses < 0
                 ) {
 
@@ -392,7 +430,9 @@ module.exports = {
                 // DUPLICATE
                 // ==================================================
 
-                if (codes[code]) {
+                if (
+                    codes[code]
+                ) {
 
                     return message.reply({
 
@@ -420,11 +460,14 @@ module.exports = {
 
                 codes[code] = {
 
-                    reward: reward,
+                    reward:
+                        reward,
 
-                    maxUses: maxUses,
+                    maxUses:
+                        maxUses,
 
-                    used: [],
+                    used:
+                        [],
 
                     createdAt:
                         Date.now(),
@@ -438,7 +481,11 @@ module.exports = {
                 // SAVE
                 // ==================================================
 
-                if (!saveCodes(codes)) {
+                if (
+                    !saveCodes(
+                        codes
+                    )
+                ) {
 
                     return message.reply({
 
@@ -474,19 +521,19 @@ module.exports = {
 
                             "🎁 TẠO GIFT CODE THÀNH CÔNG",
 
-                            `🏷️ **Code:** \`${code}\`\n\n` +
+                            `🏷️ Code: \`${code}\`\n\n` +
 
-                            `💰 **Phần thưởng:** ` +
+                            `💰 Phần thưởng: ` +
                             `${reward.toLocaleString()} Fcoin\n\n` +
 
-                            `👥 **Giới hạn:** ` +
+                            `👥 Giới hạn: ` +
                             `${
                                 maxUses === 0
                                     ? "Không giới hạn"
                                     : `${maxUses} người`
                             }\n\n` +
 
-                            `👤 **Người tạo:** ${message.author}`
+                            `👤 Người tạo: ${message.author}`
 
                         )
 
@@ -508,7 +555,9 @@ module.exports = {
                 action === "remove"
             ) {
 
-                if (!isAdmin(message)) {
+                if (
+                    !isAdmin(message)
+                ) {
 
                     return message.reply({
 
@@ -531,7 +580,9 @@ module.exports = {
                 }
 
                 const code =
-                    String(args[1] || "")
+                    String(
+                        args[1] || ""
+                    )
                         .trim()
                         .toUpperCase();
 
@@ -557,7 +608,9 @@ module.exports = {
 
                 }
 
-                if (!codes[code]) {
+                if (
+                    !codes[code]
+                ) {
 
                     return message.reply({
 
@@ -581,7 +634,11 @@ module.exports = {
 
                 delete codes[code];
 
-                if (!saveCodes(codes)) {
+                if (
+                    !saveCodes(
+                        codes
+                    )
+                ) {
 
                     return message.reply({
 
@@ -613,7 +670,7 @@ module.exports = {
 
                             "🗑️ ĐÃ XÓA GIFT CODE",
 
-                            `🏷️ **Code:** \`${code}\`\n\n` +
+                            `🏷️ Code: \`${code}\`\n\n` +
                             `Giftcode đã được xóa khỏi hệ thống.`
 
                         )
@@ -630,9 +687,13 @@ module.exports = {
             // fgiftcode list
             // ==================================================
 
-            if (action === "list") {
+            if (
+                action === "list"
+            ) {
 
-                if (!isAdmin(message)) {
+                if (
+                    !isAdmin(message)
+                ) {
 
                     return message.reply({
 
@@ -655,9 +716,13 @@ module.exports = {
                 }
 
                 const entries =
-                    Object.entries(codes);
+                    Object.entries(
+                        codes
+                    );
 
-                if (!entries.length) {
+                if (
+                    !entries.length
+                ) {
 
                     return message.reply({
 
@@ -689,7 +754,11 @@ module.exports = {
                     of entries
                 ) {
 
-                    if (!Array.isArray(gift.used)) {
+                    if (
+                        !Array.isArray(
+                            gift.used
+                        )
+                    ) {
 
                         gift.used = [];
 
@@ -735,7 +804,12 @@ module.exports = {
 
                             "🎁 DANH SÁCH GIFT CODE",
 
-                            lines.join("\n\n")
+                            lines.join(
+                                `\n\n${SEPARATOR}\n\n`
+                            ) +
+
+                            `\n\n“ Furina chúc bạn may mắn\n` +
+                            `và nhận được thật nhiều Fcoin! ”`
 
                         )
 
@@ -751,9 +825,13 @@ module.exports = {
             // fgiftcode info CODE
             // ==================================================
 
-            if (action === "info") {
+            if (
+                action === "info"
+            ) {
 
-                if (!isAdmin(message)) {
+                if (
+                    !isAdmin(message)
+                ) {
 
                     return message.reply({
 
@@ -776,7 +854,9 @@ module.exports = {
                 }
 
                 const code =
-                    String(args[1] || "")
+                    String(
+                        args[1] || ""
+                    )
                         .trim()
                         .toUpperCase();
 
@@ -827,7 +907,11 @@ module.exports = {
 
                 }
 
-                if (!Array.isArray(gift.used)) {
+                if (
+                    !Array.isArray(
+                        gift.used
+                    )
+                ) {
 
                     gift.used = [];
 
@@ -853,19 +937,19 @@ module.exports = {
 
                             "🔎 THÔNG TIN GIFT CODE",
 
-                            `🏷️ **Code:** \`${code}\`\n\n` +
+                            `🏷️ Code: \`${code}\`\n\n` +
 
-                            `💰 **Phần thưởng:** ` +
+                            `💰 Phần thưởng: ` +
                             `${reward.toLocaleString()} Fcoin\n\n` +
 
-                            `👥 **Đã sử dụng:** ` +
+                            `👥 Đã sử dụng: ` +
                             `${gift.used.length}/${
                                 maxUses === 0
                                     ? "∞"
                                     : maxUses
                             }\n\n` +
 
-                            `📅 **Ngày tạo:** ` +
+                            `📅 Ngày tạo: ` +
                             `<t:${Math.floor(
                                 Number(
                                     gift.createdAt ||
@@ -888,7 +972,9 @@ module.exports = {
             // ==================================================
 
             const code =
-                String(args[0])
+                String(
+                    args[0]
+                )
                     .trim()
                     .toUpperCase();
 
@@ -925,7 +1011,11 @@ module.exports = {
             // FIX OLD CODE
             // ==================================================
 
-            if (!Array.isArray(gift.used)) {
+            if (
+                !Array.isArray(
+                    gift.used
+                )
+            ) {
 
                 gift.used = [];
 
@@ -976,7 +1066,8 @@ module.exports = {
 
             if (
                 gift.maxUses > 0 &&
-                gift.used.length >= gift.maxUses
+                gift.used.length >=
+                gift.maxUses
             ) {
 
                 return message.reply({
@@ -989,7 +1080,7 @@ module.exports = {
 
                             "🎁 GIFT CODE ĐÃ HẾT LƯỢT",
 
-                            `🏷️ **Code:** \`${code}\`\n\n` +
+                            `🏷️ Giftcode: \`${code}\`\n\n` +
 
                             `👥 Giftcode đã đạt giới hạn ` +
                             `**${gift.maxUses} người**.\n\n` +
@@ -1045,7 +1136,9 @@ module.exports = {
                 );
 
             if (
-                !Number.isSafeInteger(reward) ||
+                !Number.isSafeInteger(
+                    reward
+                ) ||
                 reward <= 0
             ) {
 
@@ -1080,7 +1173,8 @@ module.exports = {
                 );
 
             user.money =
-                oldMoney + reward;
+                oldMoney +
+                reward;
 
             // ==================================================
             // MARK USED
@@ -1094,7 +1188,11 @@ module.exports = {
             // SAVE GIFT CODE
             // ==================================================
 
-            if (!saveCodes(codes)) {
+            if (
+                !saveCodes(
+                    codes
+                )
+            ) {
 
                 user.money =
                     oldMoney;
@@ -1142,9 +1240,12 @@ module.exports = {
 
             const remaining =
                 gift.maxUses === 0
+
                     ? "∞"
+
                     : Math.max(
-                        gift.maxUses - used,
+                        gift.maxUses -
+                        used,
                         0
                     );
 
@@ -1162,28 +1263,29 @@ module.exports = {
 
                         "🎁 NHẬN GIFT CODE THÀNH CÔNG",
 
-                        `👤 **Người nhận:** ${message.author}\n\n` +
+                        `👤 Người nhận: ${message.author}\n\n` +
 
-                        `🏷️ **Giftcode:** \`${code}\`\n\n` +
+                        `🏷️ Giftcode: \`${code}\`\n\n` +
 
-                        `💰 **Phần thưởng:** ` +
+                        `💰 Phần thưởng: ` +
                         `+${reward.toLocaleString()} Fcoin\n\n` +
 
-                        `💵 **Số dư mới:** ` +
+                        `💵 Số dư mới: ` +
                         `${Number(
                             user.money
                         ).toLocaleString()} Fcoin\n\n` +
 
-                        `👥 **Lượt sử dụng:** ` +
+                        `👥 Lượt sử dụng: ` +
                         `${used}/${
                             gift.maxUses === 0
                                 ? "∞"
                                 : gift.maxUses
                         }\n\n` +
 
-                        `🎟️ **Còn lại:** ${remaining} lượt\n\n` +
+                        `🎟️ Còn lại: ${remaining} lượt\n\n` +
 
-                        `✨ Chúc bạn câu được thật nhiều cá hiếm!`
+                        `“ Furina chúc bạn may mắn\n` +
+                        `và nhận được thật nhiều Fcoin! ”`
 
                     )
 
@@ -1199,7 +1301,9 @@ module.exports = {
                 "❌ GIFTCODE ERROR:"
             );
 
-            console.error(err);
+            console.error(
+                err
+            );
 
             return message.reply({
 

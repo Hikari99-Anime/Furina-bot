@@ -2,12 +2,10 @@ const {
     EmbedBuilder
 } = require("discord.js");
 
-
 const {
     prefix,
     emoji
 } = require("../config");
-
 
 const {
     getUser,
@@ -15,60 +13,186 @@ const {
 } = require("../database");
 
 
+// ======================================================
+// EMBED
+// ======================================================
 
+function createEmbed(
+    color,
+    title,
+    description
+) {
+
+    return new EmbedBuilder()
+
+        .setColor(color)
+
+        .setTitle(title)
+
+        .setDescription(
+            `୨୧ ───────── ୨୧\n\n` +
+            description +
+            `\n\n୨୧ ───────── ୨୧`
+        )
+
+        .setFooter({
+            text: "✦ Furina-sama · Fishing Adventure"
+        })
+
+        .setTimestamp();
+}
+
+
+// ======================================================
+// COMMAND
+// ======================================================
 
 module.exports = {
 
-    name:"tungdongxu",
+    name: "tungdongxu",
 
-    aliases:["tdx"],
+    aliases: [
+        "tdx"
+    ],
 
-    async execute(message,args){
+    async execute(
+        message,
+        args
+    ) {
 
-        const side = (args[0] || "").toLowerCase();
+        const side =
+            (
+                args[0] || ""
+            )
+                .toLowerCase();
 
-        const bet = Number(args[1]);
+        const bet =
+            Number(
+                args[1]
+            );
 
 
-        if(
+        // ==================================================
+        // CHECK INPUT
+        // ==================================================
 
-            (side !== "n" && side !== "s")
+        if (
+
+            (
+                side !== "n" &&
+                side !== "s"
+            )
+
             ||
-            !Number.isInteger(bet)
+
+            !Number.isInteger(
+                bet
+            )
+
             ||
+
             bet <= 0
 
-        ){
+        ) {
 
-            return message.reply(
-                `❌ Ví dụ: \`${prefix}tdx n 1000\` (ngửa) hoặc \`${prefix}tdx s 1000\` (sấp)`
-            );
+            return message.reply({
+
+                embeds: [
+
+                    createEmbed(
+
+                        "#EF4444",
+
+                        "❌ CÁCH SỬ DỤNG",
+
+                        `Vui lòng nhập đúng cú pháp.\n\n` +
+
+                        `🪙 **Ngửa**\n` +
+                        `\`${prefix}tdx n 1000\`\n\n` +
+
+                        `🪙 **Sấp**\n` +
+                        `\`${prefix}tdx s 1000\`\n\n` +
+
+                        `💡 Ví dụ: \`${prefix}tdx n 10000\``
+
+                    )
+
+                ]
+
+            });
 
         }
 
 
-        const user = getUser(message.author.id);
+        // ==================================================
+        // GET USER
+        // ==================================================
 
-
-        if(user.money < bet){
-
-            return message.reply(
-                "❌ Không đủ tiền"
+        const user =
+            getUser(
+                message.author.id
             );
+
+
+        // ==================================================
+        // CHECK MONEY
+        // ==================================================
+
+        if (
+            Number(user.money || 0) <
+            bet
+        ) {
+
+            return message.reply({
+
+                embeds: [
+
+                    createEmbed(
+
+                        "#EF4444",
+
+                        "❌ KHÔNG ĐỦ XU",
+
+                        `💰 **Số dư:** ` +
+                        `${user.money.toLocaleString()} ${emoji.money}\n\n` +
+
+                        `🎲 **Tiền cược:** ` +
+                        `${bet.toLocaleString()} ${emoji.money}\n\n` +
+
+                        `Bạn không có đủ xu để thực hiện lượt cược này.`
+
+                    )
+
+                ]
+
+            });
 
         }
 
 
-        const result = Math.random() < 0.5 ? "n" : "s";
+        // ==================================================
+        // TUNG ĐỒNG XU
+        // ==================================================
 
-        const win = result === side;
+        const result =
+            Math.random() < 0.5
+                ? "n"
+                : "s";
 
 
-        if(win){
+        const win =
+            result === side;
+
+
+        // ==================================================
+        // CỘNG / TRỪ TIỀN
+        // ==================================================
+
+        if (win) {
 
             user.money += bet;
 
-        }else{
+        } else {
 
             user.money -= bet;
 
@@ -78,36 +202,85 @@ module.exports = {
         save();
 
 
-        const resultText =
-        result === "n"
-        ?
-        "🪙 NGỬA"
-        :
-        "🪙 SẤP";
+        // ==================================================
+        // RESULT TEXT
+        // ==================================================
 
+        const resultText =
+            result === "n"
+                ? "🪙 **NGỬA**"
+                : "🪙 **SẤP**";
+
+
+        const choiceText =
+            side === "n"
+                ? "🪙 Ngửa"
+                : "🪙 Sấp";
+
+
+        // ==================================================
+        // FURINA TEXT
+        // ==================================================
+
+        const furinaText =
+            win
+
+                ?
+
+                "✦ Furina chúc mừng bạn!\n" +
+                "Hôm nay vận may đang đứng về phía bạn đấy~\n" +
+                "Hãy tận hưởng chiến thắng này nhé! ♡"
+
+                :
+
+                "✦ Furina rất tiếc cho bạn...\n" +
+                "Có lẽ vận may hôm nay chưa đứng về phía bạn.\n" +
+                "Đừng buồn, lần sau chắc chắn sẽ may mắn hơn! ♡";
+
+
+        // ==================================================
+        // EMBED
+        // ==================================================
 
         return message.reply({
 
-            embeds:[
+            embeds: [
 
-                new EmbedBuilder()
+                createEmbed(
 
-                .setColor(win ? "Green" : "Red")
+                    win
+                        ? "#86EFAC"
+                        : "#F9A8D4",
 
-                .setTitle("🪙 TUNG ĐỒNG XU")
+                    win
+                        ? "🪙 TUNG ĐỒNG XU · THẮNG"
+                        : "🪙 TUNG ĐỒNG XU · THUA",
 
-                .setDescription(
+                    `🎯 **Bạn chọn:**\n` +
+                    `${choiceText}\n\n` +
 
-`Kết quả: **${resultText}**
+                    `🪙 **Kết quả:**\n` +
+                    `${resultText}\n\n` +
 
-${
-    win
-    ?
-    `✅ Bạn thắng +${bet.toLocaleString()} xu`
-    :
-    `❌ Bạn thua -${bet.toLocaleString()} xu`
-}
-💰 Số dư: ${user.money.toLocaleString()} ${emoji.money}`
+                    (
+                        win
+
+                            ?
+
+                            `✅ **Bạn thắng:** ` +
+                            `+${bet.toLocaleString()} ${emoji.money}\n\n`
+
+                            :
+
+                            `❌ **Bạn thua:** ` +
+                            `-${bet.toLocaleString()} ${emoji.money}\n\n`
+                    ) +
+
+                    `💰 **Số dư:**\n` +
+                    `${user.money.toLocaleString()} ${emoji.money}\n\n` +
+
+                    `୨୧ **Furina nói** ୨୧\n` +
+                    `*${furinaText}*`
 
                 )
 

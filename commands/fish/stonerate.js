@@ -11,8 +11,16 @@ const {
     getUser
 } = require("../../data");
 
-// Cùng ô lưu trữ với commands/fish/upgrade.js (RATE_STONE_ID = "da_rate")
+// ======================================================
+// ID ĐÁ TĂNG TỈ LỆ
+// Cùng storage với commands/fish/upgrade.js
+// ======================================================
+
 const RATE_STONE_ID = "da_rate";
+
+// ======================================================
+// LẤY SỐ LƯỢNG ĐÁ
+// ======================================================
 
 function getRateStoneCount(user) {
 
@@ -25,7 +33,12 @@ function getRateStoneCount(user) {
             0
         )
     );
+
 }
+
+// ======================================================
+// MODULE
+// ======================================================
 
 module.exports = {
 
@@ -38,39 +51,116 @@ module.exports = {
 
     async execute(message) {
 
+        // ==================================================
+        // USER
+        // ==================================================
+
         const user =
             getUser(
                 message.author.id
             );
 
+        // ==================================================
+        // DATA
+        // ==================================================
+
         const count =
-            getRateStoneCount(user);
+            getRateStoneCount(
+                user
+            );
 
         const info =
             rateStone?.da_tang_rate;
 
+        const stoneEmoji =
+            info?.emoji ||
+            "🪨";
+
+        const stoneName =
+            info?.name ||
+            "Đá tăng tỉ lệ";
+
+        const rate =
+            Number(
+                info?.rate ?? 5
+            );
+
+        const maxUse = 5;
+
+
+        // ==================================================
+        // EMBED
+        // ==================================================
+
         const embed =
             new EmbedBuilder()
-                .setColor("#A78BFA")
+
+                .setColor(
+                    "#A78BFA"
+                )
+
+                .setAuthor({
+
+                    name:
+                        `${message.author.username} · Fishing`,
+
+                    iconURL:
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 128
+                        })
+
+                })
+
                 .setTitle(
-                    "🪨 `RATE STONE`"
+                    `${stoneEmoji} \`RATE STONE\``
                 )
+
                 .setDescription(
-                    `${info?.emoji || "🪨"} **${info?.name || "Đá tăng tỉ lệ"}**\n\n` +
-                    `📦 Bạn đang có: **${count}** viên\n` +
-                    `📈 Mỗi viên: **+${info?.rate ?? 5}%** tỉ lệ cường hóa\n` +
-                    `🎯 Tối đa mỗi lần cường hóa: **5 viên**\n\n` +
-                    `✦ Dùng \`fshop\` để mua thêm, dùng \`fupgrade\` để cường hóa.`
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `${stoneEmoji} ${stoneName}\n` +
+                    `*Vật phẩm hỗ trợ tăng tỉ lệ cường hóa cần câu.*\n\n` +
+
+                    `📦 Đang sở hữu: **${count} viên**\n` +
+                    `📈 Hiệu quả: **+${rate}% / viên**\n` +
+                    `🎯 Tối đa mỗi lần: **${maxUse} viên**\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `💡 Mỗi viên đá sẽ cộng thêm **${rate}%** tỉ lệ cường hóa.\n` +
+                    `⚒️ Có thể sử dụng tối đa **${maxUse} viên** trong một lần nâng cấp.\n\n` +
+
+                    `🛒 Mua thêm tại \`fshop\`\n` +
+                    `⚡ Sử dụng tại \`fupgrade\`\n\n` +
+
+                    `୨୧ ───────── ୨୧`
+
                 )
+
                 .setFooter({
+
                     text:
                         "✦ Fishing Adventure · Rate Stone"
-                });
+
+                })
+
+                .setTimestamp();
+
+
+        // ==================================================
+        // SEND
+        // ==================================================
 
         return message.reply({
+
             embeds: [
                 embed
             ]
+
         });
+
     }
+
 };

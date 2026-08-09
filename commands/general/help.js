@@ -1,352 +1,321 @@
 const {
-EmbedBuilder,
-ActionRowBuilder,
-ButtonBuilder,
-ButtonStyle
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
 } = require("discord.js");
 
 const {
-prefix
+    prefix
 } = require("../../config");
 
+// ======================================================
+// STYLE
+// ======================================================
+
+const SEPARATOR =
+    "୨୧ ───────── ୨୧";
+
+const FOOTER =
+    "✦ Fishing Adventure · Furina's Blessing";
+
+// ======================================================
+// MODULE
+// ======================================================
+
 module.exports = {
-name: "help",
 
-aliases: [
-    "h",
-    "menu"
-],
+    name: "help",
 
-async execute(message) {
+    aliases: [
+        "h",
+        "menu"
+    ],
 
-    const pages = [
+    async execute(message) {
 
-        // ==========================
-        // TRANG 1 · CÂU CÁ
-        // ==========================
+        // ==================================================
+        // PAGES
+        // ==================================================
 
-        new EmbedBuilder()
+        const pages = [
 
-            .setColor("#7cc7ff")
+            // ==================================================
+            // TRANG 1 · CÂU CÁ
+            // ==================================================
 
-            .setTitle("🌊 FISHING ADVENTURE")
+            new EmbedBuilder()
 
-            .setDescription(
-                `🎣 CÂU CÁ\n\n` +
+                .setColor("#8ed8ff")
 
-                `${prefix}fish [số lần] · Câu cá\n` +
-                `${prefix}rod · Xem / trang bị cần\n` +
-                `${prefix}upgrade · Cường hóa cần\n` +
-                `${prefix}repair · Sửa chữa cần\n` +
-                `${prefix}zone · Xem khu vực câu\n\n` +
+                .setTitle(
+                    "🌊 FISHING ADVENTURE"
+                )
 
-                `💡 Ví dụ\n` +
-                `${prefix}fish 10\n` +
-                `Câu 10 lần và tiêu hao 10 độ bền.\n\n` +
+                .setDescription(
 
-                `🔧 Sửa cần\n` +
-                `Độ bền càng thấp → phí sửa càng cao.\n` +
-                `Cần gãy → phí sửa rất cao.\n\n` +
+                    `${SEPARATOR}\n\n` +
 
-                `👤 NGƯỜI CHƠI\n` +
-                `${prefix}profile · Xem hồ sơ\n` +
-                `${prefix}top · Bảng xếp hạng\n` +
-                `${prefix}gold · Xem số dư\n` +
-                `${prefix}givemoney @user <số tiền> · Chuyển xu\n\n` +
+                    `🎣 CÂU CÁ\n\n` +
 
-                `✨ Cường hóa\n` +
-                `+5 trở lên có nguy cơ giảm cấp.\n` +
-                `+10 trở lên có thể làm gãy cần khi thất bại.\n` +
-                `🎫 Vé bảo hiểm có thể bảo vệ cần.`
-            )
+                    `${prefix}fish [số lần] · Câu cá\n` +
+                    `${prefix}rod · Xem / trang bị cần\n` +
+                    `${prefix}upgrade · Cường hóa cần\n` +
+                    `${prefix}repair · Sửa chữa cần\n` +
+                    `${prefix}zone · Xem khu vực câu\n\n` +
 
-            .setFooter({
-                text: "Fishing Adventure · Trang 1/4"
-            }),
+                    `${SEPARATOR}\n\n` +
 
+                    `👤 NGƯỜI CHƠI\n\n` +
 
-        // ==========================
-        // TRANG 2 · CỬA HÀNG
-        // ==========================
+                    `${prefix}profile · Xem hồ sơ\n` +
+                    `${prefix}top · Bảng xếp hạng\n` +
+                    `${prefix}gold · Xem số dư\n` +
+                    `${prefix}givemoney @user <số tiền> · Chuyển xu\n\n` +
 
-        new EmbedBuilder()
+                    `${SEPARATOR}\n\n` +
 
-            .setColor("#8affb2")
+                    `✨ Furina chúc bạn may mắn,\n` +
+                    `và câu được thật nhiều cá hiếm!`
 
-            .setTitle("🛒 CỬA HÀNG & KHO ĐỒ")
+                )
 
-            .setDescription(
-                `🛒 CỬA HÀNG\n\n` +
+                .setFooter({
+                    text:
+                        `${FOOTER} · Trang 1/4`
+                })
 
-                `${prefix}shop · Xem cửa hàng, bấm nút để mua vật phẩm\n\n` +
+                .setTimestamp(),
 
-                `🎒 KHO ĐỒ\n\n` +
 
-                `${prefix}inventory · Xem kho\n` +
-                `${prefix}bag · Xem kho\n` +
-                `${prefix}sell [tên cá] · Bán cá\n` +
-                `${prefix}sell all · Bán toàn bộ cá\n\n` +
+            // ==================================================
+            // TRANG 2 · CỬA HÀNG
+            // ==================================================
 
-                `🎫 BẢO HIỂM\n\n` +
+            new EmbedBuilder()
 
-                `Vé bảo hiểm dùng để bảo vệ cần ` +
-                `khi cường hóa thất bại có rủi ro.\n\n` +
+                .setColor("#9debc4")
 
-                `💰 Mẹo\n` +
-                `Bán cá để kiếm xu và nâng cấp trang bị.`
-            )
+                .setTitle(
+                    "🛒 CỬA HÀNG & KHO ĐỒ"
+                )
 
-            .setFooter({
-                text: "Fishing Adventure · Trang 2/4"
-            }),
+                .setDescription(
 
+                    `${SEPARATOR}\n\n` +
 
-        // ==========================
-        // TRANG 3 · NGƯỜI CHƠI
-        // ==========================
+                    `🛒 CỬA HÀNG\n\n` +
 
-        new EmbedBuilder()
+                    `${prefix}shop · Xem cửa hàng và mua vật phẩm\n\n` +
 
-            .setColor("#ffd166")
+                    `🎒 KHO ĐỒ\n\n` +
 
-            .setTitle("👤 NGƯỜI CHƠI & HOẠT ĐỘNG")
+                    `${prefix}inventory · Xem kho\n` +
+                    `${prefix}bag · Xem kho\n` +
+                    `${prefix}sell [tên cá] · Bán cá\n` +
+                    `${prefix}sell all · Bán toàn bộ cá\n\n` +
 
-            .setDescription(
-                `👤 NGƯỜI CHƠI\n\n` +
+                    `🛡️ BẢO HIỂM\n\n` +
 
-                `${prefix}profile · Xem hồ sơ\n` +
-                `${prefix}top · Bảng xếp hạng\n` +
-                `${prefix}givemoney @user [số tiền] · Chuyển xu\n\n` +
+                    `Vé bảo hiểm giúp bảo vệ cần\n` +
+                    `khi cường hóa thất bại.\n\n` +
 
-                `🎁 HOẠT ĐỘNG\n\n` +
+                    `${SEPARATOR}\n\n` +
 
-                `${prefix}daily · Nhận thưởng hằng ngày\n` +
-                `${prefix}quest · Xem nhiệm vụ\n` +
-                `${prefix}open [rương] · Mở rương\n\n` +
+                    `💰 Bán cá để kiếm xu,\n` +
+                    `sau đó nâng cấp hành trang của bạn.\n\n` +
 
-                `🏆 BẢNG XẾP HẠNG\n\n` +
+                    `✨ Furina chúc bạn luôn có thật nhiều Fcoin!`
 
-                `${prefix}top money · BXH tiền\n` +
-                `${prefix}top fish · BXH số cá\n` +
-                `${prefix}top kg · BXH cân nặng\n\n` +
+                )
 
-                `🌍 KHU VỰC\n\n` +
+                .setFooter({
+                    text:
+                        `${FOOTER} · Trang 2/4`
+                })
 
-                `${prefix}zone · Xem khu vực hiện tại`
-            )
+                .setTimestamp(),
 
-            .setFooter({
-                text: "Fishing Adventure · Trang 3/4"
-            }),
 
+            // ==================================================
+            // TRANG 3 · NGƯỜI CHƠI
+            // ==================================================
 
-        // ==========================
-        // TRANG 4 · MINI-GAME
-        // ==========================
+            new EmbedBuilder()
 
-        new EmbedBuilder()
+                .setColor("#ffd98a")
 
-            .setColor("#c59cff")
+                .setTitle(
+                    "👤 NGƯỜI CHƠI & HOẠT ĐỘNG"
+                )
 
-            .setTitle("🎮 MINI-GAME & THÔNG TIN")
+                .setDescription(
 
-            .setDescription(
-                `🔗 NỐI TỪ\n\n` +
+                    `${SEPARATOR}\n\n` +
 
-                `${prefix}noitu vi · Nối từ tiếng Việt\n` +
-                `${prefix}noitu en · Word chain tiếng Anh\n\n` +
+                    `👤 NGƯỜI CHƠI\n\n` +
 
-                `💰 PHẦN THƯỞNG\n\n` +
+                    `${prefix}profile · Xem hồ sơ\n` +
+                    `${prefix}top · Bảng xếp hạng\n` +
+                    `${prefix}givemoney @user [số tiền] · Chuyển xu\n\n` +
 
-                `Nối đúng → +300 xu\n` +
-                `Dead-end → +1.000 xu\n` +
-                `Hết đường nối → tự tạo round mới\n\n` +
+                    `🎁 HOẠT ĐỘNG\n\n` +
 
-                `🔄 ROUND\n\n` +
+                    `${prefix}daily · Nhận thưởng hằng ngày\n` +
+                    `${prefix}quest · Xem nhiệm vụ\n` +
+                    `${prefix}open [rương] · Mở rương\n\n` +
 
-                `Round tự đếm và reset mỗi 10.\n` +
-                `Mini-game không tự dừng.\n\n` +
+                    `🏆 XẾP HẠNG\n\n` +
 
-                `🛑 ADMIN\n\n` +
+                    `${prefix}top money · BXH tiền\n` +
+                    `${prefix}top fish · BXH số cá\n` +
+                    `${prefix}top kg · BXH cân nặng\n\n` +
 
-                `${prefix}noitu stop · Dừng mini-game\n\n` +
+                    `🌍 KHU VỰC\n\n` +
 
-                `🎲 CỜ BẠC\n\n` +
+                    `${prefix}zone · Xem khu vực hiện tại\n\n` +
 
-                `${prefix}taixiu · Tài xỉu\n` +
-                `${prefix}xidach <tiền cược> · Xì dách\n` +
-                `${prefix}tdx n/s <tiền cược> · Tung đồng xu\n\n` +
+                    `${SEPARATOR}\n\n` +
 
-                `💡 MẸO\n` +
-                `Cần tốt → câu nhanh hơn.\n` +
-                `Độ bền thấp → sửa trước khi câu tiếp.\n` +
-                `Cường hóa cao → nên cân nhắc vé bảo hiểm.\n\n` +
+                    `💙 Chúc bạn có một chuyến câu thật thuận lợi!`
 
-                `🛒 Dùng ${prefix}shop để bắt đầu hành trình câu cá.`
-            )
+                )
 
-            .setFooter({
-                text: "Fishing Adventure · Trang 4/4"
-            })
+                .setFooter({
+                    text:
+                        `${FOOTER} · Trang 3/4`
+                })
 
-    ];
+                .setTimestamp(),
 
 
-    let page = 0;
+            // ==================================================
+            // TRANG 4 · MINI GAME
+            // ==================================================
 
+            new EmbedBuilder()
 
-    // ==========================
-    // NÚT CHUYỂN TRANG
-    // ==========================
+                .setColor("#c6a7ff")
 
-    function getRow() {
+                .setTitle(
+                    "🎮 MINI-GAME & THÔNG TIN"
+                )
 
-        return new ActionRowBuilder()
+                .setDescription(
 
-            .addComponents(
+                    `${SEPARATOR}\n\n` +
 
-                new ButtonBuilder()
+                    `🔗 NỐI TỪ\n\n` +
 
-                    .setCustomId(
-                        `help_prev_${message.author.id}`
-                    )
+                    `${prefix}noitu vi · Nối từ tiếng Việt\n` +
+                    `${prefix}noitu en · Word chain tiếng Anh\n\n` +
 
-                    .setLabel("◀")
+                    `💰 PHẦN THƯỞNG\n\n` +
 
-                    .setStyle(
-                        ButtonStyle.Secondary
-                    )
+                    `Nối đúng · +300 xu\n` +
+                    `Dead-end · +1.000 xu\n` +
+                    `Hết đường nối · Tạo round mới\n\n` +
 
-                    .setDisabled(
-                        page === 0
-                    ),
+                    `🎲 CỜ BẠC\n\n` +
 
+                    `${prefix}taixiu · Tài xỉu\n` +
+                    `${prefix}xidach <tiền cược> · Xì dách\n` +
+                    `${prefix}tdx n/s <tiền cược> · Tung đồng xu\n\n` +
 
-                new ButtonBuilder()
+                    `🛑 ADMIN\n\n` +
 
-                    .setCustomId(
-                        `help_next_${message.author.id}`
-                    )
+                    `${prefix}noitu stop · Dừng mini-game\n\n` +
 
-                    .setLabel("▶")
+                    `${SEPARATOR}\n\n` +
 
-                    .setStyle(
-                        ButtonStyle.Primary
-                    )
+                    `✨ Furina chúc bạn may mắn\n` +
+                    `và mang về thật nhiều Fcoin!`
 
-                    .setDisabled(
-                        page === pages.length - 1
-                    )
+                )
 
-            );
+                .setFooter({
+                    text:
+                        `${FOOTER} · Trang 4/4`
+                })
 
-    }
+                .setTimestamp()
 
+        ];
 
-    // ==========================
-    // GỬI MENU
-    // ==========================
 
-    const msg =
-        await message.reply({
+        // ==================================================
+        // PAGE HIỆN TẠI
+        // ==================================================
 
-            embeds: [
-                pages[page]
-            ],
+        let page = 0;
 
-            components: [
-                getRow()
-            ]
 
-        });
+        // ==================================================
+        // TẠO BUTTON
+        // ==================================================
 
+        function getRow() {
 
-    // ==========================
-    // COLLECTOR
-    // ==========================
+            return new ActionRowBuilder()
 
-    const collector =
-        msg.createMessageComponentCollector({
+                .addComponents(
 
-            time: 120000
+                    // ==============================
+                    // TRANG TRƯỚC
+                    // ==============================
 
-        });
+                    new ButtonBuilder()
 
+                        .setCustomId(
+                            `help_prev_${message.author.id}`
+                        )
 
-    collector.on(
+                        .setLabel(
+                            "◀"
+                        )
 
-        "collect",
+                        .setStyle(
+                            ButtonStyle.Secondary
+                        )
 
-        async interaction => {
+                        .setDisabled(
+                            page === 0
+                        ),
 
-            // ==========================
-            // CHỈ NGƯỜI GỌI ĐƯỢC BẤM
-            // ==========================
 
-            if (
-                interaction.user.id !==
-                message.author.id
-            ) {
+                    // ==============================
+                    // TRANG SAU
+                    // ==============================
 
-                return interaction.reply({
+                    new ButtonBuilder()
 
-                    content:
-                        "❌ Đây không phải bảng trợ giúp của bạn.",
+                        .setCustomId(
+                            `help_next_${message.author.id}`
+                        )
 
-                    ephemeral: true
+                        .setLabel(
+                            "▶"
+                        )
 
-                });
+                        .setStyle(
+                            ButtonStyle.Primary
+                        )
 
-            }
+                        .setDisabled(
+                            page === pages.length - 1
+                        )
 
-
-            // ==========================
-            // TRANG TRƯỚC
-            // ==========================
-
-            if (
-                interaction.customId ===
-                `help_prev_${message.author.id}`
-            ) {
-
-                page--;
-
-            }
-
-
-            // ==========================
-            // TRANG SAU
-            // ==========================
-
-            if (
-                interaction.customId ===
-                `help_next_${message.author.id}`
-            ) {
-
-                page++;
-
-            }
-
-
-            // ==========================
-            // GIỚI HẠN PAGE
-            // ==========================
-
-            page =
-                Math.max(
-                    0,
-                    Math.min(
-                        pages.length - 1,
-                        page
-                    )
                 );
 
+        }
 
-            // ==========================
-            // UPDATE
-            // ==========================
 
-            await interaction.update({
+        // ==================================================
+        // GỬI HELP
+        // ==================================================
+
+        const msg =
+            await message.reply({
 
                 embeds: [
                     pages[page]
@@ -358,34 +327,131 @@ async execute(message) {
 
             });
 
-        }
 
-    );
+        // ==================================================
+        // COLLECTOR
+        // ==================================================
+
+        const collector =
+            msg.createMessageComponentCollector({
+
+                time: 120000
+
+            });
 
 
-    // ==========================
-    // HẾT THỜI GIAN
-    // ==========================
+        // ==================================================
+        // BUTTON COLLECT
+        // ==================================================
 
-    collector.on(
+        collector.on(
+            "collect",
+            async interaction => {
 
-        "end",
+                // ==========================================
+                // CHECK USER
+                // ==========================================
 
-        async () => {
+                if (
+                    interaction.user.id !==
+                    message.author.id
+                ) {
 
-            try {
+                    return interaction.reply({
 
-                await msg.edit({
+                        content:
+                            "❌ Đây không phải bảng trợ giúp của bạn.",
 
-                    components: []
+                        ephemeral: true
+
+                    });
+
+                }
+
+
+                // ==========================================
+                // TRANG TRƯỚC
+                // ==========================================
+
+                if (
+                    interaction.customId ===
+                    `help_prev_${message.author.id}`
+                ) {
+
+                    page--;
+
+                }
+
+
+                // ==========================================
+                // TRANG SAU
+                // ==========================================
+
+                if (
+                    interaction.customId ===
+                    `help_next_${message.author.id}`
+                ) {
+
+                    page++;
+
+                }
+
+
+                // ==========================================
+                // GIỚI HẠN
+                // ==========================================
+
+                page =
+                    Math.max(
+                        0,
+                        Math.min(
+                            pages.length - 1,
+                            page
+                        )
+                    );
+
+
+                // ==========================================
+                // UPDATE
+                // ==========================================
+
+                return interaction.update({
+
+                    embeds: [
+                        pages[page]
+                    ],
+
+                    components: [
+                        getRow()
+                    ]
 
                 });
 
-            } catch {}
+            }
+        );
 
-        }
 
-    );
+        // ==================================================
+        // HẾT THỜI GIAN
+        // ==================================================
 
-}
+        collector.on(
+            "end",
+            async () => {
+
+                try {
+
+                    await msg.edit({
+
+                        components: []
+
+                    });
+
+                } catch {}
+
+            }
+        );
+
+    }
+
 };

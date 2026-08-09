@@ -15,6 +15,12 @@ const {
     save
 } = require("../../data");
 
+// ======================================================
+// SEPARATOR
+// ======================================================
+
+const SEPARATOR =
+    `\n\n୨୧ ───────── ୨୧\n\n`;
 
 // ======================================================
 // LẤY DỮ LIỆU CẦN
@@ -36,16 +42,19 @@ function getRodData(user, id) {
 
             level: 0,
 
-            luck: base.luck || 1,
+            luck:
+                base.luck || 1,
 
-            uses: base.uses || 1,
+            uses:
+                base.uses || 1,
 
-            maxUses: base.uses || 1,
+            maxUses:
+                base.uses || 1,
 
-            destroyed: false
+            destroyed:
+                false
 
         };
-
     }
 
     const rod =
@@ -54,15 +63,29 @@ function getRodData(user, id) {
     const base =
         rods[id];
 
-    // Đảm bảo dữ liệu cũ không lỗi
+    if (!base)
+        return null;
+
+    // ==================================================
+    // CHUẨN HÓA LEVEL
+    // ==================================================
+
     rod.level =
         Number(rod.level) || 0;
 
-    rod.luck =
-        Number(rod.luck) || base.luck || 1;
+    // ==================================================
+    // CHUẨN HÓA LUCK
+    // ==================================================
 
-    // Đồng bộ độ bền tối đa với config hiện tại
-    // (tránh cần cũ bị kẹt ở maxUses lỗi thời khi config thay đổi)
+    rod.luck =
+        Number(rod.luck) ||
+        base.luck ||
+        1;
+
+    // ==================================================
+    // ĐỘ BỀN TỐI ĐA
+    // ==================================================
+
     const configMaxUses =
         Math.max(
             1,
@@ -75,6 +98,10 @@ function getRodData(user, id) {
     let currentUses =
         Number(rod.uses);
 
+    // ==================================================
+    // DATA CŨ KHÔNG CÓ USES
+    // ==================================================
+
     if (
         !Number.isFinite(
             currentUses
@@ -84,6 +111,10 @@ function getRodData(user, id) {
         currentUses =
             configMaxUses;
     }
+
+    // ==================================================
+    // MIGRATE MAX USES
+    // ==================================================
 
     if (
         oldMaxUses > 0 &&
@@ -99,6 +130,10 @@ function getRodData(user, id) {
                 );
     }
 
+    // ==================================================
+    // CLAMP USES
+    // ==================================================
+
     rod.uses =
         Math.max(
             0,
@@ -111,6 +146,10 @@ function getRodData(user, id) {
     rod.maxUses =
         configMaxUses;
 
+    // ==================================================
+    // DESTROYED
+    // ==================================================
+
     if (
         typeof rod.destroyed !==
         "boolean"
@@ -118,29 +157,30 @@ function getRodData(user, id) {
 
         rod.destroyed =
             rod.uses <= 0;
-
     }
 
     return rod;
 }
 
-
 // ======================================================
-// SẮP XẾP THEO THỨ TỰ CẤU HÌNH (THẤP → CAO)
+// SẮP XẾP CẦN
 // ======================================================
 
 function sortRodIds(ids) {
 
     const order =
-        Object.keys(rods);
+        Object.keys(
+            rods
+        );
 
-    return [...ids].sort(
+    return [
+        ...ids
+    ].sort(
         (a, b) =>
             order.indexOf(a) -
             order.indexOf(b)
     );
 }
-
 
 // ======================================================
 // FORMAT LUCK
@@ -152,22 +192,26 @@ function formatLuck(luck) {
         Number(luck) || 0;
 
     if (
-        Number.isInteger(luck)
+        Number.isInteger(
+            luck
+        )
     ) {
 
-        return String(luck);
-
+        return String(
+            luck
+        );
     }
 
     return luck
         .toFixed(1)
-        .replace(/\.0$/, "");
-
+        .replace(
+            /\.0$/,
+            ""
+        );
 }
 
-
 // ======================================================
-// TẠO DÒNG CẦN
+// FORMAT CẦN
 // ======================================================
 
 function createRodLine(
@@ -195,28 +239,42 @@ function createRodLine(
             ? "🟢"
             : "🔴";
 
+    const status =
+        rod.destroyed ||
+        rod.uses <= 0
+            ? "💥"
+            : "";
+
     const level =
-        `\`+${rod.level}\``;
+        `+${rod.level}`;
 
     const durability =
-        `\`${rod.uses}/${rod.maxUses}\``;
+        `${rod.uses}/${rod.maxUses}`;
 
     const luck =
         formatLuck(
             rod.luck
         );
 
+    const title =
+        rodTitles?.[
+            rod.level
+        ]
+            ? ` · ${rodTitles[rod.level]}`
+            : "";
+
     return (
-        `${equipped} ${base.emoji} ` +
-        `${base.name} ${level} ` +
-        `Độ bền ${durability} ` +
-        `Luck ${luck}`
+        `${equipped} ${base.emoji || "🎣"} ` +
+        `${base.name} \`${level}\`` +
+        `${status ? ` ${status}` : ""}` +
+        ` · Độ bền \`${durability}\`` +
+        ` · 🍀 Luck ${luck}` +
+        `${title}`
     );
 }
 
-
 // ======================================================
-// TẠO EMBED
+// EMBED COLLECTION
 // ======================================================
 
 function createRodEmbed(
@@ -229,7 +287,8 @@ function createRodEmbed(
             Object.keys(
                 user.can?.danhSach || {}
             ).filter(
-                id => rods[id]
+                id =>
+                    rods[id]
             )
         );
 
@@ -245,15 +304,16 @@ function createRodEmbed(
                 user
             ) +
             "\n";
-
     }
 
     text =
         text.trim();
 
-    if (!text)
+    if (!text) {
+
         text =
             "Bạn chưa có cần câu.";
+    }
 
     const currentId =
         user.can?.dangDung;
@@ -261,14 +321,28 @@ function createRodEmbed(
     const current =
         rods[currentId];
 
+    const currentRod =
+        currentId
+            ? getRodData(
+                user,
+                currentId
+            )
+            : null;
+
     const currentText =
         current
-            ? `${current.emoji} ${current.name}`
+            ? (
+                `${current.emoji || "🎣"} ` +
+                `${current.name} ` +
+                `\`+${currentRod?.level || 0}\``
+            )
             : "Chưa có";
 
     return new EmbedBuilder()
 
-        .setColor("#89ddff")
+        .setColor(
+            "#89ddff"
+        )
 
         .setAuthor({
 
@@ -284,14 +358,18 @@ function createRodEmbed(
         })
 
         .setTitle(
-            "🎣 `ROD COLLECTION`"
+            "🎣 ROD COLLECTION"
         )
 
         .setDescription(
 
-            `*Kho cần câu của bạn.*\n\n` +
+            `Kho cần câu của bạn.` +
 
-            `${text}\n\n` +
+            SEPARATOR +
+
+            `${text}` +
+
+            SEPARATOR +
 
             `🎣 Đang dùng: ${currentText}`
 
@@ -307,6 +385,107 @@ function createRodEmbed(
         .setTimestamp();
 }
 
+// ======================================================
+// EMBED KHÔNG CÓ CẦN
+// ======================================================
+
+function createNoRodEmbed() {
+
+    return new EmbedBuilder()
+
+        .setColor(
+            "#ff6b81"
+        )
+
+        .setTitle(
+            "🎣 NO ROD"
+        )
+
+        .setDescription(
+
+            `Bạn chưa có cần câu.` +
+
+            SEPARATOR +
+
+            `Hãy mua cần câu tại shop để bắt đầu câu cá.`
+
+        )
+
+        .setFooter({
+
+            text:
+                "✦ Fishing Adventure"
+
+        });
+}
+
+// ======================================================
+// EMBED CẦN ĐÃ TRANG BỊ
+// ======================================================
+
+function createEquippedEmbed(
+    message,
+    base,
+    rod
+) {
+
+    const title =
+        rodTitles?.[
+            rod.level
+        ]
+            ? ` · ${rodTitles[rod.level]}`
+            : "";
+
+    return new EmbedBuilder()
+
+        .setColor(
+            "#8affb2"
+        )
+
+        .setAuthor({
+
+            name:
+                `${message.author.username} · Fishing`,
+
+            iconURL:
+                message.author.displayAvatarURL({
+                    extension: "png",
+                    size: 128
+                })
+
+        })
+
+        .setTitle(
+            "🎣 ROD EQUIPPED"
+        )
+
+        .setDescription(
+
+            `${base.emoji || "🎣"} ${base.name} ` +
+            `\`+${rod.level}\`` +
+
+            SEPARATOR +
+
+            `🎯 Độ bền: \`${rod.uses}/${rod.maxUses}\`\n` +
+            `🍀 Luck: ${formatLuck(rod.luck)}` +
+            `${title}` +
+
+            SEPARATOR +
+
+            `🟢 Cần câu đã được trang bị.\n` +
+            `Sẵn sàng cho chuyến câu tiếp theo.`
+
+        )
+
+        .setFooter({
+
+            text:
+                "✦ Fishing Adventure · Rod"
+
+        })
+
+        .setTimestamp();
+}
 
 // ======================================================
 // MODULE
@@ -314,7 +493,8 @@ function createRodEmbed(
 
 module.exports = {
 
-    name: "rod",
+    name:
+        "rod",
 
     aliases: [
         "can",
@@ -323,11 +503,48 @@ module.exports = {
 
     async execute(message) {
 
+        // ==================================================
+        // USER
+        // ==================================================
+
         const user =
             getUser(
                 message.author.id
             );
 
+        if (!user) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ff6b81"
+                        )
+
+                        .setTitle(
+                            "❌ Không tìm thấy người chơi"
+                        )
+
+                        .setDescription(
+
+                            `Không thể tải dữ liệu người chơi.`
+
+                        )
+
+                        .setFooter({
+
+                            text:
+                                "✦ Fishing Adventure"
+
+                        })
+
+                ]
+
+            });
+        }
 
         // ==================================================
         // ĐẢM BẢO DATA
@@ -342,7 +559,6 @@ module.exports = {
         if (!user.rodData)
             user.rodData = {};
 
-
         // ==================================================
         // DANH SÁCH CẦN
         // ==================================================
@@ -352,52 +568,28 @@ module.exports = {
                 Object.keys(
                     user.can.danhSach
                 ).filter(
-                    id => rods[id]
+                    id =>
+                        rods[id]
                 )
             );
 
+        // ==================================================
+        // KHÔNG CÓ CẦN
+        // ==================================================
 
         if (!list.length) {
 
             return message.reply({
 
                 embeds: [
-
-                    new EmbedBuilder()
-
-                        .setColor(
-                            "#ff6b81"
-                        )
-
-                        .setTitle(
-                            "🎣 `NO ROD`"
-                        )
-
-                        .setDescription(
-
-                            `Bạn chưa có cần câu.\n\n` +
-
-                            `Hãy mua cần câu tại shop ` +
-                            `để bắt đầu câu cá.`
-
-                        )
-
-                        .setFooter({
-
-                            text:
-                                "✦ Fishing Adventure"
-
-                        })
-
+                    createNoRodEmbed()
                 ]
 
             });
-
         }
 
-
         // ==================================================
-        // KHỞI TẠO DATA CẦN
+        // KHỞI TẠO DATA
         // ==================================================
 
         for (
@@ -408,11 +600,9 @@ module.exports = {
                 user,
                 id
             );
-
         }
 
         save();
-
 
         // ==================================================
         // BUTTON
@@ -421,14 +611,29 @@ module.exports = {
         const row =
             new ActionRowBuilder();
 
-
-        // MỞ TỐI ĐA 5 CẦN
+        // Discord tối đa 5 button / row
         for (
-            const id of list.slice(0, 5)
+            const id of list.slice(
+                0,
+                5
+            )
         ) {
 
             const base =
                 rods[id];
+
+            const rod =
+                getRodData(
+                    user,
+                    id
+                );
+
+            if (!base || !rod)
+                continue;
+
+            const disabled =
+                rod.destroyed ||
+                rod.uses <= 0;
 
             row.addComponents(
 
@@ -443,17 +648,19 @@ module.exports = {
                     )
 
                     .setEmoji(
-                        base.emoji
+                        base.emoji || "🎣"
                     )
 
                     .setStyle(
                         ButtonStyle.Primary
                     )
 
+                    .setDisabled(
+                        disabled
+                    )
+
             );
-
         }
-
 
         // ==================================================
         // GỬI EMBED
@@ -478,7 +685,6 @@ module.exports = {
 
             });
 
-
         // ==================================================
         // COLLECTOR
         // ==================================================
@@ -491,13 +697,12 @@ module.exports = {
 
             });
 
-
         collector.on(
             "collect",
             async interaction => {
 
                 // ==========================================
-                // KIỂM TRA USER
+                // USER
                 // ==========================================
 
                 if (
@@ -514,23 +719,22 @@ module.exports = {
                             true
 
                     });
-
                 }
 
-
                 // ==========================================
-                // LẤY ID
+                // CUSTOM ID
                 // ==========================================
 
                 const parts =
-                    interaction.customId.split("_");
+                    interaction.customId.split(
+                        "_"
+                    );
 
                 const id =
                     parts[1];
 
-
                 // ==========================================
-                // KIỂM TRA CẦN
+                // CHECK ID
                 // ==========================================
 
                 if (
@@ -547,9 +751,11 @@ module.exports = {
                             true
 
                     });
-
                 }
 
+                // ==========================================
+                // CHECK SỞ HỮU
+                // ==========================================
 
                 if (
                     !user.can.danhSach[id]
@@ -564,12 +770,10 @@ module.exports = {
                             true
 
                     });
-
                 }
 
-
                 // ==========================================
-                // LẤY DATA
+                // DATA
                 // ==========================================
 
                 const rod =
@@ -580,7 +784,6 @@ module.exports = {
 
                 const base =
                     rods[id];
-
 
                 if (!rod) {
 
@@ -593,9 +796,7 @@ module.exports = {
                             true
 
                     });
-
                 }
-
 
                 // ==========================================
                 // CẦN GÃY
@@ -615,9 +816,7 @@ module.exports = {
                             true
 
                     });
-
                 }
-
 
                 // ==========================================
                 // TRANG BỊ
@@ -628,19 +827,6 @@ module.exports = {
 
                 save();
 
-
-                // ==========================================
-                // TITLE
-                // ==========================================
-
-                const title =
-                    rodTitles?.[
-                        rod.level
-                    ]
-                        ? ` · ${rodTitles[rod.level]}`
-                        : "";
-
-
                 // ==========================================
                 // UPDATE
                 // ==========================================
@@ -649,50 +835,11 @@ module.exports = {
 
                     embeds: [
 
-                        new EmbedBuilder()
-
-                            .setColor(
-                                "#8affb2"
-                            )
-
-                            .setAuthor({
-
-                                name:
-                                    `${message.author.username} · Fishing`,
-
-                                iconURL:
-                                    message.author.displayAvatarURL({
-                                        extension: "png",
-                                        size: 128
-                                    })
-
-                            })
-
-                            .setTitle(
-                                "🎣 `ROD EQUIPPED`"
-                            )
-
-                            .setDescription(
-
-                                `${base.emoji} ${base.name} ` +
-                                `\`+${rod.level}\` ` +
-                                `Độ bền \`${rod.uses}/${rod.maxUses}\` ` +
-                                `Luck ${formatLuck(rod.luck)}` +
-                                `${title}\n\n` +
-
-                                `🟢 Cần câu đã được trang bị.\n` +
-                                `Sẵn sàng cho chuyến câu tiếp theo.`
-
-                            )
-
-                            .setFooter({
-
-                                text:
-                                    "✦ Fishing Adventure · Rod"
-
-                            })
-
-                            .setTimestamp()
+                        createEquippedEmbed(
+                            message,
+                            base,
+                            rod
+                        )
 
                     ],
 
@@ -703,9 +850,8 @@ module.exports = {
             }
         );
 
-
         // ==================================================
-        // KẾT THÚC
+        // KẾT THÚC COLLECTOR
         // ==================================================
 
         collector.on(

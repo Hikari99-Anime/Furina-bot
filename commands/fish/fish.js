@@ -20,6 +20,27 @@ const {
 } = require("../../data");
 
 // ======================================================
+// MÀU EMBED
+// ======================================================
+
+const COLORS = {
+    primary: "#9b59ff",
+    info: "#7ddcff",
+    success: "#A0E7E5",
+    warning: "#ffd166",
+    error: "#ff6b81",
+    danger: "#ff4d67"
+};
+
+// ======================================================
+// FOOTER
+// ======================================================
+
+const FOOTER = {
+    text: "✦ Fishing Adventure"
+};
+
+// ======================================================
 // LẤY KHU VỰC HIỆN TẠI
 // ======================================================
 
@@ -50,10 +71,12 @@ function getCurrentZone() {
         return null;
     }
 
-    // 00-05  -> Tropical
-    // 06-11  -> Cold
-    // 12-17  -> Swamp
-    // 18-23  -> Deep
+    /*
+     * 00-05  -> Tropical
+     * 06-11  -> Cold
+     * 12-17  -> Swamp
+     * 18-23  -> Deep
+     */
 
     const index =
         Math.floor(
@@ -382,8 +405,9 @@ function getBaitName(
     const info =
         baits?.[baitID];
 
-    if (!info)
+    if (!info) {
         return "🪱 Mồi";
+    }
 
     return (
         `${info.emoji || "🪱"} ${info.name}`
@@ -434,7 +458,9 @@ function createBaitButtons(
         new ActionRowBuilder();
 
     const baitIds =
-        Object.keys(baits || {});
+        Object.keys(
+            baits || {}
+        );
 
     for (
         const baitID of baitIds
@@ -473,12 +499,47 @@ function createBaitButtons(
                 .setDisabled(
                     count <= 0
                 )
-
         );
-
     }
 
     return row;
+}
+
+// ======================================================
+// EMBED CƠ BẢN
+// ======================================================
+
+function createEmbed({
+    color = COLORS.primary,
+    title,
+    description,
+    image = null
+}) {
+
+    const embed =
+        new EmbedBuilder()
+
+            .setColor(color)
+
+            .setTitle(title)
+
+            .setDescription(description)
+
+            .setFooter(
+                FOOTER
+            );
+
+    if (
+        image &&
+        typeof image === "string"
+    ) {
+
+        embed.setImage(
+            image
+        );
+    }
+
+    return embed;
 }
 
 // ======================================================
@@ -510,9 +571,23 @@ module.exports = {
 
         if (!user) {
 
-            return message.reply(
-                "❌ Không tìm thấy dữ liệu người chơi."
-            );
+            return message.reply({
+
+                embeds: [
+
+                    createEmbed({
+
+                        color:
+                            COLORS.error,
+
+                        title:
+                            "❌ Không tìm thấy người chơi",
+
+                        description:
+                            "Không thể tải dữ liệu người chơi của bạn."
+                    })
+                ]
+            });
         }
 
         // ==================================================
@@ -543,25 +618,20 @@ module.exports = {
 
                     embeds: [
 
-                        new EmbedBuilder()
+                        createEmbed({
 
-                            .setColor(
-                                "#ff6b81"
-                            )
+                            color:
+                                COLORS.error,
 
-                            .setTitle(
-                                "❌ `INVALID AMOUNT`"
-                            )
+                            title:
+                                "❌ Số lần câu không hợp lệ",
 
-                            .setDescription(
-                                `Số lần câu không hợp lệ.\n\n` +
-                                `Ví dụ: \`${prefix}fish 10\``
-                            )
+                            description:
 
-                            .setFooter({
-                                text:
-                                    "✦ Fishing Adventure"
-                            })
+                                `Số lần câu phải là số nguyên dương.\n\n` +
+
+                                `💡 Ví dụ: \`${prefix}fish 10\``
+                        })
                     ]
                 });
             }
@@ -574,24 +644,20 @@ module.exports = {
 
                     embeds: [
 
-                        new EmbedBuilder()
+                        createEmbed({
 
-                            .setColor(
-                                "#ff6b81"
-                            )
+                            color:
+                                COLORS.error,
 
-                            .setTitle(
-                                "❌ `TOO MANY CASTS`"
-                            )
+                            title:
+                                "❌ Vượt quá giới hạn",
 
-                            .setDescription(
-                                `Mỗi lượt chỉ được câu tối đa **${MAX_AMOUNT} lần**.`
-                            )
+                            description:
 
-                            .setFooter({
-                                text:
-                                    "✦ Fishing Adventure"
-                            })
+                                `Mỗi lượt chỉ được câu tối đa **${MAX_AMOUNT} lần**.\n\n` +
+
+                                `💡 Hãy nhập từ **1 đến ${MAX_AMOUNT}**.`
+                        })
                     ]
                 });
             }
@@ -610,24 +676,17 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ff6b81"
-                        )
+                        color:
+                            COLORS.error,
 
-                        .setTitle(
-                            "🌊 `NO FISHING ZONE`"
-                        )
+                        title:
+                            "🌊 Không có khu vực câu cá",
 
-                        .setDescription(
-                            "Hiện chưa có khu vực câu cá."
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                        description:
+                            "Hiện chưa có khu vực câu cá khả dụng."
+                    })
                 ]
             });
         }
@@ -645,25 +704,20 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ff6b81"
-                        )
+                        color:
+                            COLORS.error,
 
-                        .setTitle(
-                            "🎣 `NO ROD EQUIPPED`"
-                        )
+                        title:
+                            "🎣 Chưa trang bị cần câu",
 
-                        .setDescription(
+                        description:
+
                             `Bạn chưa trang bị cần câu.\n\n` +
-                            `Dùng \`${prefix}rod\` để kiểm tra cần.`
-                        )
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                            `💡 Dùng \`${prefix}rod\` để kiểm tra và trang bị cần.`
+                    })
                 ]
             });
         }
@@ -687,24 +741,17 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ff6b81"
-                        )
+                        color:
+                            COLORS.error,
 
-                        .setTitle(
-                            "❌ `ROD DATA ERROR`"
-                        )
+                        title:
+                            "❌ Dữ liệu cần câu lỗi",
 
-                        .setDescription(
-                            "Dữ liệu cần câu không hợp lệ."
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                        description:
+                            "Không tìm thấy dữ liệu cần câu đang trang bị."
+                    })
                 ]
             });
         }
@@ -747,7 +794,7 @@ module.exports = {
                 rod.uses
             );
 
-        // DATA CŨ KHÔNG CÓ uses
+        // Data cũ không có uses
         if (
             !Number.isFinite(
                 currentUses
@@ -758,7 +805,7 @@ module.exports = {
                 configMaxUses;
         }
 
-        // MIGRATE DATA CŨ
+        // Migrate data cũ
         if (
             oldMaxUses > 0 &&
             oldMaxUses !== configMaxUses
@@ -806,17 +853,15 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ff4d67"
-                        )
+                        color:
+                            COLORS.danger,
 
-                        .setTitle(
-                            "💥 `ROD BROKEN`"
-                        )
+                        title:
+                            "💥 Cần câu đã gãy",
 
-                        .setDescription(
+                        description:
 
                             `${formatRod(
                                 baseRod,
@@ -829,18 +874,13 @@ module.exports = {
                             `🔧 Trạng thái: **Đã gãy**\n\n` +
 
                             `💡 Hãy sửa hoặc mua cần mới trước khi tiếp tục.`
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                    })
                 ]
             });
         }
 
         // ==================================================
-        // ĐỦ ĐỘ BỀN
+        // KHÔNG ĐỦ ĐỘ BỀN
         // ==================================================
 
         if (
@@ -851,17 +891,15 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ffd166"
-                        )
+                        color:
+                            COLORS.warning,
 
-                        .setTitle(
-                            "🎯 `NOT ENOUGH DURABILITY`"
-                        )
+                        title:
+                            "🎯 Không đủ độ bền",
 
-                        .setDescription(
+                        description:
 
                             `${formatRod(
                                 baseRod,
@@ -872,12 +910,7 @@ module.exports = {
                             `🎯 Độ bền: **${rod.uses}/${configMaxUses}**\n\n` +
 
                             `💡 Cần ít nhất **${amount}** độ bền.`
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                    })
                 ]
             });
         }
@@ -890,7 +923,9 @@ module.exports = {
             user.moi || {};
 
         const baitIds =
-            Object.keys(baits || {});
+            Object.keys(
+                baits || {}
+            );
 
         const baitCounts = {};
 
@@ -925,24 +960,22 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ff6b81"
-                        )
+                        color:
+                            COLORS.error,
 
-                        .setTitle(
-                            "🪱 `NO BAIT`"
-                        )
+                        title:
+                            "🪱 Không còn mồi",
 
-                        .setDescription(
+                        description:
 
                             `${formatRod(
                                 baseRod,
                                 rod
                             )}\n\n` +
 
-                            `Bạn không còn mồi.\n\n` +
+                            `Bạn không còn loại mồi nào để câu.\n\n` +
 
                             baitIds
                                 .map(
@@ -952,12 +985,7 @@ module.exports = {
                                 .join("\n") +
 
                             `\n\n💡 Hãy mua thêm mồi rồi thử lại.`
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                    })
                 ]
             });
         }
@@ -967,22 +995,24 @@ module.exports = {
         // ==================================================
 
         const zoneFish =
-            fishList.filter(
-                fish => {
+            Array.isArray(fishList)
+                ? fishList.filter(
+                    fish => {
 
-                    if (
-                        !Array.isArray(
-                            zone.fish
-                        )
-                    ) {
-                        return false;
+                        if (
+                            !Array.isArray(
+                                zone.fish
+                            )
+                        ) {
+                            return false;
+                        }
+
+                        return zone.fish.includes(
+                            fish.id
+                        );
                     }
-
-                    return zone.fish.includes(
-                        fish.id
-                    );
-                }
-            );
+                )
+                : [];
 
         // ==================================================
         // KIỂM TRA ID CÁ
@@ -996,17 +1026,15 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ff6b81"
-                        )
+                        color:
+                            COLORS.error,
 
-                        .setTitle(
-                            "❌ `ZONE FISH ERROR`"
-                        )
+                        title:
+                            "❌ Khu vực không có dữ liệu cá",
 
-                        .setDescription(
+                        description:
 
                             `${zone.name}\n\n` +
 
@@ -1017,12 +1045,7 @@ module.exports = {
                             ) || "Không có"}\`\n\n` +
 
                             `Nhưng các ID này không tồn tại trong \`fishList\`.`
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                    })
                 ]
             });
         }
@@ -1035,17 +1058,15 @@ module.exports = {
             message.author.id;
 
         const baitSelectEmbed =
-            new EmbedBuilder()
+            createEmbed({
 
-                .setColor(
-                    "#7ddcff"
-                )
+                color:
+                    COLORS.info,
 
-                .setTitle(
-                    "🪱 `CHỌN MỒI`"
-                )
+                title:
+                    "🪱 Chọn mồi",
 
-                .setDescription(
+                description:
 
                     `${zone.name}\n\n` +
 
@@ -1056,6 +1077,8 @@ module.exports = {
 
                     `🎣 Số lần câu: **${amount}**\n\n` +
 
+                    `🪱 **Mồi hiện có**\n` +
+
                     baitIds
                         .map(
                             id =>
@@ -1064,12 +1087,7 @@ module.exports = {
                         .join("\n") +
 
                     `\n\n👇 **Chọn loại mồi muốn sử dụng:**`
-                )
-
-                .setFooter({
-                    text:
-                        "✦ Fishing Adventure · Bấm nút để chọn mồi"
-                });
+            });
 
         const baitMessage =
             await message.reply({
@@ -1115,7 +1133,7 @@ module.exports = {
                     .pop();
 
             // ==================================================
-            // KIỂM TRA MỒI SAU KHI BẤM
+            // KIỂM TRA MỒI
             // ==================================================
 
             const selectedBaitCount =
@@ -1132,17 +1150,15 @@ module.exports = {
 
                     embeds: [
 
-                        new EmbedBuilder()
+                        createEmbed({
 
-                            .setColor(
-                                "#ff6b81"
-                            )
+                            color:
+                                COLORS.error,
 
-                            .setTitle(
-                                "❌ `NOT ENOUGH BAIT`"
-                            )
+                            title:
+                                "❌ Không đủ mồi",
 
-                            .setDescription(
+                            description:
 
                                 `${getBaitName(
                                     baitID
@@ -1151,13 +1167,8 @@ module.exports = {
                                 `🎣 Cần: **${amount}**\n` +
                                 `🪱 Hiện có: **${selectedBaitCount}**\n\n` +
 
-                                `💡 Bạn không đủ loại mồi này để câu ${amount} lần.`
-                            )
-
-                            .setFooter({
-                                text:
-                                    "✦ Fishing Adventure"
-                            })
+                                `💡 Bạn không đủ loại mồi này để câu **${amount} lần**.`
+                        })
                     ],
 
                     components: []
@@ -1167,28 +1178,27 @@ module.exports = {
             }
 
             // ==================================================
-            // UPDATE THÀNH ĐANG CÂU
+            // UPDATE ĐANG CÂU
             // ==================================================
 
             await interaction.update({
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#7ddcff"
-                        )
+                        color:
+                            COLORS.info,
 
-                        .setTitle(
-                            "🎣 `FISHING`"
-                        )
+                        title:
+                            "🎣 Đang câu cá",
 
-                        .setDescription(
+                        description:
 
                             `${zone.name}\n` +
                             `${zone.description || ""}\n\n` +
 
+                            `🎣 **Cần câu**\n` +
                             `${formatRod(
                                 baseRod,
                                 rod
@@ -1200,17 +1210,11 @@ module.exports = {
                             )}**\n` +
                             `🪱 Số lượng: **${selectedBaitCount}**\n\n` +
 
-                            `✦ *Đang chuẩn bị câu...*`
-                        )
+                            `✦ *Đang chuẩn bị câu...*`,
 
-                        .setImage(
-                            zone.image || null
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                        image:
+                            zone.image
+                    })
                 ],
 
                 components: []
@@ -1219,32 +1223,27 @@ module.exports = {
         } catch (error) {
 
             // ==================================================
-            // HẾT THỜI GIAN CHỌN MỒI
+            // HẾT THỜI GIAN
             // ==================================================
 
             return baitMessage.edit({
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ffd166"
-                        )
+                        color:
+                            COLORS.warning,
 
-                        .setTitle(
-                            "⏰ `BAIT SELECTION TIMEOUT`"
-                        )
+                        title:
+                            "⏰ Hết thời gian chọn mồi",
 
-                        .setDescription(
+                        description:
+
                             `Bạn đã không chọn mồi trong **30 giây**.\n\n` +
-                            `Hãy dùng lại \`${prefix}fish ${amount}\` để câu cá.`
-                        )
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                            `💡 Hãy dùng lại \`${prefix}fish ${amount}\` để câu cá.`
+                    })
                 ],
 
                 components: []
@@ -1290,21 +1289,20 @@ module.exports = {
 
             embeds: [
 
-                new EmbedBuilder()
+                createEmbed({
 
-                    .setColor(
-                        "#7ddcff"
-                    )
+                    color:
+                        COLORS.info,
 
-                    .setTitle(
-                        "🎣 `FISHING`"
-                    )
+                    title:
+                        "🎣 Đang câu cá",
 
-                    .setDescription(
+                    description:
 
                         `${zone.name}\n` +
                         `${zone.description || ""}\n\n` +
 
+                        `🎣 **Cần câu**\n` +
                         `${formatRod(
                             baseRod,
                             rod
@@ -1316,17 +1314,11 @@ module.exports = {
                             baitID
                         )}**\n\n` +
 
-                        `✦ *Đang chờ cá cắn câu...*`
-                    )
+                        `✦ *Đang chờ cá cắn câu...*`,
 
-                    .setImage(
-                        zone.image || null
-                    )
-
-                    .setFooter({
-                        text:
-                            "✦ Fishing Adventure"
-                    })
+                    image:
+                        zone.image
+                })
             ],
 
             components: []
@@ -1362,26 +1354,23 @@ module.exports = {
 
                 embeds: [
 
-                    new EmbedBuilder()
+                    createEmbed({
 
-                        .setColor(
-                            "#ff6b81"
-                        )
+                        color:
+                            COLORS.error,
 
-                        .setTitle(
-                            "❌ `BAIT ERROR`"
-                        )
+                        title:
+                            "❌ Không đủ mồi",
 
-                        .setDescription(
+                        description:
+
                             `Không đủ ${getBaitName(
                                 baitID
-                            )} để hoàn thành lượt câu.`
-                        )
+                            )} để hoàn thành lượt câu.\n\n` +
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                            `🎣 Cần: **${amount}**\n` +
+                            `🪱 Hiện có: **${finalBaitCount}**`
+                    })
                 ],
 
                 components: []
@@ -1425,7 +1414,7 @@ module.exports = {
         ) {
 
             // ==================================================
-            // DÙNG ĐÚNG MỒI ĐÃ CHỌN
+            // KIỂM TRA MỒI
             // ==================================================
 
             if (
@@ -1433,6 +1422,7 @@ module.exports = {
                     user.moi[baitID] || 0
                 ) <= 0
             ) {
+
                 break;
             }
 
@@ -1535,7 +1525,6 @@ module.exports = {
 
                     weight:
                         0
-
                 };
             }
 
@@ -1617,9 +1606,7 @@ module.exports = {
                 )
                 .map(
                     id =>
-                        `${getBaitEmoji(
-                            id
-                        )} x${baitUsed[id]}`
+                        `${getBaitEmoji(id)} x${baitUsed[id]}`
                 )
                 .join(" · ") ||
             "-";
@@ -1644,19 +1631,17 @@ module.exports = {
 
             embeds: [
 
-                new EmbedBuilder()
+                createEmbed({
 
-                    .setColor(
+                    color:
                         rod.destroyed
-                            ? "#ff6b81"
-                            : "#A0E7E5"
-                    )
+                            ? COLORS.danger
+                            : COLORS.success,
 
-                    .setTitle(
-                        "🎣 `FISHING COMPLETE`"
-                    )
+                    title:
+                        "🎣 Câu cá thành công",
 
-                    .setDescription(
+                    description:
 
                         `${zone.name}\n\n` +
 
@@ -1667,9 +1652,9 @@ module.exports = {
 
                         `⚖️ Tổng cân nặng: **${totalWeight.toFixed(2)} KG**\n` +
 
-                        // CHỈ HIỆN 1 DÒNG MỒI
                         `🪱 Mồi đã dùng: ${baitText}\n\n` +
 
+                        `🎣 **Cần câu**\n` +
                         `${formatRod(
                             baseRod,
                             rod
@@ -1683,20 +1668,11 @@ module.exports = {
                                 : ""
                         ) +
 
-                        `✦ *Chúc bạn câu được cá hiếm.*`
-                    )
+                        `✦ *Chúc bạn câu được cá hiếm.*`,
 
-                    .setImage(
-                        zone.image || null
-                    )
-
-                    .setFooter({
-                        text:
-                            "✦ Fishing Adventure · Ocean Diary"
-                    })
-
-                    .setTimestamp()
-
+                    image:
+                        zone.image
+                })
             ],
 
             components: []

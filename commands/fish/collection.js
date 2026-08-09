@@ -15,19 +15,19 @@ const {
 } = require("../../data");
 
 // ======================================================
-// MÀU KHU VỰC
+// 🎨 MÀU KHU VỰC
 // ======================================================
 
 const zoneColors = {
-    tropical: "#2ecc71",
-    cold: "#3498db",
-    swamp: "#1abc9c",
-    deep: "#9b59b6",
-    volcano: "#e74c3c"
+    tropical: "#2ECC71",
+    cold: "#3498DB",
+    swamp: "#1ABC9C",
+    deep: "#9B59B6",
+    volcano: "#E74C3C"
 };
 
 // ======================================================
-// EMOJI KHU VỰC
+// 🌊 EMOJI KHU VỰC
 // ======================================================
 
 const zoneEmojis = {
@@ -39,11 +39,19 @@ const zoneEmojis = {
 };
 
 // ======================================================
-// FORMAT PHẦN TRĂM
+// 🎨 MÀU CHÍNH
+// ======================================================
+
+const MAIN_COLOR = "#9B59FF";
+
+// ======================================================
+// 📊 FORMAT PHẦN TRĂM
 // ======================================================
 
 function formatPercent(value) {
-    const number = Number(value) || 0;
+
+    const number =
+        Number(value) || 0;
 
     return Math.max(
         0,
@@ -55,7 +63,7 @@ function formatPercent(value) {
 }
 
 // ======================================================
-// PROGRESS BAR
+// 📊 PROGRESS BAR
 // ======================================================
 
 function createProgressBar(
@@ -68,7 +76,9 @@ function createProgressBar(
 
     const filled =
         Math.round(
-            safePercent / 100 * size
+            safePercent /
+            100 *
+            size
         );
 
     return (
@@ -83,7 +93,7 @@ function createProgressBar(
 }
 
 // ======================================================
-// IMAGE
+// 🖼️ IMAGE
 // ======================================================
 
 function getImage(image) {
@@ -105,7 +115,7 @@ function getImage(image) {
         return null;
     }
 
-    // Markdown image:
+    // Markdown:
     // [Tên](https://...)
     if (
         image.startsWith("[") &&
@@ -117,7 +127,10 @@ function getImage(image) {
                 /\((https?:\/\/[^)]+)\)/
             );
 
-        return match?.[1] || null;
+        return (
+            match?.[1] ||
+            null
+        );
     }
 
     // URL bình thường
@@ -134,7 +147,7 @@ function getImage(image) {
 }
 
 // ======================================================
-// LẤY TÊN KHU VỰC
+// 🗺️ TÊN KHU VỰC
 // ======================================================
 
 function getZoneName(
@@ -147,14 +160,17 @@ function getZoneName(
     ) {
 
         return zone.name
+
             .replace(
                 /^(🌴|❄️|🌿|🌌|🌋)\s*/u,
                 ""
             )
+
             .replace(
                 /^Vùng\s*/u,
                 ""
             )
+
             .trim();
     }
 
@@ -164,6 +180,116 @@ function getZoneName(
             .toUpperCase() +
         zoneId.slice(1)
     );
+}
+
+// ======================================================
+// 🌊 EMOJI KHU VỰC
+// ======================================================
+
+function getZoneEmoji(
+    zoneId
+) {
+
+    return (
+        zoneEmojis[
+            zoneId
+        ] ||
+        "🐟"
+    );
+}
+
+// ======================================================
+// 🎨 MÀU KHU VỰC
+// ======================================================
+
+function getZoneColor(
+    zoneId
+) {
+
+    return (
+        zoneColors[
+            zoneId
+        ] ||
+        MAIN_COLOR
+    );
+}
+
+// ======================================================
+// 🏆 DANH HIỆU TỔNG
+// ======================================================
+
+function getCollectionStatus(
+    percent
+) {
+
+    if (
+        percent >= 100
+    ) {
+
+        return "👑 Huyền thoại";
+    }
+
+    if (
+        percent >= 75
+    ) {
+
+        return "🏆 Bậc thầy sưu tầm";
+    }
+
+    if (
+        percent >= 50
+    ) {
+
+        return "🌊 Nhà thám hiểm";
+    }
+
+    if (
+        percent >= 25
+    ) {
+
+        return "🎣 Ngư dân tập sự";
+    }
+
+    return "🌱 Người mới";
+}
+
+// ======================================================
+// 🗺️ STATUS KHU VỰC
+// ======================================================
+
+function getZoneStatus(
+    percent
+) {
+
+    if (
+        percent >= 100
+    ) {
+
+        return "👑 Đã hoàn thành";
+    }
+
+    if (
+        percent >= 75
+    ) {
+
+        return "🏆 Gần hoàn thành";
+    }
+
+    if (
+        percent >= 50
+    ) {
+
+        return "🌊 Khá thành thạo";
+    }
+
+    if (
+        percent >= 25
+    ) {
+
+        return "🎣 Đang khám phá";
+    }
+
+    return "🔒 Chưa khám phá";
 }
 
 // ======================================================
@@ -183,7 +309,7 @@ module.exports = {
     async execute(message) {
 
         // ==================================================
-        // USER
+        // 👤 USER
         // ==================================================
 
         const user =
@@ -193,13 +319,36 @@ module.exports = {
 
         if (!user) {
 
-            return message.reply(
-                "❌ Không tìm thấy dữ liệu người chơi."
-            );
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#FF6B81"
+                        )
+
+                        .setTitle(
+                            "❌ KHÔNG TÌM THẤY DỮ LIỆU"
+                        )
+
+                        .setDescription(
+                            "Không thể tìm thấy dữ liệu người chơi của bạn."
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+
+                ]
+
+            });
         }
 
         // ==================================================
-        // KIỂM TRA DATA
+        // 🐟 FISH LIST AN TOÀN
         // ==================================================
 
         const safeFishList =
@@ -209,14 +358,59 @@ module.exports = {
                 ? fishList
                 : [];
 
+        // ==================================================
+        // 🗺️ ZONE AN TOÀN
+        // ==================================================
+
         const safeZones =
             fishingZones &&
             typeof fishingZones === "object"
                 ? fishingZones
                 : {};
 
+        const zoneIds =
+            Object.keys(
+                safeZones
+            );
+
         // ==================================================
-        // MAP CÁ
+        // ❌ KHÔNG CÓ KHU VỰC
+        // ==================================================
+
+        if (
+            zoneIds.length === 0
+        ) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#FF6B81"
+                        )
+
+                        .setTitle(
+                            "📖 BỘ SƯU TẬP CÁ"
+                        )
+
+                        .setDescription(
+                            "❌ Hiện chưa có khu vực câu cá."
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+
+                ]
+
+            });
+        }
+
+        // ==================================================
+        // 🐟 MAP CÁ
         // ==================================================
 
         const fishMap =
@@ -231,6 +425,7 @@ module.exports = {
                 !fish ||
                 !fish.id
             ) {
+
                 continue;
             }
 
@@ -241,54 +436,12 @@ module.exports = {
         }
 
         // ==================================================
-        // DANH SÁCH KHU VỰC
-        // ==================================================
-
-        const zoneIds =
-            Object.keys(
-                safeZones
-            );
-
-        if (
-            zoneIds.length === 0
-        ) {
-
-            return message.reply({
-
-                embeds: [
-
-                    new EmbedBuilder()
-
-                        .setColor(
-                            "#ff6b81"
-                        )
-
-                        .setTitle(
-                            "📖 `BỘ SƯU TẬP`"
-                        )
-
-                        .setDescription(
-                            "❌ Hiện chưa có khu vực câu cá."
-                        )
-
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
-                ]
-
-            });
-        }
-
-        // ==================================================
-        // TÍNH TIẾN ĐỘ TỔNG
+        // 📊 TÍNH TỔNG BỘ SƯU TẬP
         // ==================================================
 
         let total = 0;
         let caught = 0;
 
-        // Dùng Set để tránh tính trùng
-        // nếu một con cá xuất hiện ở nhiều khu.
         const countedFish =
             new Set();
 
@@ -298,7 +451,9 @@ module.exports = {
         ) {
 
             const zone =
-                safeZones[zoneId];
+                safeZones[
+                    zoneId
+                ];
 
             if (
                 !zone ||
@@ -306,6 +461,7 @@ module.exports = {
                     zone.fish
                 )
             ) {
+
                 continue;
             }
 
@@ -314,19 +470,29 @@ module.exports = {
                 of zone.fish
             ) {
 
+                // ------------------------------------------
+                // TRÁNH TÍNH TRÙNG
+                // ------------------------------------------
+
                 if (
                     countedFish.has(
                         fishId
                     )
                 ) {
+
                     continue;
                 }
+
+                // ------------------------------------------
+                // CÁ KHÔNG TỒN TẠI
+                // ------------------------------------------
 
                 if (
                     !fishMap.has(
                         fishId
                     )
                 ) {
+
                     continue;
                 }
 
@@ -335,6 +501,10 @@ module.exports = {
                 );
 
                 total++;
+
+                // ------------------------------------------
+                // KIỂM TRA ĐÃ BẮT
+                // ------------------------------------------
 
                 const owned =
                     user.fish?.[
@@ -354,7 +524,7 @@ module.exports = {
         }
 
         // ==================================================
-        // PHẦN TRĂM
+        // 📈 PHẦN TRĂM TỔNG
         // ==================================================
 
         const percent =
@@ -367,7 +537,7 @@ module.exports = {
                 : 0;
 
         // ==================================================
-        // PROGRESS
+        // 📊 PROGRESS
         // ==================================================
 
         const progress =
@@ -377,46 +547,16 @@ module.exports = {
             );
 
         // ==================================================
-        // DANH HIỆU
+        // 🏆 DANH HIỆU
         // ==================================================
 
-        let status =
-            "🌱 Người mới";
-
-        if (
-            percent >= 25
-        ) {
-
-            status =
-                "🎣 Ngư dân tập sự";
-        }
-
-        if (
-            percent >= 50
-        ) {
-
-            status =
-                "🌊 Nhà thám hiểm";
-        }
-
-        if (
-            percent >= 75
-        ) {
-
-            status =
-                "🏆 Bậc thầy sưu tầm";
-        }
-
-        if (
-            percent >= 100
-        ) {
-
-            status =
-                "👑 Huyền thoại";
-        }
+        const status =
+            getCollectionStatus(
+                percent
+            );
 
         // ==================================================
-        // EMBED CHÍNH
+        // 🏠 EMBED TRANG TỔNG QUAN
         // ==================================================
 
         function mainEmbed() {
@@ -424,7 +564,7 @@ module.exports = {
             return new EmbedBuilder()
 
                 .setColor(
-                    "#9b59ff"
+                    MAIN_COLOR
                 )
 
                 .setTitle(
@@ -433,29 +573,40 @@ module.exports = {
 
                 .setDescription(
 
-                    `🐟 **Tiến độ bộ sưu tập**\n` +
+                    `*Hành trình khám phá đại dương của bạn...* 🌊\n\n` +
 
-                    `\`${progress}\` **${percent}%**\n` +
+                    `୨୧ ───────── ୨୧\n\n` +
 
-                    `**${caught}/${total}** loài đã khám phá\n\n` +
+                    `🐟 **TIẾN ĐỘ BỘ SƯU TẬP**\n\n` +
+
+                    `\`${progress}\` **${percent}%**\n\n` +
+
+                    `📚 **${caught}/${total}** loài đã khám phá\n\n` +
 
                     `🏆 **Danh hiệu:** ${status}\n` +
 
                     `🗺️ **Khu vực:** ${zoneIds.length}\n\n` +
 
-                    `💡 Chọn khu vực bên dưới để xem chi tiết.\n\n` +
+                    `୨୧ ───────── ୨୧\n\n` +
 
-                    `⬛ Chưa bắt  •  🐟 Đã bắt`
+                    `💡 **Chọn một khu vực bên dưới**\n` +
+
+                    `để xem chi tiết những sinh vật bạn đã khám phá.\n\n` +
+
+                    `🐟 Đã bắt  •  ⬛ Chưa bắt`
+
                 )
 
                 .setFooter({
+
                     text:
-                        "✦ Fishing Adventure"
+                        "✦ Fishing Adventure · Bộ sưu tập"
+
                 });
         }
 
         // ==================================================
-        // EMBED KHU VỰC
+        // 🗺️ EMBED KHU VỰC
         // ==================================================
 
         function zoneEmbed(
@@ -472,7 +623,7 @@ module.exports = {
             }
 
             // ----------------------------------------------
-            // DANH SÁCH CÁ
+            // 🐟 DANH SÁCH CÁ
             // ----------------------------------------------
 
             const zoneFishIds =
@@ -489,7 +640,11 @@ module.exports = {
             let totalFish = 0;
             let caughtFish = 0;
 
-            let fishText = "";
+            const fishLines = [];
+
+            // ----------------------------------------------
+            // LOOP CÁ
+            // ----------------------------------------------
 
             for (
                 const fishId
@@ -524,18 +679,24 @@ module.exports = {
 
                     caughtFish++;
 
-                    fishText +=
-                        `${fish.emoji || "🐟"} `;
+                    fishLines.push(
+
+                        `${fish.emoji || "🐟"} **${fish.name || fishId}**`
+
+                    );
 
                 } else {
 
-                    fishText +=
-                        "⬛ ";
+                    fishLines.push(
+
+                        `⬛ **???**`
+
+                    );
                 }
             }
 
             // ----------------------------------------------
-            // PHẦN TRĂM
+            // %
             // ----------------------------------------------
 
             const percent =
@@ -554,47 +715,32 @@ module.exports = {
             const progress =
                 createProgressBar(
                     percent,
-                    12
+                    15
                 );
 
             // ----------------------------------------------
-            // TRẠNG THÁI
+            // STATUS
             // ----------------------------------------------
 
-            let status =
-                "🔒 Chưa khám phá";
+            const status =
+                getZoneStatus(
+                    percent
+                );
 
-            if (
-                percent >= 25
-            ) {
+            // ----------------------------------------------
+            // NAME
+            // ----------------------------------------------
 
-                status =
-                    "🎣 Đang khám phá";
-            }
+            const zoneName =
+                getZoneName(
+                    zone,
+                    zoneId
+                );
 
-            if (
-                percent >= 50
-            ) {
-
-                status =
-                    "🌊 Khá thành thạo";
-            }
-
-            if (
-                percent >= 75
-            ) {
-
-                status =
-                    "🏆 Gần hoàn thành";
-            }
-
-            if (
-                percent >= 100
-            ) {
-
-                status =
-                    "👑 Đã hoàn thành";
-            }
+            const zoneEmoji =
+                getZoneEmoji(
+                    zoneId
+                );
 
             // ----------------------------------------------
             // DESCRIPTION
@@ -604,55 +750,83 @@ module.exports = {
                 zone.description ||
                 "Chưa có mô tả khu vực.";
 
-            return new EmbedBuilder()
+            // ----------------------------------------------
+            // EMBED
+            // ----------------------------------------------
 
-                .setColor(
-                    zoneColors[
-                        zoneId
-                    ] ||
-                    "#9b59ff"
-                )
+            const embed =
+                new EmbedBuilder()
 
-                .setTitle(
-                    `${zoneEmojis[zoneId] || "🐟"} ${getZoneName(
-                        zone,
-                        zoneId
-                    )}`
-                )
-
-                .setDescription(
-
-                    `📖 ${description}\n\n` +
-
-                    `📊 **Tiến độ**\n` +
-
-                    `\`${progress}\` **${percent}%**\n` +
-
-                    `**${caughtFish}/${totalFish}** loài\n` +
-
-                    `${status}\n\n` +
-
-                    `🐟 **Bộ sưu tập**\n` +
-
-                    `${fishText || "⬛"}\n\n` +
-
-                    `⬛ Chưa bắt  •  🐟 Đã bắt`
-                )
-
-                .setImage(
-                    getImage(
-                        zone.image
+                    .setColor(
+                        getZoneColor(
+                            zoneId
+                        )
                     )
-                )
 
-                .setFooter({
-                    text:
-                        "✦ Fishing Adventure"
-                });
+                    .setTitle(
+
+                        `${zoneEmoji} ${zoneName}`
+
+                    )
+
+                    .setDescription(
+
+                        `*${description}*\n\n` +
+
+                        `୨୧ ───────── ୨୧\n\n` +
+
+                        `📊 **TIẾN ĐỘ KHÁM PHÁ**\n\n` +
+
+                        `\`${progress}\` **${percent}%**\n\n` +
+
+                        `🐟 **${caughtFish}/${totalFish}** loài đã bắt\n` +
+
+                        `${status}\n\n` +
+
+                        `୨୧ ───────── ୨୧\n\n` +
+
+                        `🐟 **BỘ SƯU TẬP**\n\n` +
+
+                        (
+                            fishLines.length
+                                ? fishLines.join("\n")
+                                : "⬛ Chưa có dữ liệu cá."
+                        ) +
+
+                        `\n\n୨୧ ───────── ୨୧\n\n` +
+
+                        `🐟 Đã bắt  •  ⬛ Chưa bắt`
+
+                    )
+
+                    .setFooter({
+
+                        text:
+                            "✦ Fishing Adventure · Bộ sưu tập"
+
+                    });
+
+            // ----------------------------------------------
+            // IMAGE
+            // ----------------------------------------------
+
+            const image =
+                getImage(
+                    zone.image
+                );
+
+            if (image) {
+
+                embed.setImage(
+                    image
+                );
+            }
+
+            return embed;
         }
 
         // ==================================================
-        // NÚT KHU VỰC
+        // 🔘 NÚT KHU VỰC
         // ==================================================
 
         function buttons(
@@ -662,16 +836,18 @@ module.exports = {
             const rows = [];
 
             /*
-             * Discord giới hạn:
-             * - 5 button / row
+             * Discord:
              *
-             * Tách khu vực thành nhiều row
-             * để không lỗi nếu có > 5 khu.
+             * 5 button / row
+             * tối đa 5 ActionRow
+             *
+             * => tối đa 25 khu vực
              */
 
             for (
                 let i = 0;
-                i < zoneIds.length;
+                i < zoneIds.length &&
+                rows.length < 5;
                 i += 5
             ) {
 
@@ -708,7 +884,9 @@ module.exports = {
                         new ButtonBuilder()
 
                             .setCustomId(
+
                                 `collection_${message.author.id}_${zoneId}`
+
                             )
 
                             .setLabel(
@@ -716,59 +894,53 @@ module.exports = {
                             )
 
                             .setEmoji(
-                                zoneEmojis[
+                                getZoneEmoji(
                                     zoneId
-                                ] ||
-                                "🐟"
+                                )
                             )
 
                             .setStyle(
 
                                 zoneId === selected
+
                                     ? ButtonStyle.Success
+
                                     : ButtonStyle.Secondary
 
                             )
+
                     );
                 }
 
                 rows.push(
                     row
                 );
-
-                /*
-                 * Discord chỉ cho tối đa 5 ActionRow.
-                 * Nếu có quá 25 khu thì dừng để tránh lỗi.
-                 */
-
-                if (
-                    rows.length >= 5
-                ) {
-                    break;
-                }
             }
 
             return rows;
         }
 
         // ==================================================
-        // GỬI MESSAGE
+        // 📩 GỬI TRANG CHÍNH
         // ==================================================
 
         const reply =
             await message.reply({
 
                 embeds: [
+
                     mainEmbed()
+
                 ],
 
                 components:
+
                     buttons()
 
             });
 
         // ==================================================
-        // COLLECTOR
+        // 🎛️ COLLECTOR
         // ==================================================
 
         const collector =
@@ -780,125 +952,200 @@ module.exports = {
             });
 
         // ==================================================
-        // CLICK BUTTON
+        // 🖱️ CLICK
         // ==================================================
 
         collector.on(
+
             "collect",
+
             async interaction => {
 
-                // ------------------------------------------
-                // CHỈ CHỦ MESSAGE
-                // ------------------------------------------
-
-                if (
-                    interaction.user.id !==
-                    message.author.id
-                ) {
-
-                    return interaction.reply({
-
-                        content:
-                            "❌ Đây không phải bộ sưu tập của bạn!",
-
-                        ephemeral:
-                            true
-
-                    });
-                }
-
-                // ------------------------------------------
-                // PREFIX
-                // ------------------------------------------
-
-                const prefix =
-                    `collection_${message.author.id}_`;
-
-                // ------------------------------------------
-                // LẤY ZONE ID
-                // ------------------------------------------
-
-                const zoneId =
-                    interaction.customId.replace(
-                        prefix,
-                        ""
-                    );
-
-                // ------------------------------------------
-                // KIỂM TRA
-                // ------------------------------------------
-
-                if (
-                    !safeZones[
-                        zoneId
-                    ]
-                ) {
-
-                    return interaction.reply({
-
-                        content:
-                            "❌ Không tìm thấy khu vực!",
-
-                        ephemeral:
-                            true
-
-                    });
-                }
-
-                // ------------------------------------------
-                // TẠO EMBED
-                // ------------------------------------------
-
-                const embed =
-                    zoneEmbed(
-                        zoneId
-                    );
-
-                if (!embed) {
-
-                    return interaction.reply({
-
-                        content:
-                            "❌ Không thể hiển thị khu vực này!",
-
-                        ephemeral:
-                            true
-
-                    });
-                }
-
-                // ------------------------------------------
-                // UPDATE
-                // ------------------------------------------
-
                 try {
+
+                    // ------------------------------------------
+                    // 🔒 CHỈ CHỦ LỆNH
+                    // ------------------------------------------
+
+                    if (
+                        interaction.user.id !==
+                        message.author.id
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Đây không phải bộ sưu tập của bạn!",
+
+                            ephemeral:
+                                true
+
+                        });
+                    }
+
+                    // ------------------------------------------
+                    // 🔙 NÚT TRANG CHỦ
+                    // ------------------------------------------
+
+                    if (
+                        interaction.customId ===
+                        `collection_home_${message.author.id}`
+                    ) {
+
+                        return interaction.update({
+
+                            embeds: [
+
+                                mainEmbed()
+
+                            ],
+
+                            components:
+
+                                buttons()
+
+                        });
+                    }
+
+                    // ------------------------------------------
+                    // PREFIX
+                    // ------------------------------------------
+
+                    const prefix =
+                        `collection_${message.author.id}_`;
+
+                    // ------------------------------------------
+                    // KHÔNG PHẢI BUTTON COLLECTION
+                    // ------------------------------------------
+
+                    if (
+                        !interaction.customId.startsWith(
+                            prefix
+                        )
+                    ) {
+
+                        return;
+                    }
+
+                    // ------------------------------------------
+                    // ZONE ID
+                    // ------------------------------------------
+
+                    const zoneId =
+                        interaction.customId.replace(
+                            prefix,
+                            ""
+                        );
+
+                    // ------------------------------------------
+                    // CHECK ZONE
+                    // ------------------------------------------
+
+                    if (
+                        !safeZones[
+                            zoneId
+                        ]
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Không tìm thấy khu vực này!",
+
+                            ephemeral:
+                                true
+
+                        });
+                    }
+
+                    // ------------------------------------------
+                    // CREATE EMBED
+                    // ------------------------------------------
+
+                    const embed =
+                        zoneEmbed(
+                            zoneId
+                        );
+
+                    if (!embed) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Không thể hiển thị khu vực này!",
+
+                            ephemeral:
+                                true
+
+                        });
+                    }
+
+                    // ------------------------------------------
+                    // UPDATE
+                    // ------------------------------------------
 
                     await interaction.update({
 
                         embeds: [
+
                             embed
+
                         ],
 
                         components:
+
                             buttons(
                                 zoneId
                             )
 
                     });
 
-                } catch {
-
-                    // Interaction có thể hết hạn
                 }
+
+                catch (err) {
+
+                    console.error(
+                        "❌ COLLECTION BUTTON ERROR:",
+                        err
+                    );
+
+                    try {
+
+                        if (
+                            !interaction.replied &&
+                            !interaction.deferred
+                        ) {
+
+                            await interaction.reply({
+
+                                content:
+                                    "❌ Có lỗi khi hiển thị bộ sưu tập.",
+
+                                ephemeral:
+                                    true
+
+                            });
+
+                        }
+
+                    }
+
+                    catch {}
+
+                }
+
             }
+
         );
 
         // ==================================================
-        // HẾT THỜI GIAN
+        // ⏰ HẾT THỜI GIAN
         // ==================================================
 
         collector.on(
+
             "end",
+
             async () => {
 
                 try {
@@ -909,8 +1156,12 @@ module.exports = {
 
                     });
 
-                } catch {}
+                }
+
+                catch {}
+
             }
+
         );
     }
 };

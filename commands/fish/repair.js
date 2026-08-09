@@ -18,6 +18,29 @@ const {
 
 
 // ======================================================
+// MÀU EMBED
+// ======================================================
+
+const COLORS = {
+    primary: "#9b59ff",
+    info: "#7ddcff",
+    success: "#A0E7E5",
+    warning: "#ffd166",
+    error: "#ff6b81",
+    danger: "#ff4d67"
+};
+
+
+// ======================================================
+// FOOTER
+// ======================================================
+
+const FOOTER = {
+    text: "✦ Fishing Adventure"
+};
+
+
+// ======================================================
 // FORMAT TIME
 // ======================================================
 
@@ -42,7 +65,7 @@ function formatTime(seconds) {
 
 
 // ======================================================
-// THỜI GIAN SỬA TỐI ĐA THEO CẤP CẦN
+// THỜI GIAN SỬA TỐI ĐA THEO CẤP
 //
 // ⭐      = 1 phút
 // ⭐⭐     = 2 phút
@@ -227,17 +250,9 @@ function createFinishedEmbed(
 
     return new EmbedBuilder()
 
-        .setColor("#8affb2")
-
-        .setAuthor({
-            name:
-                `${discordUser.username} · Workshop`,
-            iconURL:
-                discordUser.displayAvatarURL({
-                    extension: "png",
-                    size: 128
-                })
-        })
+        .setColor(
+            COLORS.success
+        )
 
         .setTitle(
             "🔧 `REPAIR COMPLETE`"
@@ -245,22 +260,23 @@ function createFinishedEmbed(
 
         .setDescription(
 
-            `*Cần câu đã được sửa xong.*\n` +
-            `*Độ bền đã được phục hồi hoàn toàn.*\n\n` +
+            `${base.emoji} ${base.name}\n` +
+            `${"⭐".repeat(base.star || 1)}\n\n` +
 
-            `${base.emoji} ${base.name}\n\n` +
+            `୨୧ ───────── ୨୧\n\n` +
 
-            `> 🎯 Độ bền: ${maxUses}/${maxUses}\n` +
-            `> 🔧 Trạng thái: Sẵn sàng\n\n` +
+            `🎯 Độ bền: ${maxUses}/${maxUses}\n` +
+            `🔧 Trạng thái: Sẵn sàng\n\n` +
 
-            `✦ *Bạn có thể tiếp tục câu cá.*`
+            `୨୧ ───────── ୨୧\n\n` +
+
+            `✦ *Cần câu đã được phục hồi hoàn toàn.*`
 
         )
 
-        .setFooter({
-            text:
-                "✦ Fishing Adventure · Workshop"
-        })
+        .setFooter(
+            FOOTER
+        )
 
         .setTimestamp();
 }
@@ -424,17 +440,9 @@ function createRepairingEmbed(
 
     return new EmbedBuilder()
 
-        .setColor("#f5a623")
-
-        .setAuthor({
-            name:
-                `${message.author.username} · Workshop`,
-            iconURL:
-                message.author.displayAvatarURL({
-                    extension: "png",
-                    size: 128
-                })
-        })
+        .setColor(
+            COLORS.warning
+        )
 
         .setTitle(
             "🔧 `REPAIRING`"
@@ -442,24 +450,28 @@ function createRepairingEmbed(
 
         .setDescription(
 
-            `${base.emoji} ${base.name}\n\n` +
+            `${base.emoji} ${base.name}\n` +
+            `${"⭐".repeat(base.star || 1)}\n\n` +
 
-            `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
-            `> 💸 Phí sửa: ${formatMoney(price)} ${emoji.money}\n` +
-            `> ⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
-            `> ⏳ Thời gian: ${formatTime(repairSeconds)}\n\n` +
+            `୨୧ ───────── ୨୧\n\n` +
+
+            `🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+            `💸 Phí sửa: ${formatMoney(price)} ${emoji.money}\n` +
+            `⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+            `⏳ Thời gian: ${formatTime(repairSeconds)}\n\n` +
 
             `🔧 Trạng thái: Đang sửa\n\n` +
+
+            `୨୧ ───────── ୨୧\n\n` +
 
             `💡 Bạn có thể trang bị cần khác ` +
             `trong lúc chờ sửa.`
 
         )
 
-        .setFooter({
-            text:
-                "✦ Fishing Adventure · Workshop"
-        });
+        .setFooter(
+            FOOTER
+        );
 }
 
 
@@ -542,7 +554,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#f5a623")
+                        .setColor(
+                            COLORS.warning
+                        )
 
                         .setTitle(
                             "🔧 `REPAIRING`"
@@ -551,22 +565,26 @@ module.exports = {
                         .setDescription(
 
                             `${base?.emoji || "🎣"} ` +
-                            `${base?.name || "Cần câu"}\n\n` +
+                            `${base?.name || "Cần câu"}\n` +
+                            `${"⭐".repeat(base?.star || 1)}\n\n` +
 
-                            `> 🔧 Trạng thái: Đang sửa\n` +
-                            `> ⏳ Còn lại: ${formatTime(
+                            `୨୧ ───────── ୨୧\n\n` +
+
+                            `🔧 Trạng thái: Đang sửa\n` +
+                            `⏳ Còn lại: ${formatTime(
                                 remaining / 1000
                             )}\n\n` +
+
+                            `୨୧ ───────── ୨୧\n\n` +
 
                             `💡 Bạn có thể trang bị cần khác ` +
                             `trong lúc chờ sửa.`
 
                         )
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure · Workshop"
-                        })
+                        .setFooter(
+                            FOOTER
+                        )
 
                 ]
 
@@ -589,7 +607,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ff6b81")
+                        .setColor(
+                            COLORS.error
+                        )
 
                         .setTitle(
                             "🎣 `NO ROD EQUIPPED`"
@@ -599,15 +619,16 @@ module.exports = {
 
                             `Bạn chưa trang bị cần câu.\n\n` +
 
-                            `> 💡 Hãy trang bị một chiếc cần ` +
+                            `୨୧ ───────── ୨୧\n\n` +
+
+                            `💡 Hãy trang bị một chiếc cần ` +
                             `trước khi sửa.`
 
                         )
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                        .setFooter(
+                            FOOTER
+                        )
 
                 ]
 
@@ -624,9 +645,35 @@ module.exports = {
 
         if (!base) {
 
-            return message.reply(
-                "╰・❌ Không tìm thấy loại cần."
-            );
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            COLORS.error
+                        )
+
+                        .setTitle(
+                            "❌ `ROD NOT FOUND`"
+                        )
+
+                        .setDescription(
+
+                            `Không tìm thấy loại cần.\n\n` +
+
+                            `୨୧ ───────── ୨୧`
+
+                        )
+
+                        .setFooter(
+                            FOOTER
+                        )
+
+                ]
+
+            });
         }
 
         const rod =
@@ -634,9 +681,35 @@ module.exports = {
 
         if (!rod) {
 
-            return message.reply(
-                "╰・❌ Không tìm thấy dữ liệu cần."
-            );
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            COLORS.error
+                        )
+
+                        .setTitle(
+                            "❌ `ROD DATA ERROR`"
+                        )
+
+                        .setDescription(
+
+                            `Không tìm thấy dữ liệu cần câu.\n\n` +
+
+                            `୨୧ ───────── ୨୧`
+
+                        )
+
+                        .setFooter(
+                            FOOTER
+                        )
+
+                ]
+
+            });
         }
 
 
@@ -661,7 +734,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ff4d67")
+                        .setColor(
+                            COLORS.danger
+                        )
 
                         .setTitle(
                             "💥 `ROD BROKEN`"
@@ -669,10 +744,13 @@ module.exports = {
 
                         .setDescription(
 
-                            `${base.emoji} ${base.name}\n\n` +
+                            `${base.emoji} ${base.name}\n` +
+                            `${"⭐".repeat(base.star || 1)}\n\n` +
 
-                            `> 🎯 Độ bền: 0/${rod.maxUses}\n` +
-                            `> 🔧 Trạng thái: Đã gãy\n\n` +
+                            `୨୧ ───────── ୨୧\n\n` +
+
+                            `🎯 Độ bền: 0/${rod.maxUses}\n` +
+                            `🔧 Trạng thái: Đã gãy\n\n` +
 
                             `Cần câu đã hỏng hoàn toàn.\n` +
                             `Việc sửa chữa không còn hiệu quả.\n\n` +
@@ -682,10 +760,9 @@ module.exports = {
 
                         )
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                        .setFooter(
+                            FOOTER
+                        )
 
                 ]
 
@@ -707,7 +784,9 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#8affb2")
+                        .setColor(
+                            COLORS.success
+                        )
 
                         .setTitle(
                             "✨ `ROD IS READY`"
@@ -715,20 +794,22 @@ module.exports = {
 
                         .setDescription(
 
-                            `${base.emoji} ${base.name}\n\n` +
+                            `${base.emoji} ${base.name}\n` +
+                            `${"⭐".repeat(base.star || 1)}\n\n` +
 
-                            `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
-                            `> 🔧 Trạng thái: Sẵn sàng\n\n` +
+                            `୨୧ ───────── ୨୧\n\n` +
+
+                            `🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                            `🔧 Trạng thái: Sẵn sàng\n\n` +
 
                             `Cần câu vẫn còn tốt.\n` +
                             `Không cần sửa chữa.`
 
                         )
 
-                        .setFooter({
-                            text:
-                                "✦ Fishing Adventure"
-                        })
+                        .setFooter(
+                            FOOTER
+                        )
 
                 ]
 
@@ -799,7 +880,9 @@ module.exports = {
 
             return new EmbedBuilder()
 
-                .setColor("#ffd166")
+                .setColor(
+                    COLORS.warning
+                )
 
                 .setTitle(
                     "🔧 `ROD REPAIR`"
@@ -808,27 +891,27 @@ module.exports = {
                 .setDescription(
 
                     `${base.emoji} ${base.name}\n` +
+                    `${"⭐".repeat(base.star || 1)}\n\n` +
 
-                    `${"⭐".repeat(
-                        base.star || 1
-                    )}\n\n` +
+                    `୨୧ ───────── ୨୧\n\n` +
 
-                    `\`${bar}\` ${percent}%\n` +
+                    `\`${bar}\` ${percent}%\n\n` +
 
-                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
-                    `> 💸 Sửa thường: ${formatMoney(price)} ${emoji.money}\n` +
-                    `> ⏳ Thời gian: ${formatTime(repairSeconds)}\n` +
-                    `> ⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
-                    `> 💰 Số dư: ${formatMoney(user.money)} ${emoji.money}\n\n` +
+                    `🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                    `💸 Sửa thường: ${formatMoney(price)} ${emoji.money}\n` +
+                    `⏳ Thời gian: ${formatTime(repairSeconds)}\n` +
+                    `⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+                    `💰 Số dư: ${formatMoney(user.money)} ${emoji.money}\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
 
                     `✦ *Cần càng hỏng, thời gian và phí sửa càng cao.*`
 
                 )
 
-                .setFooter({
-                    text:
-                        "✦ Fishing Adventure · Workshop"
-                });
+                .setFooter(
+                    FOOTER
+                );
         }
 
 
@@ -970,7 +1053,9 @@ module.exports = {
 
                             new EmbedBuilder()
 
-                                .setColor("#777777")
+                                .setColor(
+                                    COLORS.error
+                                )
 
                                 .setTitle(
                                     "❌ `REPAIR CANCELLED`"
@@ -978,16 +1063,18 @@ module.exports = {
 
                                 .setDescription(
 
-                                    `${base.emoji} ${base.name}\n\n` +
+                                    `${base.emoji} ${base.name}\n` +
+                                    `${"⭐".repeat(base.star || 1)}\n\n` +
+
+                                    `୨୧ ───────── ୨୧\n\n` +
 
                                     `Không có thay đổi nào được thực hiện.`
 
                                 )
 
-                                .setFooter({
-                                    text:
-                                        "✦ Fishing Adventure"
-                                })
+                                .setFooter(
+                                    FOOTER
+                                )
 
                         ],
 
@@ -1066,7 +1153,9 @@ module.exports = {
 
                             new EmbedBuilder()
 
-                                .setColor("#ffd166")
+                                .setColor(
+                                    COLORS.warning
+                                )
 
                                 .setTitle(
                                     "⚡ `QUICK REPAIR`"
@@ -1074,12 +1163,17 @@ module.exports = {
 
                                 .setDescription(
 
-                                    `${base.emoji} ${base.name}\n\n` +
+                                    `${base.emoji} ${base.name}\n` +
+                                    `${"⭐".repeat(base.star || 1)}\n\n` +
 
-                                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
-                                    `> 💸 Sửa thường: ${formatMoney(price)} ${emoji.money}\n` +
-                                    `> ⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
-                                    `> ⏳ Thời gian: Hoàn tất ngay\n\n` +
+                                    `୨୧ ───────── ୨୧\n\n` +
+
+                                    `🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                                    `💸 Sửa thường: ${formatMoney(price)} ${emoji.money}\n` +
+                                    `⚡ Sửa nhanh: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+                                    `⏳ Thời gian: Hoàn tất ngay\n\n` +
+
+                                    `୨୧ ───────── ୨୧\n\n` +
 
                                     `*Sửa nhanh bỏ qua toàn bộ thời gian chờ.*\n\n` +
 
@@ -1087,10 +1181,9 @@ module.exports = {
 
                                 )
 
-                                .setFooter({
-                                    text:
-                                        "✦ Fishing Adventure · Workshop"
-                                })
+                                .setFooter(
+                                    FOOTER
+                                )
 
                         ],
 
@@ -1177,7 +1270,9 @@ module.exports = {
 
                             new EmbedBuilder()
 
-                                .setColor("#9b7cff")
+                                .setColor(
+                                    COLORS.primary
+                                )
 
                                 .setTitle(
                                     "🔧 `CONFIRM REPAIR`"
@@ -1185,11 +1280,16 @@ module.exports = {
 
                                 .setDescription(
 
-                                    `${base.emoji} ${base.name}\n\n` +
+                                    `${base.emoji} ${base.name}\n` +
+                                    `${"⭐".repeat(base.star || 1)}\n\n` +
 
-                                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
-                                    `> 💸 Chi phí: ${formatMoney(price)} ${emoji.money}\n` +
-                                    `> ⏳ Thời gian: ${formatTime(repairSeconds)}\n\n` +
+                                    `୨୧ ───────── ୨୧\n\n` +
+
+                                    `🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                                    `💸 Chi phí: ${formatMoney(price)} ${emoji.money}\n` +
+                                    `⏳ Thời gian: ${formatTime(repairSeconds)}\n\n` +
+
+                                    `୨୧ ───────── ୨୧\n\n` +
 
                                     `💡 Bạn có thể trang bị cần khác ` +
                                     `trong lúc chờ.\n\n` +
@@ -1198,10 +1298,9 @@ module.exports = {
 
                                 )
 
-                                .setFooter({
-                                    text:
-                                        "✦ Fishing Adventure · Workshop"
-                                })
+                                .setFooter(
+                                    FOOTER
+                                )
 
                         ],
 
@@ -1400,7 +1499,9 @@ module.exports = {
 
                             new EmbedBuilder()
 
-                                .setColor("#8affb2")
+                                .setColor(
+                                    COLORS.success
+                                )
 
                                 .setTitle(
                                     "⚡ `QUICK REPAIR COMPLETE`"
@@ -1408,23 +1509,25 @@ module.exports = {
 
                                 .setDescription(
 
-                                    `*Cần câu đã được sửa nhanh thành công.*\n\n` +
+                                    `${base.emoji} ${base.name}\n` +
+                                    `${"⭐".repeat(base.star || 1)}\n\n` +
 
-                                    `${base.emoji} ${base.name}\n\n` +
+                                    `୨୧ ───────── ୨୧\n\n` +
 
-                                    `> 🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
-                                    `> ⚡ Đã thanh toán: ${formatMoney(quickPrice)} ${emoji.money}\n` +
-                                    `> ⏳ Thời gian: Hoàn tất ngay\n` +
-                                    `> 🔧 Trạng thái: Sẵn sàng\n\n` +
+                                    `🎯 Độ bền: ${rod.uses}/${rod.maxUses}\n` +
+                                    `⚡ Đã thanh toán: ${formatMoney(quickPrice)} ${emoji.money}\n` +
+                                    `⏳ Thời gian: Hoàn tất ngay\n` +
+                                    `🔧 Trạng thái: Sẵn sàng\n\n` +
+
+                                    `୨୧ ───────── ୨୧\n\n` +
 
                                     `✦ *Cần câu đã được phục hồi hoàn toàn.*`
 
                                 )
 
-                                .setFooter({
-                                    text:
-                                        "✦ Fishing Adventure · Workshop"
-                                })
+                                .setFooter(
+                                    FOOTER
+                                )
 
                                 .setTimestamp()
 

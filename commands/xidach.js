@@ -1,594 +1,993 @@
 const {
-
-EmbedBuilder,
-
-ActionRowBuilder,
-
-ButtonBuilder,
-
-ButtonStyle
-
-}=require("discord.js");
-
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
+} = require("discord.js");
 
 const {
-prefix
-}=require("../config");
-
+    prefix,
+    emoji,
+    formatMoney
+} = require("../../config");
 
 const {
+    getUser,
+    save
+} = require("../../data");
 
-getUser,
+// ======================================================
+// TẠO BỘ BÀI
+// ======================================================
 
-save
+function taoBoBai() {
 
-}=require("../database");
+    const ranks = [
+        "2", "3", "4", "5", "6", "7",
+        "8", "9", "10", "J", "Q", "K", "A"
+    ];
 
+    const suits = [
+        "♠",
+        "♥",
+        "♦",
+        "♣"
+    ];
 
+    const deck = [];
 
+    for (const suit of suits) {
 
-function taoBoBai(){
+        for (const rank of ranks) {
 
+            deck.push({
+                rank,
+                suit
+            });
 
-const ranks=[
-"2","3","4","5","6","7","8","9","10","J","Q","K","A"
-];
+        }
 
+    }
 
-const suits=["♠","♥","♦","♣"];
+    // Fisher-Yates shuffle
 
+    for (
+        let i = deck.length - 1;
+        i > 0;
+        i--
+    ) {
 
-const deck=[];
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
 
+        [
+            deck[i],
+            deck[j]
+        ] = [
+            deck[j],
+            deck[i]
+        ];
 
-for(const suit of suits){
+    }
 
-for(const rank of ranks){
+    return deck;
+}
 
-deck.push({rank,suit});
+// ======================================================
+// GIÁ TRỊ BÀI
+// ======================================================
+
+function giaTri(rank) {
+
+    if (rank === "A") {
+        return 1;
+    }
+
+    if (
+        rank === "J" ||
+        rank === "Q" ||
+        rank === "K"
+    ) {
+
+        return 10;
+
+    }
+
+    return Number(rank);
+}
+
+// ======================================================
+// TỔNG ĐIỂM
+// ======================================================
+
+function tongDiem(hand) {
+
+    return hand.reduce(
+        (sum, card) =>
+            sum + giaTri(card.rank),
+        0
+    );
 
 }
 
-}
+// ======================================================
+// HIỂN THỊ BÀI
+// ======================================================
 
+function hienThi(hand) {
 
-for(let i=deck.length-1;i>0;i--){
-
-const j=Math.floor(Math.random()*(i+1));
-
-[deck[i],deck[j]]=[deck[j],deck[i]];
-
-}
-
-
-return deck;
-
+    return hand
+        .map(
+            card =>
+                `\`${card.rank}${card.suit}\``
+        )
+        .join(" ");
 
 }
 
+// ======================================================
+// XÌ DÁCH
+// ======================================================
 
+function laXiDach(hand) {
 
+    if (hand.length !== 2) {
+        return false;
+    }
 
-function giaTri(rank){
+    const hasAce =
+        hand.some(
+            card =>
+                card.rank === "A"
+        );
 
+    const hasTen =
+        hand.some(
+            card =>
+                giaTri(card.rank) === 10
+        );
 
-if(rank==="A")
-return 1;
+    return (
+        hasAce &&
+        hasTen
+    );
+}
 
+// ======================================================
+// NGŨ LINH
+// ======================================================
 
-if(rank==="J"||rank==="Q"||rank==="K")
-return 10;
+function laNguLinh(hand) {
 
-
-return Number(rank);
-
+    return (
+        hand.length >= 5 &&
+        tongDiem(hand) <= 21
+    );
 
 }
 
+// ======================================================
+// EMBED
+// ======================================================
 
+function taoEmbed(
+    color,
+    title,
+    description
+) {
 
+    return new EmbedBuilder()
 
-function tongDiem(hand){
+        .setColor(color)
 
+        .setTitle(
+            "୨୧ ───────── ୨୧\n" +
+            title +
+            "\n୨୧ ───────── ୨୧"
+        )
 
-return hand.reduce(
-(sum,c)=>sum+giaTri(c.rank),
-0
-);
+        .setDescription(
+            description
+        )
 
+        .setFooter({
+            text:
+                "✦ Fishing Adventure · Xì Dách"
+        })
 
-}
-
-
-
-
-function hienThi(hand){
-
-
-return hand.map(
-c=>`${c.rank}${c.suit}`
-).join(" ");
-
-
-}
-
-
-
-
-function laXiDach(hand){
-
-
-if(hand.length!==2)
-return false;
-
-
-const ranks=hand.map(c=>c.rank);
-
-
-return (
-ranks.includes("A")
-&&
-ranks.some(r=>giaTri(r)===10)
-);
-
+        .setTimestamp();
 
 }
 
+// ======================================================
+// NÚT
+// ======================================================
 
+function taoButtons(
+    userId
+) {
 
+    return new ActionRowBuilder()
+
+        .addComponents(
+
+            new ButtonBuilder()
+
+                .setCustomId(
+                    `xidach_hit_${userId}`
+                )
+
+                .setLabel(
+                    "🃏 Rút bài"
+                )
+
+                .setStyle(
+                    ButtonStyle.Primary
+                ),
+
+            new ButtonBuilder()
+
+                .setCustomId(
+                    `xidach_stand_${userId}`
+                )
+
+                .setLabel(
+                    "✋ Dừng"
+                )
+
+                .setStyle(
+                    ButtonStyle.Secondary
+                )
+
+        );
+
+}
+
+// ======================================================
+// COMMAND
+// ======================================================
 
 module.exports = {
 
+    name: "xidach",
 
-name:"xidach",
+    aliases: [
+        "xd"
+    ],
 
+    async execute(
+        message,
+        args
+    ) {
 
-aliases:[
-    "xd"
-],
+        // ==================================================
+        // KIỂM TRA CƯỢC
+        // ==================================================
 
+        const bet =
+            Number(args[0]);
 
+        if (
+            !Number.isSafeInteger(bet) ||
+            bet <= 0
+        ) {
 
-async execute(message,args){
+            return message.reply({
 
+                embeds: [
 
-const bet=Number(args[0]);
+                    taoEmbed(
 
+                        "#EF4444",
 
-if(
-!Number.isInteger(bet)
-||
-bet<=0
-){
+                        "❌ CƯỢC KHÔNG HỢP LỆ",
 
-return message.reply(
-`❌ Ví dụ: \`${prefix}xidach 1000\``
-);
+                        `Cách dùng:\n\n` +
+                        `\`${prefix}xidach <số tiền>\`\n\n` +
+                        `Ví dụ:\n` +
+                        `\`${prefix}xidach 10000\``
 
-}
+                    )
 
+                ]
 
+            });
 
-const user=getUser(
-message.author.id
-);
+        }
 
+        // ==================================================
+        // USER
+        // ==================================================
 
+        const user =
+            getUser(
+                message.author.id
+            );
 
-if(user.money<bet){
+        if (!user) {
 
-return message.reply(
-"❌ Không đủ tiền"
-);
+            return message.reply({
 
-}
+                embeds: [
 
+                    taoEmbed(
 
+                        "#EF4444",
 
-const deck=taoBoBai();
+                        "❌ KHÔNG TÌM THẤY DỮ LIỆU",
 
+                        "Không tìm thấy dữ liệu người chơi."
 
-const playerHand=[
-deck.pop(),
-deck.pop()
-];
+                    )
 
+                ]
 
-const dealerHand=[
-deck.pop(),
-deck.pop()
-];
+            });
 
+        }
 
+        user.money =
+            Number(
+                user.money || 0
+            );
 
-function ketThuc(msg,ketQua,heSo){
+        // ==================================================
+        // KIỂM TRA TIỀN
+        // ==================================================
 
+        if (
+            user.money < bet
+        ) {
 
-let text="";
+            return message.reply({
 
+                embeds: [
 
-if(ketQua==="win"){
+                    taoEmbed(
 
-user.money+=bet*heSo;
+                        "#EF4444",
 
-text=`✅ Bạn thắng +${(bet*heSo).toLocaleString()} xu`;
+                        "❌ KHÔNG ĐỦ FCOIN",
 
-}else if(ketQua==="lose"){
+                        `💰 Số dư hiện tại: ` +
+                        `**${formatMoney(user.money)}** ${emoji.money}\n\n` +
 
-user.money-=bet;
+                        `🎲 Tiền cược: ` +
+                        `**${formatMoney(bet)}** ${emoji.money}\n\n` +
 
-text=`❌ Bạn thua -${bet.toLocaleString()} xu`;
+                        `Bạn không đủ tiền để bắt đầu ván.`
 
-}else{
+                    )
 
-text="🤝 Hoà, hoàn tiền cược";
+                ]
 
-}
+            });
 
+        }
 
-save();
+        // ==================================================
+        // TRỪ TIỀN NGAY KHI BẮT ĐẦU
+        // ==================================================
 
+        user.money -= bet;
 
-msg.edit({
+        save();
 
-embeds:[
+        // ==================================================
+        // TẠO BÀI
+        // ==================================================
 
-new EmbedBuilder()
+        const deck =
+            taoBoBai();
 
-.setColor(
-ketQua==="win"?"Green":
-ketQua==="lose"?"Red":"Grey"
-)
+        const playerHand = [
+            deck.pop(),
+            deck.pop()
+        ];
 
-.setTitle("🃏 KẾT QUẢ XÌ DÁCH")
+        const dealerHand = [
+            deck.pop(),
+            deck.pop()
+        ];
 
-.setDescription(
+        // ==================================================
+        // XỬ LÝ KẾT THÚC
+        // ==================================================
 
-`
-👤 Bài của bạn:
-${hienThi(playerHand)} (${tongDiem(playerHand)} điểm)
+        let finished = false;
 
+        async function ketThuc(
+            msg,
+            ketQua,
+            heSo = 0
+        ) {
 
-🤖 Bài nhà cái:
-${hienThi(dealerHand)} (${tongDiem(dealerHand)} điểm)
+            if (finished) {
+                return;
+            }
 
+            finished = true;
 
-${text}
+            let reward = 0;
+            let resultText = "";
+            let color = "#9CA3AF";
+            let title = "🤝 HÒA";
 
+            // ==============================================
+            // THẮNG
+            // ==============================================
 
-💰 Số dư: ${user.money.toLocaleString()} xu
-`
+            if (
+                ketQua === "win"
+            ) {
 
-)
+                reward =
+                    Math.floor(
+                        bet * heSo
+                    );
 
-],
+                user.money +=
+                    reward;
 
-components:[]
+                resultText =
+                    `✅ **Bạn thắng!**\n` +
+                    `💰 Nhận: **+${formatMoney(reward)}** ${emoji.money}`;
 
-});
+                color =
+                    "#86EFAC";
 
+                title =
+                    "🎉 BẠN THẮNG";
 
-}
+            }
 
+            // ==============================================
+            // THUA
+            // ==============================================
 
+            else if (
+                ketQua === "lose"
+            ) {
 
-function nhaCaiChoi(msg){
+                resultText =
+                    `❌ **Bạn thua!**\n` +
+                    `💸 Mất: **${formatMoney(bet)}** ${emoji.money}`;
 
+                color =
+                    "#EF4444";
 
-while(
-tongDiem(dealerHand)<17
-&&
-dealerHand.length<5
-){
+                title =
+                    "💀 BẠN THUA";
 
-dealerHand.push(deck.pop());
+            }
 
-}
+            // ==============================================
+            // HÒA
+            // ==============================================
 
+            else {
 
-const dTong=tongDiem(dealerHand);
+                user.money +=
+                    bet;
 
-const pTong=tongDiem(playerHand);
+                reward =
+                    bet;
 
+                resultText =
+                    `🤝 **Hòa!**\n` +
+                    `💰 Hoàn lại: **${formatMoney(bet)}** ${emoji.money}`;
 
-const dXiDach=laXiDach(dealerHand);
+                color =
+                    "#F5C451";
 
+                title =
+                    "🤝 HÒA";
 
-if(dXiDach){
+            }
 
-return ketThuc(
-msg,
-"lose",
-0
-);
+            save();
 
-}
+            const playerScore =
+                tongDiem(
+                    playerHand
+                );
 
+            const dealerScore =
+                tongDiem(
+                    dealerHand
+                );
 
-if(dTong>21){
+            const embed =
+                taoEmbed(
 
-return ketThuc(msg,"win",1);
+                    color,
 
-}
+                    title,
 
+                    `👤 **Bài của bạn**\n` +
+                    `${hienThi(playerHand)}\n` +
+                    `📊 Điểm: **${playerScore}**\n\n` +
 
-if(pTong>dTong){
+                    `🤖 **Bài nhà cái**\n` +
+                    `${hienThi(dealerHand)}\n` +
+                    `📊 Điểm: **${dealerScore}**\n\n` +
 
-return ketThuc(msg,"win",1);
+                    `୨୧ ───────── ୨୧\n\n` +
 
-}
+                    `${resultText}\n\n` +
 
+                    `💳 **Số dư:** ` +
+                    `${formatMoney(user.money)} ${emoji.money}`
 
-if(pTong<dTong){
+                );
 
-return ketThuc(msg,"lose",0);
+            try {
 
-}
+                await msg.edit({
 
+                    embeds: [
+                        embed
+                    ],
 
-return ketThuc(msg,"push",0);
+                    components: []
 
+                });
 
-}
+            } catch {}
 
+        }
 
+        // ==================================================
+        // NHÀ CÁI
+        // ==================================================
 
-const row=new ActionRowBuilder()
+        async function nhaCaiChoi(
+            msg
+        ) {
 
-.addComponents(
+            while (
+                tongDiem(dealerHand) < 17 &&
+                dealerHand.length < 5
+            ) {
 
-new ButtonBuilder()
+                dealerHand.push(
+                    deck.pop()
+                );
 
-.setCustomId("xd_hit")
+            }
 
-.setLabel("🃏 Rút bài")
+            const playerScore =
+                tongDiem(
+                    playerHand
+                );
 
-.setStyle(ButtonStyle.Primary),
+            const dealerScore =
+                tongDiem(
+                    dealerHand
+                );
 
+            // ==============================================
+            // NHÀ CÁI XÌ DÁCH
+            // ==============================================
 
-new ButtonBuilder()
+            if (
+                laXiDach(
+                    dealerHand
+                )
+            ) {
 
-.setCustomId("xd_stand")
+                return ketThuc(
+                    msg,
+                    "lose"
+                );
 
-.setLabel("✋ Dừng")
+            }
 
-.setStyle(ButtonStyle.Secondary)
+            // ==============================================
+            // NHÀ CÁI NGŨ LINH
+            // ==============================================
 
-);
+            if (
+                laNguLinh(
+                    dealerHand
+                )
+            ) {
 
+                if (
+                    laNguLinh(
+                        playerHand
+                    )
+                ) {
 
+                    return ketThuc(
+                        msg,
+                        "push"
+                    );
 
-if(laXiDach(playerHand)){
+                }
 
+                return ketThuc(
+                    msg,
+                    "lose"
+                );
 
-user.money+=Math.floor(bet*2);
+            }
 
+            // ==============================================
+            // NHÀ CÁI QUÁ 21
+            // ==============================================
 
-save();
+            if (
+                dealerScore > 21
+            ) {
 
+                return ketThuc(
+                    msg,
+                    "win",
+                    2
+                );
 
-return message.channel.send({
+            }
 
-embeds:[
+            // ==============================================
+            // SO ĐIỂM
+            // ==============================================
 
-new EmbedBuilder()
+            if (
+                playerScore >
+                dealerScore
+            ) {
 
-.setColor("Gold")
+                return ketThuc(
+                    msg,
+                    "win",
+                    2
+                );
 
-.setTitle("🃏 XÌ DÁCH!")
+            }
 
-.setDescription(
+            if (
+                playerScore <
+                dealerScore
+            ) {
 
-`
-👤 Bài của bạn:
-${hienThi(playerHand)} (21 điểm - XÌ DÁCH)
+                return ketThuc(
+                    msg,
+                    "lose"
+                );
 
+            }
 
-✅ Thắng +${(bet*2).toLocaleString()} xu
+            return ketThuc(
+                msg,
+                "push"
+            );
 
+        }
 
-💰 Số dư: ${user.money.toLocaleString()} xu
-`
+        // ==================================================
+        // NGƯỜI CHƠI XÌ DÁCH
+        // ==================================================
 
-)
+        if (
+            laXiDach(
+                playerHand
+            )
+        ) {
 
-]
+            const reward =
+                bet * 3;
 
-});
+            user.money +=
+                reward;
 
+            save();
 
-}
+            return message.reply({
 
+                embeds: [
 
+                    taoEmbed(
 
-const msg=await message.channel.send({
+                        "#FFD700",
 
-embeds:[
+                        "🃏 XÌ DÁCH!"
 
-new EmbedBuilder()
+                        ,
 
-.setColor("Gold")
+                        `👤 **Bài của bạn**\n` +
+                        `${hienThi(playerHand)}\n` +
+                        `📊 **21 điểm · XÌ DÁCH**\n\n` +
 
-.setTitle("🃏 XÌ DÁCH")
+                        `୨୧ ───────── ୨୧\n\n` +
 
-.setDescription(
+                        `🎉 **XÌ DÁCH!**\n` +
+                        `💰 Tiền nhận: **+${formatMoney(reward)}** ${emoji.money}\n\n` +
 
-`
-👤 Bài của bạn:
-${hienThi(playerHand)} (${tongDiem(playerHand)} điểm)
+                        `💳 Số dư mới: ` +
+                        `**${formatMoney(user.money)}** ${emoji.money}`
 
+                    )
 
-🤖 Nhà cái:
-${dealerHand[0].rank}${dealerHand[0].suit} 🂠
+                ]
 
+            });
 
-💰 Cược: ${bet.toLocaleString()} xu
+        }
 
-⏳ 30 giây để rút bài hoặc dừng
-`
+        // ==================================================
+        // GIAO DIỆN BAN ĐẦU
+        // ==================================================
 
-)
+        const msg =
+            await message.channel.send({
 
-],
+                embeds: [
 
-components:[row]
+                    taoEmbed(
 
-});
+                        "#FFD166",
 
+                        "🃏 XÌ DÁCH",
 
+                        `👤 **Bài của bạn**\n` +
+                        `${hienThi(playerHand)}\n` +
+                        `📊 Điểm: **${tongDiem(playerHand)}**\n\n` +
 
-const collector=msg.createMessageComponentCollector({
+                        `🤖 **Nhà cái**\n` +
+                        `${dealerHand[0].rank}${dealerHand[0].suit} 🂠\n\n` +
 
-filter:i=>i.user.id===message.author.id,
+                        `୨୧ ───────── ୨୧\n\n` +
 
-time:30000
+                        `💰 **Tiền cược:** ` +
+                        `${formatMoney(bet)} ${emoji.money}\n\n` +
 
-});
+                        `🃏 Rút bài để tiếp tục\n` +
+                        `✋ Dừng để nhà cái chơi\n\n` +
 
+                        `⏳ Bạn có **30 giây** để hành động.`
 
+                    )
 
-collector.on(
+                ],
 
-"collect",
+                components: [
 
-async interaction=>{
+                    taoButtons(
+                        message.author.id
+                    )
 
+                ]
 
-if(interaction.customId==="xd_hit"){
+            });
 
+        // ==================================================
+        // COLLECTOR
+        // ==================================================
 
-playerHand.push(deck.pop());
+        const collector =
+            msg.createMessageComponentCollector({
 
+                time: 30000
 
-const tong=tongDiem(playerHand);
+            });
 
+        // ==================================================
+        // CLICK BUTTON
+        // ==================================================
 
+        collector.on(
+            "collect",
+            async interaction => {
 
-if(tong>21){
+                // ==========================================
+                // CHỈ CHỦ VÁN
+                // ==========================================
 
+                if (
+                    interaction.user.id !==
+                    message.author.id
+                ) {
 
-collector.stop("resolved");
+                    return interaction.reply({
 
+                        content:
+                            "❌ Đây không phải ván Xì Dách của bạn.",
 
-await interaction.update({
+                        ephemeral: true
 
-components:[]
+                    });
 
-});
+                }
 
+                // ==========================================
+                // RÚT BÀI
+                // ==========================================
 
-return ketThuc(msg,"lose",0);
+                if (
+                    interaction.customId ===
+                    `xidach_hit_${message.author.id}`
+                ) {
 
+                    playerHand.push(
+                        deck.pop()
+                    );
 
-}
+                    const score =
+                        tongDiem(
+                            playerHand
+                        );
 
+                    // ======================================
+                    // QUÁ 21
+                    // ======================================
 
+                    if (
+                        score > 21
+                    ) {
 
-if(playerHand.length>=5){
+                        collector.stop(
+                            "resolved"
+                        );
 
+                        await interaction.update({
 
-collector.stop("resolved");
+                            components: []
 
+                        });
 
-await interaction.update({
+                        return ketThuc(
+                            msg,
+                            "lose"
+                        );
 
-components:[]
+                    }
 
-});
+                    // ======================================
+                    // NGŨ LINH
+                    // ======================================
 
+                    if (
+                        laNguLinh(
+                            playerHand
+                        )
+                    ) {
 
-return ketThuc(msg,"win",2);
+                        collector.stop(
+                            "resolved"
+                        );
 
+                        await interaction.update({
 
-}
+                            components: []
 
+                        });
 
+                        return ketThuc(
+                            msg,
+                            "win",
+                            3
+                        );
 
-return interaction.update({
+                    }
 
-embeds:[
+                    // ======================================
+                    // CẬP NHẬT
+                    // ======================================
 
-new EmbedBuilder()
+                    return interaction.update({
 
-.setColor("Gold")
+                        embeds: [
 
-.setTitle("🃏 XÌ DÁCH")
+                            taoEmbed(
 
-.setDescription(
+                                "#FFD166",
 
-`
-👤 Bài của bạn:
-${hienThi(playerHand)} (${tong} điểm)
+                                "🃏 XÌ DÁCH",
 
+                                `👤 **Bài của bạn**\n` +
+                                `${hienThi(playerHand)}\n` +
+                                `📊 Điểm: **${score}**\n\n` +
 
-🤖 Nhà cái:
-${dealerHand[0].rank}${dealerHand[0].suit} 🂠
+                                `🤖 **Nhà cái**\n` +
+                                `${dealerHand[0].rank}${dealerHand[0].suit} 🂠\n\n` +
 
+                                `୨୧ ───────── ୨୧\n\n` +
 
-💰 Cược: ${bet.toLocaleString()} xu
+                                `💰 **Tiền cược:** ` +
+                                `${formatMoney(bet)} ${emoji.money}\n\n` +
 
-⏳ Rút thêm hoặc dừng
-`
+                                `🃏 Bạn có thể rút tiếp hoặc dừng.`
 
-)
+                            )
 
-],
+                        ],
 
-components:[row]
+                        components: [
 
-});
+                            taoButtons(
+                                message.author.id
+                            )
 
+                        ]
 
-}
+                    });
 
+                }
 
+                // ==========================================
+                // DỪNG
+                // ==========================================
 
-if(interaction.customId==="xd_stand"){
+                if (
+                    interaction.customId ===
+                    `xidach_stand_${message.author.id}`
+                ) {
 
+                    collector.stop(
+                        "resolved"
+                    );
 
-collector.stop("resolved");
+                    await interaction.update({
 
+                        components: []
 
-await interaction.update({
+                    });
 
-components:[]
+                    return nhaCaiChoi(
+                        msg
+                    );
 
-});
+                }
 
+            }
+        );
 
-return nhaCaiChoi(msg);
+        // ==================================================
+        // HẾT THỜI GIAN
+        // ==================================================
 
+        collector.on(
+            "end",
+            async (
+                collected,
+                reason
+            ) => {
 
-}
+                if (
+                    reason ===
+                    "time"
+                ) {
 
+                    if (
+                        finished
+                    ) {
 
-}
+                        return;
 
-);
+                    }
 
+                    try {
 
+                        await msg.edit({
 
-collector.on(
+                            components: []
 
-"end",
+                        });
 
-(collected,reason)=>{
+                    } catch {}
 
+                    return nhaCaiChoi(
+                        msg
+                    );
 
-if(reason==="time"){
+                }
 
-nhaCaiChoi(msg);
+            }
+        );
 
-}
-
-
-}
-
-);
-
-
-
-}
-
+    }
 
 };

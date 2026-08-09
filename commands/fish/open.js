@@ -15,6 +15,9 @@ const {
     save
 } = require("../../data");
 
+// ======================================================
+// MODULE
+// ======================================================
 
 module.exports = {
 
@@ -29,10 +32,40 @@ module.exports = {
 
     async execute(message, args) {
 
+        // ==================================================
+        // USER
+        // ==================================================
+
         const user =
             getUser(
                 message.author.id
             );
+
+        if (!user) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor("#ff6b81")
+
+                        .setTitle("❌ Không tìm thấy dữ liệu")
+
+                        .setDescription(
+                            "Không thể tìm thấy dữ liệu người chơi của bạn."
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+
+            });
+
+        }
 
 
         // ==================================================
@@ -40,18 +73,64 @@ module.exports = {
         // ==================================================
 
         const id =
-            args[0]?.toLowerCase();
+            args?.[0]?.toLowerCase();
 
 
         if (!id) {
 
+            const chestIds =
+                Object.keys(
+                    chests || {}
+                );
+
+
+            if (
+                chestIds.length === 0
+            ) {
+
+                return message.reply({
+
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor("#ff6b81")
+
+                            .setTitle("🎁 Rương kho báu")
+
+                            .setDescription(
+                                "Hiện chưa có rương nào."
+                            )
+
+                            .setFooter({
+                                text:
+                                    "✦ Fishing Adventure"
+                            })
+                    ]
+
+                });
+
+            }
+
+
             const chestList =
-                Object.values(chests)
+                chestIds
                     .map(
-                        chest =>
-                            `${chest.emoji} ${chest.name} · ⭐${chest.star || 1}`
+                        chestID => {
+
+                            const chest =
+                                chests[
+                                    chestID
+                                ];
+
+                            return (
+                                `${chest.emoji || "🎁"} **${chest.name || chestID}**\n` +
+                                `└ ⭐ Độ hiếm: **${chest.star || 1}** · \`${chestID}\``
+                            );
+
+                        }
                     )
-                    .join("\n");
+                    .join("\n\n");
 
 
             return message.reply({
@@ -60,25 +139,23 @@ module.exports = {
 
                     new EmbedBuilder()
 
-                        .setColor("#ffd166")
+                        .setColor("#9b59ff")
 
-                        .setTitle(
-                            "🎁 `TREASURE CHESTS`"
-                        )
+                        .setTitle("🎁 Rương kho báu")
 
                         .setDescription(
 
+                            `✨ **Danh sách rương**\n\n` +
+
                             `${chestList}\n\n` +
 
-                            `╰・Dùng: \`${prefix}open <tên rương>\``
-
+                            `💡 Dùng \`${prefix}open <tên rương>\` để mở.`
                         )
 
                         .setFooter({
                             text:
-                                "✦ Fishing Adventure"
+                                "✦ Fishing Adventure · Treasure"
                         })
-
                 ]
 
             });
@@ -91,14 +168,36 @@ module.exports = {
         // ==================================================
 
         const chest =
-            chests[id];
+            chests?.[id];
 
 
         if (!chest) {
 
-            return message.reply(
-                "╰・❌ Không tìm thấy rương"
-            );
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor("#ff6b81")
+
+                        .setTitle("❌ Không tìm thấy rương")
+
+                        .setDescription(
+
+                            `Không có rương với ID:\n` +
+                            `\`${id}\`\n\n` +
+
+                            `💡 Dùng \`${prefix}open\` để xem danh sách rương.`
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+
+            });
 
         }
 
@@ -110,21 +209,62 @@ module.exports = {
         const keyID =
             chest.key;
 
+
         const key =
-            keys[keyID];
+            keys?.[keyID];
 
 
         if (!key) {
 
-            return message.reply(
-                "╰・❌ Rương này chưa được cấu hình chìa khóa"
-            );
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor("#ff6b81")
+
+                        .setTitle("❌ Lỗi cấu hình rương")
+
+                        .setDescription(
+
+                            `${chest.emoji || "🎁"} **${chest.name || id}**\n\n` +
+
+                            `Rương này chưa được cấu hình chìa khóa hợp lệ.\n\n` +
+
+                            `🔑 Key ID: \`${keyID || "Không có"}\``
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+
+            });
 
         }
 
 
+        // ==================================================
+        // SỐ CHÌA KHÓA
+        // ==================================================
+
+        const keyCount =
+            Math.max(
+                0,
+                Number(
+                    user.keys?.[keyID] || 0
+                )
+            );
+
+
+        // ==================================================
+        // KHÔNG ĐỦ CHÌA KHÓA
+        // ==================================================
+
         if (
-            (user.keys?.[keyID] || 0) <= 0
+            keyCount <= 0
         ) {
 
             return message.reply({
@@ -135,26 +275,25 @@ module.exports = {
 
                         .setColor("#ff6b81")
 
-                        .setTitle(
-                            "🔑 `NOT ENOUGH KEY`"
-                        )
+                        .setTitle("🔑 Không đủ chìa khóa")
 
                         .setDescription(
 
-                            `${chest.emoji} ${chest.name}\n\n` +
+                            `${chest.emoji || "🎁"} **${chest.name || id}**\n\n` +
 
-                            `> 🔑 Cần: ${key.emoji} ${key.name}\n` +
-                            `> 📦 Bạn có: 0\n\n` +
+                            `Bạn cần:\n` +
+                            `🔑 ${key.emoji || "🔑"} **${key.name || keyID}** ×1\n\n` +
 
-                            `╰・Hãy mua thêm chìa khóa để mở rương.`
+                            `Bạn đang có:\n` +
+                            `🔑 **0**\n\n` +
 
+                            `💡 Hãy mua thêm chìa khóa rồi thử lại.`
                         )
 
                         .setFooter({
                             text:
-                                "✦ Fishing Adventure"
+                                "✦ Fishing Adventure · Treasure"
                         })
-
                 ]
 
             });
@@ -167,13 +306,36 @@ module.exports = {
         // ==================================================
 
         if (
-            !Array.isArray(chest.drop) ||
+            !Array.isArray(
+                chest.drop
+            ) ||
             chest.drop.length === 0
         ) {
 
-            return message.reply(
-                "╰・❌ Rương này chưa có phần thưởng"
-            );
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor("#ff6b81")
+
+                        .setTitle("❌ Rương chưa có phần thưởng")
+
+                        .setDescription(
+
+                            `${chest.emoji || "🎁"} **${chest.name || id}**\n\n` +
+
+                            `Rương này hiện chưa được cấu hình phần thưởng.`
+                        )
+
+                        .setFooter({
+                            text:
+                                "✦ Fishing Adventure"
+                        })
+                ]
+
+            });
 
         }
 
@@ -182,7 +344,17 @@ module.exports = {
         // TRỪ CHÌA KHÓA
         // ==================================================
 
-        user.keys[keyID]--;
+        user.keys =
+            user.keys || {};
+
+
+        user.keys[keyID] =
+            Math.max(
+                0,
+                Number(
+                    user.keys[keyID] || 0
+                ) - 1
+            );
 
 
         // ==================================================
@@ -211,34 +383,50 @@ module.exports = {
         ) {
 
             const min =
-                Number(
-                    drop.min || 0
+                Math.max(
+                    0,
+                    Number(
+                        drop.min || 0
+                    )
                 );
+
 
             const max =
-                Number(
-                    drop.max || min
+                Math.max(
+                    min,
+                    Number(
+                        drop.max ?? min
+                    )
                 );
 
 
-            const money = Math.floor(
-                 Math.random() * (drop.max - drop.min + 1) + drop.min
-                 );
-            min;
+            const money =
+                Math.floor(
+                    Math.random() *
+                    (
+                        max -
+                        min +
+                        1
+                    ) +
+                    min
+                );
 
 
-            user.money +=
+            user.money =
+                Number(
+                    user.money || 0
+                ) +
                 money;
 
 
             rewardText =
-                `💰 Nhận được: ${formatMoney(money)} ${emoji.money}`;
+                `💰 **${formatMoney(money)} ${emoji.money}**`;
 
         }
 
 
         // ==================================================
-        // ITEM
+        // CHÌA KHÓA
         // ==================================================
 
         else if (
@@ -254,60 +442,81 @@ module.exports = {
                 );
 
 
+            user.keys =
+                user.keys || {};
+
+
             user.keys[drop.id] =
                 (
-                    user.keys[drop.id] ||
-                    0
+                    Number(
+                        user.keys[
+                            drop.id
+                        ] || 0
+                    )
                 ) +
                 amount;
 
 
             const rewardKey =
-                keys[drop.id];
+                keys?.[
+                    drop.id
+                ];
 
 
             rewardText =
-                `🔑 Nhận được: ${rewardKey?.emoji || "🔑"} ${rewardKey?.name || drop.id} x${amount}`;
+                `${rewardKey?.emoji || "🔑"} **${rewardKey?.name || drop.id} ×${amount}**`;
 
         }
 
 
         // ==================================================
-        // LƯU
+        // LOẠI DROP KHÔNG HỖ TRỢ
+        // ==================================================
+
+        else {
+
+            rewardText =
+                `🎁 **${drop.id || "Phần thưởng không xác định"}**`;
+
+        }
+
+
+        // ==================================================
+        // SAVE
         // ==================================================
 
         save();
 
 
         // ==================================================
-        // EMBED
+        // EMBED KẾT QUẢ
         // ==================================================
 
         const embed =
             new EmbedBuilder()
 
-                .setColor("#ffd86b")
+                .setColor("#ffd166")
 
                 .setTitle(
-                    "🎁 `CHEST OPENED`"
+                    "🎁 Mở rương thành công"
                 )
 
                 .setDescription(
 
-                    `${chest.emoji} ${chest.name}\n\n` +
+                    `${chest.emoji || "🎁"} **${chest.name || id}**\n\n` +
 
-                    `✨ Rương đã mở thành công!\n\n` +
+                    `✨ Bạn đã mở rương và nhận được:\n\n` +
 
-                    `> ${rewardText}\n` +
-                    `> 🔑 Chìa khóa còn lại: ${user.keys[keyID]}\n\n` +
+                    `> ${rewardText}\n\n` +
 
-                    `╰・🌊 Chúc bạn may mắn!`
+                    `🔑 **Chìa khóa còn lại:** ${user.keys[keyID] || 0}\n\n` +
 
+                    `🌊 Chúc bạn may mắn trong lần mở tiếp theo!`
                 )
 
                 .setFooter({
                     text:
-                        "✦ Fishing Adventure"
+                        "✦ Fishing Adventure · Treasure"
                 })
 
                 .setTimestamp();
