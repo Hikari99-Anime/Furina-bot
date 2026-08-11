@@ -3,8 +3,7 @@ const {
 } = require("discord.js");
 
 const {
-    fetchPosts,
-    filterValidPosts,
+    fetchValidPostsPaged,
     buildPostEmbed,
     findBestTags,
     resolveWordTag
@@ -186,15 +185,9 @@ module.exports = {
                 // KHÔNG CÓ TỪ KHOÁ -> DUYỆT TOP ẢNH ĐIỂM CAO NHẤT
                 // ==================================================
 
-                const posts =
-                    await fetchPosts(
-                        `order:score ${ratingTag(nsfw)}`,
-                        20
-                    );
-
                 valid =
-                    filterValidPosts(
-                        posts,
+                    await fetchValidPostsPaged(
+                        `order:score ${ratingTag(nsfw)}`,
                         nsfw
                     );
 
@@ -214,16 +207,9 @@ module.exports = {
 
                 for (const candidate of candidates) {
 
-                    const posts =
-                        await fetchPosts(
-                            `${candidate} order:score ${ratingTag(nsfw)}`,
-                            20
-                        );
-
-
                     valid =
-                        filterValidPosts(
-                            posts,
+                        await fetchValidPostsPaged(
+                            `${candidate} order:score ${ratingTag(nsfw)}`,
                             nsfw
                         );
 
@@ -274,16 +260,9 @@ module.exports = {
                             continue;
 
 
-                        const posts =
-                            await fetchPosts(
-                                `${resolved} order:score ${ratingTag(nsfw)}`,
-                                20
-                            );
-
-
                         valid =
-                            filterValidPosts(
-                                posts,
+                            await fetchValidPostsPaged(
+                                `${resolved} order:score ${ratingTag(nsfw)}`,
                                 nsfw
                             );
 

@@ -340,6 +340,55 @@ function filterValidPosts(
 
 
 // ======================================================
+// FETCH POSTS + LỌC, TỰ SANG TRANG SAU NẾU TRANG NÀY RỖNG
+//
+// VD: top 20 (trang 1) không có ảnh hợp lệ -> thử trang 2 (ảnh
+// 21-40), rồi trang 3... cho tới khi có ảnh hợp lệ, hoặc Danbooru
+// trả về ít hơn 1 trang đầy đủ (nghĩa là hết dữ liệu thật), hoặc
+// chạm giới hạn maxPages (tránh gọi API vô hạn cho tag không tồn
+// tại ảnh hợp lệ nào).
+// ======================================================
+
+async function fetchValidPostsPaged(
+    tags,
+    nsfw,
+    limit = 20,
+    maxPages = 5
+) {
+
+    for (
+        let page = 1;
+        page <= maxPages;
+        page++
+    ) {
+
+        const posts =
+            await fetchPosts(
+                tags,
+                limit,
+                page
+            );
+
+        const valid =
+            filterValidPosts(
+                posts,
+                nsfw
+            );
+
+        if (valid.length)
+            return valid;
+
+        if (posts.length < limit)
+            break;
+
+    }
+
+    return [];
+
+}
+
+
+// ======================================================
 // EMBED ẢNH
 // ======================================================
 
@@ -410,6 +459,7 @@ function buildPostEmbed(post) {
 module.exports = {
     fetchPosts,
     filterValidPosts,
+    fetchValidPostsPaged,
     buildPostEmbed,
     findBestTags,
     resolveWordTag
