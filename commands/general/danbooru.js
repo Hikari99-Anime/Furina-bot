@@ -199,6 +199,11 @@ module.exports = {
                         args.join(" ")
                     );
 
+                console.log(
+                    `🔍 [art] step1 candidates for "${args.join(" ")}":`,
+                    candidates
+                );
+
 
                 for (const candidate of candidates) {
 
@@ -214,6 +219,10 @@ module.exports = {
                             posts,
                             nsfw
                         );
+
+                    console.log(
+                        `🔍 [art] step1 candidate="${candidate}" rawPosts=${posts.length} valid=${valid.length}`
+                    );
 
 
                     if (valid.length)
