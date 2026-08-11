@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Notify deploy start
+        run: |
+          curl -sf -H "Content-Type: application/json" -X POST \
+            -d '{"content":"🚀 Đang deploy Furina-bot lên VPS..."}' \
+            "${{ secrets.DEPLOY_WEBHOOK_URL }}"
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -23,4 +29,18 @@ jobs:
             git stash pop || true
             npm install
             pm2 restart furina-bot
+
+      - name: Notify deploy success
+        if: success()
+        run: |
+          curl -sf -H "Content-Type: application/json" -X POST \
+            -d '{"content":"✅ Deploy thành công, bot đã khởi động lại."}' \
+            "${{ secrets.DEPLOY_WEBHOOK_URL }}"
+
+      - name: Notify deploy failure
+        if: failure()
+        run: |
+          curl -sf -H "Content-Type: application/json" -X POST \
+            -d '{"content":"❌ Deploy thất bại, kiểm tra GitHub Actions log."}' \
+            "${{ secrets.DEPLOY_WEBHOOK_URL }}"
 

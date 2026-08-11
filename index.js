@@ -19,6 +19,10 @@ const noitu =
     require("./games/noitugame");
 
 const {
+    updateStatus
+} = require("./status");
+
+const {
     getUser
 } = require("./data");
 
@@ -282,8 +286,66 @@ client.once(
             "=============================="
         );
 
+
+        await updateStatus(
+            client,
+            "online"
+        );
+
     }
 
+);
+
+
+// ==========================================
+// STATUS - KẾT NỐI DISCORD
+// ==========================================
+
+client.on(
+    "shardDisconnect",
+    () => updateStatus(client, "disconnected")
+);
+
+client.on(
+    "shardReconnecting",
+    () => updateStatus(client, "reconnecting")
+);
+
+client.on(
+    "shardResume",
+    () => updateStatus(client, "resumed")
+);
+
+
+// ==========================================
+// STATUS - TẮT / RESTART (DEPLOY)
+// ==========================================
+
+async function gracefulShutdown() {
+
+    try {
+
+        await updateStatus(
+            client,
+            "restarting"
+        );
+
+    }
+
+    catch {}
+
+    process.exit(0);
+
+}
+
+process.on(
+    "SIGINT",
+    gracefulShutdown
+);
+
+process.on(
+    "SIGTERM",
+    gracefulShutdown
 );
 
 
