@@ -69,7 +69,9 @@ const client =
 
             GatewayIntentBits.GuildMessages,
 
-            GatewayIntentBits.MessageContent
+            GatewayIntentBits.MessageContent,
+
+            GatewayIntentBits.GuildVoiceStates
 
         ]
 
