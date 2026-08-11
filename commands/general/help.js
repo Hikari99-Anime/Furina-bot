@@ -228,7 +228,8 @@ module.exports = {
 
                     `🛑 ADMIN\n\n` +
 
-                    `${prefix}noitu stop · Dừng mini-game\n\n` +
+                    `${prefix}noitu stop · Dừng mini-game\n` +
+                    `${prefix}danbooruauto on/off/now/status · Auto-post ảnh Danbooru\n\n` +
 
                     `${SEPARATOR}\n\n` +
 
