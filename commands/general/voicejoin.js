@@ -1,5 +1,6 @@
 const {
-    joinSession
+    joinSession,
+    speakText
 } = require("../../utils/tts");
 
 
@@ -39,6 +40,11 @@ module.exports = {
                 );
 
             }
+
+            speakText(
+                message.guild.id,
+                `Furina đã vào, sẵn sàng đọc chat trong kênh ${message.channel.name}!`
+            );
 
             return message.reply(
 

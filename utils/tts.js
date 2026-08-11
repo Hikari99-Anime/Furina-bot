@@ -1,3 +1,10 @@
+const dns =
+    require("dns");
+
+// Nhiều VPS gán IPv6 nhưng không route được, khiến UDP discovery
+// của @discordjs/voice bị treo tới khi timeout. Ưu tiên IPv4 để né lỗi này.
+dns.setDefaultResultOrder("ipv4first");
+
 const {
     joinVoiceChannel,
     createAudioPlayer,
