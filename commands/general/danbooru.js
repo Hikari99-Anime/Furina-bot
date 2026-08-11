@@ -67,10 +67,12 @@ function createEmbed(
 
 // ======================================================
 // LUÔN CHỈ LẤY ẢNH AN TOÀN (SFW)
+//
+// Không gửi "-rating:explicit -rating:questionable" lên Danbooru vì
+// mỗi rating: cũng tính vào giới hạn số tag cho request ẩn danh
+// (dễ bị HTTP 422 khi kết hợp với tag khác). Thay vào đó lấy list
+// (mọi rating) về rồi tự lọc lại bằng filterValidPosts() ở dưới.
 // ======================================================
-
-const RATING_FILTER =
-    " -rating:explicit -rating:questionable";
 
 
 // ======================================================
@@ -152,7 +154,7 @@ module.exports = {
 
                 const posts =
                     await fetchPosts(
-                        `order:score${RATING_FILTER}`,
+                        "order:score",
                         20
                     );
 
@@ -180,7 +182,7 @@ module.exports = {
 
                     const posts =
                         await fetchPosts(
-                            `${candidate} order:score${RATING_FILTER}`,
+                            `${candidate} order:score`,
                             20
                         );
 
@@ -240,7 +242,7 @@ module.exports = {
 
                         const posts =
                             await fetchPosts(
-                                `${resolved} order:score${RATING_FILTER}`,
+                                `${resolved} order:score`,
                                 20
                             );
 
