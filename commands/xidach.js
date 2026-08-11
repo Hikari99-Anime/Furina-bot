@@ -9,12 +9,12 @@ const {
     prefix,
     emoji,
     formatMoney
-} = require("../../config");
+} = require("../config");
 
 const {
     getUser,
     save
-} = require("../../data");
+} = require("../data");
 
 // ======================================================
 // TẠO BỘ BÀI
