@@ -171,6 +171,46 @@ module.exports = {
 
 
         // ==================================================
+        // ANIMATION - HỒI HỘP CHỜ KẾT QUẢ
+        // ==================================================
+
+        const choiceTextPreview =
+            side === "n"
+                ? "🪙 Ngửa"
+                : "🪙 Sấp";
+
+        const msg =
+            await message.reply({
+
+                embeds: [
+
+                    createEmbed(
+
+                        "#7ddcff",
+
+                        "🪙 ĐANG TUNG ĐỒNG XU...",
+
+                        `🎯 **Bạn chọn:**\n` +
+                        `${choiceTextPreview}\n\n` +
+
+                        `🎲 **Tiền cược:** ` +
+                        `${bet.toLocaleString()} ${emoji.money}\n\n` +
+
+                        `🪙 Đồng xu đang xoay...`
+
+                    )
+
+                ]
+
+            });
+
+
+        await new Promise(
+            r => setTimeout(r, 3000)
+        );
+
+
+        // ==================================================
         // TUNG ĐỒNG XU
         // ==================================================
 
@@ -242,7 +282,7 @@ module.exports = {
         // EMBED
         // ==================================================
 
-        return message.reply({
+        return msg.edit({
 
             embeds: [
 
