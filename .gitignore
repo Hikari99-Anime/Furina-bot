@@ -2,3 +2,4 @@
 node_modules/
 bot.log
 status_message.json
+danbooru_autopost_state.json

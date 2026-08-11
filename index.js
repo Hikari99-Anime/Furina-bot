@@ -23,6 +23,10 @@ const {
 } = require("./status");
 
 const {
+    resumeEnabledFeeds
+} = require("./danbooru-autopost");
+
+const {
     getUser
 } = require("./data");
 
@@ -290,6 +294,11 @@ client.once(
         await updateStatus(
             client,
             "online"
+        );
+
+
+        resumeEnabledFeeds(
+            client
         );
 
     }

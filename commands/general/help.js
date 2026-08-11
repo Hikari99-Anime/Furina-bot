@@ -222,6 +222,10 @@ module.exports = {
                     `${prefix}xidach <tiền cược> · Xì dách\n` +
                     `${prefix}tdx n/s <tiền cược> · Tung đồng xu\n\n` +
 
+                    `🖼️ ẢNH\n\n` +
+
+                    `${prefix}danbooru [tag] · Ảnh phổ biến Danbooru\n\n` +
+
                     `🛑 ADMIN\n\n` +
 
                     `${prefix}noitu stop · Dừng mini-game\n\n` +
