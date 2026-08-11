@@ -18,7 +18,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /root/Furina-bot
+            git stash --include-untracked
             git pull origin main
+            git stash pop || true
             npm install
-            pm2 restart Furina-bot
-            
+            pm2 restart furina-bot
+
