@@ -22,6 +22,107 @@ const RATING_LABEL = {
 
 };
 
+const TAG_CATEGORY = {
+
+    COPYRIGHT: 3,
+    CHARACTER: 4
+
+};
+
+
+// ======================================================
+// TÌM TAG THẬT KHỚP VỚI CÂU TÌM (character trước, copyright sau)
+// ======================================================
+
+async function findBestTags(query) {
+
+    const normalized =
+        String(query || "")
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+
+    if (!normalized)
+        return [];
+
+    try {
+
+        const url =
+            `https://danbooru.donmai.us/tags.json` +
+            `?search[name_matches]=${encodeURIComponent(`*${normalized}*`)}` +
+            `&search[order]=count` +
+            `&limit=30`;
+
+
+        const res =
+            await fetch(url, {
+
+                headers: {
+
+                    "User-Agent":
+                        USER_AGENT
+
+                }
+
+            });
+
+
+        if (!res.ok)
+            return [];
+
+
+        const tags =
+            await res.json();
+
+        if (!Array.isArray(tags))
+            return [];
+
+
+        const byCount =
+            (a, b) =>
+                (b.post_count || 0) -
+                (a.post_count || 0);
+
+
+        const characters =
+            tags
+                .filter(t =>
+                    t.category === TAG_CATEGORY.CHARACTER
+                )
+                .sort(byCount);
+
+
+        const copyrights =
+            tags
+                .filter(t =>
+                    t.category === TAG_CATEGORY.COPYRIGHT
+                )
+                .sort(byCount);
+
+
+        // ==================================================
+        // ƯU TIÊN CHARACTER, RỒI ĐẾN COPYRIGHT
+        // ==================================================
+
+        return [
+            ...characters.slice(0, 3),
+            ...copyrights.slice(0, 3)
+        ].map(t => t.name);
+
+    }
+    catch (err) {
+
+        console.error(
+            "❌ Lỗi tra tag Danbooru:",
+            err
+        );
+
+        return [];
+
+    }
+
+}
+
 
 // ======================================================
 // FETCH POSTS
@@ -208,5 +309,6 @@ function buildPostEmbed(post) {
 module.exports = {
     fetchPosts,
     filterValidPosts,
-    buildPostEmbed
+    buildPostEmbed,
+    findBestTags
 };

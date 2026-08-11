@@ -5,7 +5,8 @@ const {
 const {
     fetchPosts,
     filterValidPosts,
-    buildPostEmbed
+    buildPostEmbed,
+    findBestTags
 } = require("../../utils/danbooru");
 
 
@@ -155,30 +156,81 @@ module.exports = {
                     .trim();
 
 
-            let tags =
-                userTags
-                    ? `${userTags} order:rank`
-                    : "order:rank";
-
-
-            tags +=
+            const ratingFilter =
                 nsfw
                     ? " -rating:general -rating:sensitive"
                     : " -rating:explicit -rating:questionable";
 
 
-            const posts =
-                await fetchPosts(
-                    tags,
-                    20
-                );
+            let valid = [];
 
 
-            const valid =
-                filterValidPosts(
-                    posts,
-                    nsfw
-                );
+            // ==================================================
+            // ƯU TIÊN TÌM THEO TAG CHARACTER, RỒI COPYRIGHT
+            // (VD: "fart mobius" -> tag character/copyright thật)
+            // ==================================================
+
+            if (args.length) {
+
+                const candidates =
+                    await findBestTags(
+                        args.join(" ")
+                    );
+
+
+                for (const candidate of candidates) {
+
+                    const posts =
+                        await fetchPosts(
+                            `${candidate} order:rank${ratingFilter}`,
+                            20
+                        );
+
+
+                    valid =
+                        filterValidPosts(
+                            posts,
+                            nsfw
+                        );
+
+
+                    if (valid.length)
+                        break;
+
+                }
+
+            }
+
+
+            // ==================================================
+            // FALLBACK: TÌM THEO WILDCARD TỪNG TỪ NHƯ CŨ
+            // ==================================================
+
+            if (!valid.length) {
+
+                const tags =
+                    (
+                        userTags
+                            ? `${userTags} order:rank`
+                            : "order:rank"
+                    ) +
+                    ratingFilter;
+
+
+                const posts =
+                    await fetchPosts(
+                        tags,
+                        20
+                    );
+
+
+                valid =
+                    filterValidPosts(
+                        posts,
+                        nsfw
+                    );
+
+            }
 
 
             if (!valid.length) {
