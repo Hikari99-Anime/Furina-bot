@@ -1,6 +1,12 @@
 require("dotenv").config();
 
 const {
+    initErrorLogging
+} = require("./utils/errorLog");
+
+initErrorLogging();
+
+const {
     chests,
     keys,
     insurance,
