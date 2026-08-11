@@ -203,6 +203,94 @@ module.exports = {
 
 
             // ==================================================
+            // NHIỀU TỪ KHOÁ RIÊNG (VD: "furina elysia")
+            // TRA TỪNG TỪ THÀNH TAG THẬT RỒI AND LẠI
+            // ==================================================
+
+            if (
+                !valid.length &&
+                args.length > 1
+            ) {
+
+                const resolvedParts = [];
+
+                for (const rawTag of args) {
+
+                    const tag =
+                        String(rawTag || "");
+
+                    if (!tag) {
+
+                        continue;
+
+                    }
+
+
+                    const negate =
+                        tag.startsWith("-")
+                            ? "-"
+                            : "";
+
+                    const core =
+                        negate
+                            ? tag.slice(1)
+                            : tag;
+
+
+                    // ==========================================
+                    // GIỮ NGUYÊN META TAG / WILDCARD ĐÃ CÓ
+                    // ==========================================
+
+                    if (
+                        core.includes(":") ||
+                        core.includes("*")
+                    ) {
+
+                        resolvedParts.push(tag);
+                        continue;
+
+                    }
+
+
+                    // ==========================================
+                    // TRA TAG THẬT CHO TỪNG TỪ, ƯU TIÊN CHARACTER
+                    // ==========================================
+
+                    const wordCandidates =
+                        await findBestTags(core);
+
+                    resolvedParts.push(
+
+                        wordCandidates.length
+                            ? `${negate}${wordCandidates[0]}`
+                            : `${negate}${core}*`
+
+                    );
+
+                }
+
+
+                if (resolvedParts.length > 1) {
+
+                    const posts =
+                        await fetchPosts(
+                            `${resolvedParts.join(" ")} order:rank${ratingFilter}`,
+                            20
+                        );
+
+
+                    valid =
+                        filterValidPosts(
+                            posts,
+                            nsfw
+                        );
+
+                }
+
+            }
+
+
+            // ==================================================
             // FALLBACK: TÌM THEO WILDCARD TỪNG TỪ NHƯ CŨ
             // ==================================================
 
