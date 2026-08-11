@@ -2,353 +2,231 @@ const {
     EmbedBuilder
 } = require("discord.js");
 
-
 const {
     emoji,
     formatMoney
-} = require("../../config");
-
+} = require("../../config.js");
 
 const {
     getUser,
     save
 } = require("../../data.js");
 
+// ======================================================
+// CONFIG
+// ======================================================
 
+const SEPARATOR =
+    "୨୧ ───────── ୨୧";
 
+const FOOTER = {
+    text:
+        "✦ Fishing Adventure · Daily Reward"
+};
 
+// ======================================================
+// MODULE
+// ======================================================
 
 module.exports = {
 
+    name: "daily",
 
-name:"daily",
+    aliases: [
+        "nhan",
+        "reward"
+    ],
 
+    async execute(message) {
 
-aliases:[
+        const user =
+            getUser(
+                message.author.id
+            );
 
-    "nhan",
+        if (!user) {
 
-    "reward"
+            return message.reply({
+                content:
+                    "❌ Không tìm thấy dữ liệu người chơi."
+            });
 
-],
+        }
 
+        // ==================================================
+        // FIX DAILY DATA
+        // ==================================================
 
+        user.daily ??= {
+            last: 0,
+            streak: 0
+        };
 
+        user.daily.last =
+            Number(user.daily.last) || 0;
 
+        user.daily.streak =
+            Number(user.daily.streak) || 0;
 
+        const now =
+            Date.now();
 
-async execute(message){
+        const cooldown =
+            24 * 60 * 60 * 1000;
 
+        const passed =
+            now - user.daily.last;
 
+        // ==================================================
+        // CHƯA ĐỦ 24 GIỜ
+        // ==================================================
 
-const user = getUser(
+        if (passed < cooldown) {
 
-    message.guild.id,
+            const remain =
+                cooldown - passed;
 
-    message.author.id
+            const hours =
+                Math.floor(
+                    remain /
+                    (1000 * 60 * 60)
+                );
 
-);
+            const minutes =
+                Math.floor(
+                    (
+                        remain %
+                        (1000 * 60 * 60)
+                    ) /
+                    (1000 * 60)
+                );
 
+            const embed =
+                new EmbedBuilder()
 
+                    .setColor("#f5c451")
 
+                    .setTitle(
+                        "🎁 `DAILY REWARD`"
+                    )
 
+                    .setDescription(
 
-// ======================
-// FIX DAILY DATA
-// ======================
+                        `${SEPARATOR}\n\n` +
 
+                        `Bạn đã nhận phần thưởng hôm nay.\n` +
+                        `Hãy quay lại khi thời gian chờ kết thúc.\n\n` +
 
-if(!user.daily){
+                        `⏳ Còn lại: ` +
+                        `${hours} giờ ${minutes} phút\n` +
 
+                        `🔥 Chuỗi hiện tại: ` +
+                        `${user.daily.streak} ngày\n\n` +
 
-    user.daily = {
+                        `${SEPARATOR}\n\n` +
 
-        last:0,
+                        `“Furina chúc bạn kiên nhẫn một chút, ` +
+                        `phần thưởng tiếp theo đang chờ bạn đấy!”`
 
-        streak:0
+                    )
 
-    };
+                    .setFooter(
+                        FOOTER
+                    )
 
+                    .setTimestamp();
 
-}
+            return message.reply({
+                embeds: [
+                    embed
+                ]
+            });
 
+        }
 
+        // ==================================================
+        // RESET CHUỖI
+        // ==================================================
 
+        if (
+            user.daily.last > 0 &&
+            passed > cooldown * 2
+        ) {
 
+            user.daily.streak = 0;
 
-if(typeof user.daily.last !== "number"){
+        }
 
+        // ==================================================
+        // NHẬN THƯỞNG
+        // ==================================================
 
-    user.daily.last = 0;
+        user.daily.streak++;
 
+        const reward =
+            5000 +
+            (
+                user.daily.streak *
+                1000
+            );
 
-}
+        user.money =
+            Number(user.money || 0) +
+            reward;
 
+        user.daily.last =
+            now;
 
+        save();
 
+        // ==================================================
+        // EMBED THÀNH CÔNG
+        // ==================================================
 
+        const embed =
+            new EmbedBuilder()
 
-if(typeof user.daily.streak !== "number"){
+                .setColor("#8affb2")
 
+                .setTitle(
+                    "🎁 `DAILY REWARD`"
+                )
 
-    user.daily.streak = 0;
+                .setDescription(
 
+                    `${SEPARATOR}\n\n` +
 
-}
+                    `Bạn đã nhận phần thưởng hôm nay.\n` +
+                    `Chuỗi đăng nhập của bạn tiếp tục được duy trì.\n\n` +
 
+                    `🔥 Chuỗi: ` +
+                    `${user.daily.streak} ngày\n` +
 
+                    `💰 Nhận được: ` +
+                    `${formatMoney(reward)} ${emoji.money}\n` +
 
+                    `💳 Số dư: ` +
+                    `${formatMoney(user.money)} ${emoji.money}\n\n` +
 
+                    `${SEPARATOR}\n\n` +
 
+                    `“Furina chúc bạn thật may mắn ` +
+                    `và nhận được thật nhiều Fcoin!”`
 
+                )
 
+                .setFooter(
+                    FOOTER
+                )
 
-const now = Date.now();
+                .setTimestamp();
 
+        return message.reply({
+            embeds: [
+                embed
+            ]
+        });
 
-
-
-
-const cooldown = 
-
-24 * 60 * 60 * 1000;
-
-
-
-
-
-
-
-// ======================
-// CHECK COOLDOWN
-// ======================
-
-
-const passed = 
-
-now - user.daily.last;
-
-
-
-
-
-if(
-passed < cooldown
-){
-
-
-
-const remain = 
-
-cooldown - passed;
-
-
-
-const hour = Math.floor(
-
-remain /
-
-(1000 * 60 * 60)
-
-);
-
-
-
-const minute = Math.floor(
-
-(remain % 
-
-(1000 * 60 * 60))
-
-/
-
-(1000 * 60)
-
-);
-
-
-
-
-
-return message.reply({
-
-
-embeds:[
-
-
-
-new EmbedBuilder()
-
-.setColor("#FACC15")
-
-.setTitle(
-
-"╭・⏳ DAILY REWARD"
-
-)
-
-.setDescription(
-
-`🎁 Bạn đã nhận thưởng hôm nay!
-
-⏰ Còn lại: ${hour} giờ ${minute} phút
-🔥 Chuỗi hiện tại: ${user.daily.streak} ngày
-
-╰・🎣 Hẹn gặp lại!`
-
-)
-
-.setFooter({
-
-text:
-
-"✦ Fishing Adventure"
-
-})
-
-
-]
-
-});
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ======================
-// RESET STREAK
-// ======================
-
-
-if(
-
-user.daily.last > 0 &&
-
-passed > cooldown * 2
-
-){
-
-
-user.daily.streak = 0;
-
-
-}
-
-
-
-
-
-
-
-// ======================
-// NHẬN DAILY
-// ======================
-
-
-user.daily.streak++;
-
-
-
-
-
-const reward = 
-
-5000 +
-
-(user.daily.streak * 1000);
-
-
-
-
-
-user.money += reward;
-
-
-
-
-
-user.daily.last = now;
-
-
-
-
-
-save();
-
-
-
-
-
-
-
-
-
-return message.reply({
-
-
-
-embeds:[
-
-
-
-new EmbedBuilder()
-
-
-.setColor("#86EFAC")
-
-
-.setTitle(
-
-"╭・🎁 DAILY REWARD"
-
-)
-
-
-.setDescription(
-
-`✨ Nhận thưởng thành công!
-
-🔥 Chuỗi: ${user.daily.streak} ngày
-💰 Nhận: ${formatMoney(reward)} ${emoji.money}
-💳 Số dư: ${formatMoney(user.money)} ${emoji.money}
-
-╰・🎣 Chúc bạn câu được cá hiếm!`
-
-)
-
-
-.setFooter({
-
-text:
-
-"✦ Fishing Adventure"
-
-})
-
-
-.setTimestamp()
-
-
-
-]
-
-
-});
-
-
-
-
-
-}
-
-
+    }
 
 };

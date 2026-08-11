@@ -1,175 +1,779 @@
 const {
-EmbedBuilder
-}=require("discord.js");
-
-
-const {
-baits,
-keys,
-insurance,
-fishList,
-emoji,
-formatMoney
-}=require("../../config");
-
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
+} = require("discord.js");
 
 const {
-getUser
-}=require("../../data");
+    baits,
+    keys,
+    insurance,
+    fishList,
+    emoji,
+    formatMoney
+} = require("../../config");
 
+const {
+    getUser
+} = require("../../data");
 
+// ======================================================
+// CONFIG
+// ======================================================
 
-module.exports={
+const COLOR = "#9b59ff";
 
-name:"inventory",
+const SEPARATOR =
+    "୨୧ ───────── ୨୧";
 
-aliases:[
-"inv",
-"kho"
-],
+const FOOTER = {
+    text:
+        "✦ Fishing Adventure · Inventory"
+};
 
+// ======================================================
+// TÍNH TỔNG CÁ
+// ======================================================
 
+function getFishData(user) {
 
-async execute(message){
+    let fishText = "";
 
+    let fishCount = 0;
 
-const user=
-getUser(
-message.guild.id,
-message.author.id
-);
+    let totalKg = 0;
 
+    let fishValue = 0;
 
+    const list =
+        Array.isArray(fishList)
+            ? fishList
+            : [];
 
-let bait="";
+    for (
+        const fish of list
+    ) {
 
-let key="";
+        const fishes =
+            user.fish?.[
+                fish.id
+            ];
 
+        if (
+            !Array.isArray(fishes) ||
+            fishes.length === 0
+        ) {
+            continue;
+        }
 
+        let weight = 0;
 
-for(const id in baits){
+        for (
+            const value of fishes
+        ) {
 
+            const kg =
+                Number(value);
 
-const x=baits[id];
+            if (
+                Number.isFinite(kg)
+            ) {
 
+                weight += kg;
 
-bait+=
-`${x.emoji} ${x.name} x${user.moi[id]||0}\n`;
+                totalKg += kg;
+            }
+        }
 
+        fishCount +=
+            fishes.length;
+
+        const price =
+            Number(
+                fish.sellPrice ??
+                fish.sell ??
+                fish.price ??
+                0
+            );
+
+        if (
+            Number.isFinite(price)
+        ) {
+
+            fishValue +=
+                weight * price;
+        }
+
+        fishText +=
+            `${fish.emoji || "🐟"} ` +
+            `${fish.name} x${fishes.length}\n`;
+    }
+
+    if (!fishText) {
+
+        fishText =
+            "*Chưa có cá nào.*";
+    }
+
+    return {
+
+        fishText,
+
+        fishCount,
+
+        totalKg,
+
+        fishValue:
+            Math.floor(
+                fishValue
+            )
+
+    };
 }
 
+// ======================================================
+// MỒI
+// ======================================================
 
+function getBaitText(user) {
 
-for(const id in keys){
+    let text = "";
 
+    for (
+        const id in (baits || {})
+    ) {
 
-const x=keys[id];
+        const item =
+            baits[id];
 
+        const amount =
+            Number(
+                user.moi?.[id] || 0
+            );
 
-key+=
-`${x.emoji} ${x.name} x${user.keys[id]||0}\n`;
+        if (
+            amount <= 0
+        ) {
+            continue;
+        }
 
+        text +=
+            `${item.emoji || "🪱"} ` +
+            `${item.name} x${amount}\n`;
+    }
+
+    return (
+        text ||
+        "*Không có mồi.*"
+    );
 }
 
+// ======================================================
+// CHÌA KHÓA
+// ======================================================
 
+function getKeyText(user) {
 
-for(const id in insurance){
+    let text = "";
 
+    for (
+        const id in (keys || {})
+    ) {
 
-const x=insurance[id];
+        const item =
+            keys[id];
 
+        const amount =
+            Number(
+                user.keys?.[id] || 0
+            );
 
-key+=
-`${x.emoji} ${x.name} x${user.insurance||0}\n`;
+        if (
+            amount <= 0
+        ) {
+            continue;
+        }
 
+        text +=
+            `${item.emoji || "🔑"} ` +
+            `${item.name} x${amount}\n`;
+    }
+
+    return (
+        text ||
+        "*Không có chìa khóa.*"
+    );
 }
 
+// ======================================================
+// BẢO HIỂM
+// ======================================================
 
+function getInsuranceText(user) {
 
+    let text = "";
 
-let fishText="";
+    // --------------------------------------------------
+    // DẠNG:
+    //
+    // insurance: {
+    //     basic: {...}
+    // }
+    // --------------------------------------------------
 
-let fishValue=0;
+    if (
+        insurance &&
+        typeof insurance === "object"
+    ) {
 
+        for (
+            const id in insurance
+        ) {
 
+            const item =
+                insurance[id];
 
-for(const fish of fishList){
+            let amount = 0;
 
+            if (
+                user.insurance &&
+                typeof user.insurance === "object"
+            ) {
 
-const list=
-user.fish[fish.id];
+                amount =
+                    Number(
+                        user.insurance[id] || 0
+                    );
+            }
 
+            if (
+                amount <= 0
+            ) {
+                continue;
+            }
 
-if(!list || list.length===0)
+            text +=
+                `${item.emoji || "🛡️"} ` +
+                `${item.name} x${amount}\n`;
+        }
+    }
 
-continue;
+    // --------------------------------------------------
+    // DATA CŨ:
+    //
+    // user.insurance = 2
+    // --------------------------------------------------
 
+    if (
+        typeof user.insurance === "number" &&
+        user.insurance > 0
+    ) {
 
-let weight=0;
+        text =
+            `🛡️ Bảo hiểm x${user.insurance}`;
+    }
 
-
-for(const w of list)
-
-weight+=w;
-
-
-const value=
-Math.floor(weight*fish.sell);
-
-
-fishValue+=value;
-
-
-fishText+=
-`${fish.emoji} ${fish.name} x${list.length} ┆ ${weight.toFixed(2)}KG ┆ ${formatMoney(value)} ${emoji.money}\n`;
-
-
+    return (
+        text ||
+        "*Không có bảo hiểm.*"
+    );
 }
 
+// ======================================================
+// TẠO EMBED BALO 1
+// ======================================================
 
+function createBagOneEmbed(
+    user,
+    message
+) {
 
-if(!fishText)
+    const fish =
+        getFishData(
+            user
+        );
 
-fishText=
-"Chưa có cá nào\n";
+    const balance =
+        Number(
+            user.money || 0
+        );
 
+    return new EmbedBuilder()
 
+        .setColor(
+            COLOR
+        )
 
+        .setAuthor({
 
-const embed=
-new EmbedBuilder()
+            name:
+                `${message.author.username} · Inventory`,
 
-.setColor("#9b59ff")
+            iconURL:
+                message.author.displayAvatarURL({
+                    extension: "png",
+                    size: 128
+                })
 
-.setTitle(
-"╭・🎒 KHO ĐỒ"
-)
+        })
 
-.setDescription(
-`╭・🐟 CÁ (bán được ${formatMoney(fishValue)} ${emoji.money})
-${fishText}
-╭・🪱 MỒI
-${bait}
-╭・🎟️ CHÌA KHÓA & BẢO HIỂM
-${key}
-╰・🎣 Fish System`
-)
+        .setTitle(
+            "🎒 `BALO 1`"
+        )
 
-.setFooter({
+        .setDescription(
 
-text:"Quản lý vật phẩm"
+            `🐟 **CÁ**\n\n` +
 
-});
+            `${fish.fishText}\n` +
 
+            `${SEPARATOR}\n\n` +
 
+            `🐟 **${fish.fishCount}** con\n` +
 
-message.reply({
+            `⚖️ **${fish.totalKg.toFixed(2)} KG**\n` +
 
-embeds:[embed]
+            `💰 **${formatMoney(
+                fish.fishValue
+            )} ${emoji.money}**\n\n` +
 
-});
+            `${SEPARATOR}\n\n` +
 
+            `💳 ${formatMoney(
+                balance
+            )} ${emoji.money}`
 
+        )
+
+        .setFooter(
+            FOOTER
+        )
+
+        .setTimestamp();
 }
+
+// ======================================================
+// TẠO EMBED BALO 2
+// ======================================================
+
+function createBagTwoEmbed(
+    user,
+    message
+) {
+
+    const baitText =
+        getBaitText(
+            user
+        );
+
+    const keyText =
+        getKeyText(
+            user
+        );
+
+    const insuranceText =
+        getInsuranceText(
+            user
+        );
+
+    const balance =
+        Number(
+            user.money || 0
+        );
+
+    return new EmbedBuilder()
+
+        .setColor(
+            COLOR
+        )
+
+        .setAuthor({
+
+            name:
+                `${message.author.username} · Inventory`,
+
+            iconURL:
+                message.author.displayAvatarURL({
+                    extension: "png",
+                    size: 128
+                })
+
+        })
+
+        .setTitle(
+            "📦 `BALO 2`"
+        )
+
+        .setDescription(
+
+            `🪱 **MỒI**\n\n` +
+
+            `${baitText}\n\n` +
+
+            `${SEPARATOR}\n\n` +
+
+            `🔑 **CHÌA KHÓA**\n\n` +
+
+            `${keyText}\n\n` +
+
+            `${SEPARATOR}\n\n` +
+
+            `🛡️ **BẢO HIỂM**\n\n` +
+
+            `${insuranceText}\n\n` +
+
+            `${SEPARATOR}\n\n` +
+
+            `💳 ${formatMoney(
+                balance
+            )} ${emoji.money}`
+
+        )
+
+        .setFooter(
+            FOOTER
+        )
+
+        .setTimestamp();
+}
+
+// ======================================================
+// BUTTON
+// ======================================================
+
+function createBagButtons(
+    currentBag,
+    userId
+) {
+
+    const row =
+        new ActionRowBuilder();
+
+    // ==================================================
+    // BALO 1
+    // ==================================================
+
+    row.addComponents(
+
+        new ButtonBuilder()
+
+            .setCustomId(
+                `inventory_bag_1_${userId}`
+            )
+
+            .setLabel(
+                "Balo 1"
+            )
+
+            .setEmoji(
+                "🎒"
+            )
+
+            .setStyle(
+
+                currentBag === 1
+                    ? ButtonStyle.Primary
+                    : ButtonStyle.Secondary
+
+            )
+
+    );
+
+    // ==================================================
+    // BALO 2
+    // ==================================================
+
+    row.addComponents(
+
+        new ButtonBuilder()
+
+            .setCustomId(
+                `inventory_bag_2_${userId}`
+            )
+
+            .setLabel(
+                "Balo 2"
+            )
+
+            .setEmoji(
+                "📦"
+            )
+
+            .setStyle(
+
+                currentBag === 2
+                    ? ButtonStyle.Primary
+                    : ButtonStyle.Secondary
+
+            )
+
+    );
+
+    return row;
+}
+
+// ======================================================
+// MODULE
+// ======================================================
+
+module.exports = {
+
+    name: "inventory",
+
+    aliases: [
+        "inv",
+        "kho"
+    ],
+
+    async execute(message) {
+
+        // ==================================================
+        // USER
+        // ==================================================
+
+        const user =
+            getUser(
+                message.author.id
+            );
+
+        if (!user) {
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#ff6b81"
+                        )
+
+                        .setTitle(
+                            "❌ `NO PLAYER DATA`"
+                        )
+
+                        .setDescription(
+                            "Không thể tải dữ liệu kho đồ của bạn."
+                        )
+
+                        .setFooter(
+                            FOOTER
+                        )
+
+                ]
+
+            });
+        }
+
+        // ==================================================
+        // ĐẢM BẢO DATA
+        // ==================================================
+
+        if (!user.fish) {
+
+            user.fish = {};
+
+        }
+
+        if (!user.moi) {
+
+            user.moi = {};
+
+        }
+
+        if (!user.keys) {
+
+            user.keys = {};
+
+        }
+
+        // ==================================================
+        // BALO MẶC ĐỊNH
+        // ==================================================
+
+        let currentBag = 1;
+
+        // ==================================================
+        // EMBED
+        // ==================================================
+
+        const embed =
+            createBagOneEmbed(
+                user,
+                message
+            );
+
+        // ==================================================
+        // BUTTON
+        // ==================================================
+
+        const row =
+            createBagButtons(
+                currentBag,
+                message.author.id
+            );
+
+        // ==================================================
+        // GỬI
+        // ==================================================
+
+        const msg =
+            await message.reply({
+
+                embeds: [
+                    embed
+                ],
+
+                components: [
+                    row
+                ]
+
+            });
+
+        // ==================================================
+        // COLLECTOR
+        // ==================================================
+
+        const collector =
+            msg.createMessageComponentCollector({
+
+                time:
+                    60000
+
+            });
+
+        // ==================================================
+        // BUTTON COLLECT
+        // ==================================================
+
+        collector.on(
+            "collect",
+            async interaction => {
+
+                // ==========================================
+                // CHECK USER
+                // ==========================================
+
+                if (
+                    interaction.user.id !==
+                    message.author.id
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Đây không phải kho đồ của bạn.",
+
+                        ephemeral:
+                            true
+
+                    });
+
+                }
+
+                // ==========================================
+                // ID
+                // ==========================================
+
+                const parts =
+                    interaction.customId.split("_");
+
+                const selectedBag =
+                    Number(
+                        parts[2]
+                    );
+
+                // ==========================================
+                // CHECK BALO
+                // ==========================================
+
+                if (
+                    selectedBag !== 1 &&
+                    selectedBag !== 2
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Không tìm thấy balo.",
+
+                        ephemeral:
+                            true
+
+                    });
+
+                }
+
+                // ==========================================
+                // ĐỔI BALO
+                // ==========================================
+
+                currentBag =
+                    selectedBag;
+
+                // ==========================================
+                // EMBED MỚI
+                // ==========================================
+
+                const newEmbed =
+                    currentBag === 1
+
+                        ? createBagOneEmbed(
+                            user,
+                            message
+                        )
+
+                        : createBagTwoEmbed(
+                            user,
+                            message
+                        );
+
+                // ==========================================
+                // UPDATE
+                // ==========================================
+
+                return interaction.update({
+
+                    embeds: [
+                        newEmbed
+                    ],
+
+                    components: [
+
+                        createBagButtons(
+                            currentBag,
+                            message.author.id
+                        )
+
+                    ]
+
+                });
+
+            }
+        );
+
+        // ==================================================
+        // END
+        // ==================================================
+
+        collector.on(
+            "end",
+            async () => {
+
+                try {
+
+                    await msg.edit({
+
+                        components: []
+
+                    });
+
+                } catch {}
+
+            }
+        );
+
+    }
 
 };

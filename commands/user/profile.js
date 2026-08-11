@@ -1,167 +1,444 @@
 const {
-EmbedBuilder
-}=require("discord.js");
-
-
-const {
-rods,
-emoji,
-rodTitles,
-formatMoney
-}=require("../../config");
-
+    EmbedBuilder
+} = require("discord.js");
 
 const {
-getUser
-}=require("../../data");
+    rods,
+    baits,
+    emoji,
+    rodTitles,
+    formatMoney
+} = require("../../config");
 
+const {
+    getUser
+} = require("../../data");
 
+module.exports = {
 
-module.exports={
+    name: "profile",
 
+    aliases: [
+        "pf",
+        "me",
+        "info"
+    ],
 
-name:"profile",
+    async execute(message) {
 
-aliases:[
+        // ======================================================
+        // USER
+        // ======================================================
 
-"pf",
-"me"
+        const target =
+            message.mentions.users.first() ||
+            message.author;
 
-],
+        const user =
+            getUser(target.id);
 
+        if (!user) {
 
+            return message.reply({
 
-async execute(message){
+                embeds: [
 
+                    new EmbedBuilder()
 
+                        .setColor("#EF4444")
 
-const user=
-getUser(
-message.guild.id,
-message.author.id
-);
+                        .setTitle(
+                            "୨୧ ───────── ୨୧\n" +
+                            "❌ KHÔNG TÌM THẤY\n" +
+                            "୨୧ ───────── ୨୧"
+                        )
 
+                        .setDescription(
+                            "Không tìm thấy dữ liệu người chơi này."
+                        )
 
+                        .setFooter({
+                            text: "✦ Fishing Adventure"
+                        })
 
+                        .setTimestamp()
 
+                ]
 
-// ======================
-// CẦN HIỆN TẠI
-// ======================
+            });
 
+        }
 
-let rodText=
-"Chưa trang bị";
+        // ======================================================
+        // FIX DATA
+        // ======================================================
 
+        user.money =
+            Number(user.money || 0);
 
+        user.fish ??= {};
+        user.moi ??= {};
+        user.rodData ??= {};
+        user.can ??= {};
 
-if(user.can.dangDung){
+        user.daily ??= {
+            last: 0,
+            streak: 0
+        };
 
+        // ======================================================
+        // CẦN ĐANG DÙNG
+        // ======================================================
 
+        let rodText =
+            "Chưa trang bị";
 
-const id=
-user.can.dangDung;
+        let rodLevel = 0;
+        let rodLuck = 0;
+        let rodUses = 0;
+        let rodMaxUses = 0;
 
+        const rodId =
+            user.can.dangDung;
 
-const base=
-rods[id];
+        if (rodId) {
 
+            const base =
+                rods?.[rodId];
 
-const rod=
-user.rodData[id];
+            const rod =
+                user.rodData?.[rodId];
 
+            if (base && rod) {
 
+                rodLevel =
+                    Number(rod.level || 0);
 
-let title="";
+                rodLuck =
+                    Number(rod.luck || 0);
 
+                rodUses =
+                    Number(rod.uses || 0);
 
-if(rodTitles[rod.level])
+                rodMaxUses =
+                    Number(rod.maxUses || 0);
 
-title=
-` · ${rodTitles[rod.level]}`;
+                const title =
+                    rodTitles?.[rodLevel]
+                        ? ` · ${rodTitles[rodLevel]}`
+                        : "";
 
+                rodText =
+                    `${base.emoji || "🎣"} ${base.name} +${rodLevel}${title}\n` +
+                    `🍀 May mắn: \`${rodLuck}\`\n` +
+                    `🛠️ Độ bền: \`${rodUses}/${rodMaxUses}\``;
 
+            }
 
-rodText=
-`${base.emoji} ${base.name} · ⭐+${rod.level}${title}
-🍀 Luck ${rod.luck} · 🎯 ${rod.uses}/${rod.maxUses}`;
+        }
 
+        // ======================================================
+        // THỐNG KÊ CÁ
+        // ======================================================
 
+        let totalFish = 0;
+        let totalWeight = 0;
+        let biggestFish = 0;
+        let fishSpecies = 0;
 
-}
+        for (const id in user.fish) {
 
+            const fishList =
+                user.fish[id];
 
+            if (!Array.isArray(fishList)) {
+                continue;
+            }
 
+            if (fishList.length > 0) {
+                fishSpecies++;
+            }
 
+            totalFish +=
+                fishList.length;
 
-// ======================
-// ĐẾM CÁ
-// ======================
+            for (const value of fishList) {
 
+                const weight =
+                    Number(value);
 
-let totalFish=0;
+                if (
+                    Number.isFinite(weight) &&
+                    weight > 0
+                ) {
 
+                    totalWeight += weight;
 
+                    if (
+                        weight >
+                        biggestFish
+                    ) {
 
-for(const id in user.fish){
+                        biggestFish =
+                            weight;
 
+                    }
 
+                }
 
-totalFish+=
-user.fish[id].length;
+            }
 
+        }
 
-}
+        // ======================================================
+        // DAILY
+        // ======================================================
 
+        const dailyStreak =
+            Number(
+                user.daily?.streak || 0
+            );
 
+        // ======================================================
+        // TỔNG MỒI
+        // ======================================================
 
+        let totalBait = 0;
 
+        for (const id in user.moi) {
 
-message.reply({
+            totalBait +=
+                Number(
+                    user.moi[id] || 0
+                );
 
-embeds:[
+        }
 
+        // ======================================================
+        // HIỂN THỊ MỒI
+        // ======================================================
 
-new EmbedBuilder()
+        const baitText =
+            Object.keys(baits || {})
+                .map(id => {
 
-.setColor("#89ddff")
+                    const bait =
+                        baits[id];
 
-.setTitle(
-`╭・👤 Hồ sơ ${message.author.username}`
-)
+                    const amount =
+                        Number(
+                            user.moi?.[id] || 0
+                        );
 
-.setThumbnail(
-message.author.displayAvatarURL()
-)
+                    return (
+                        `${bait?.emoji || "🪱"} ${amount}`
+                    );
 
-.setDescription(
-`╭・💰 **Tài sản:** ${formatMoney(user.money)} ${emoji.money}
+                })
+                .join(" · ") ||
+            "Chưa có mồi";
 
-╭・🎣 **Cần đang dùng**
-${rodText}
+        // ======================================================
+        // ĐỘ BỀN
+        // ======================================================
 
-╭・🐟 **Cá đã bắt:** ${totalFish}
+        let durabilityBar =
+            "Chưa trang bị";
 
-╭・🎒 **Túi mồi:** 🪱 ${user.moi.moithuong || 0} · 🦐 ${user.moi.moibac || 0} · ✨ ${user.moi.moivang || 0}
+        let rodStatus =
+            "⚪ Chưa trang bị";
 
-╰・🌊 Fishing Adventure`
-)
+        if (
+            rodMaxUses > 0
+        ) {
 
-.setFooter({
+            const percent =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        Math.floor(
+                            (rodUses /
+                                rodMaxUses) *
+                            100
+                        )
+                    )
+                );
 
-text:
-"✦ Hành trình ngư dân"
+            const filled =
+                Math.round(
+                    percent / 10
+                );
 
-})
+            durabilityBar =
+                "▰".repeat(filled) +
+                "▱".repeat(10 - filled) +
+                ` ${percent}%`;
 
+            if (rodUses <= 0) {
 
+                rodStatus =
+                    "🔴 Cần đã gãy";
 
-]
+            } else if (
+                percent <= 20
+            ) {
 
-});
+                rodStatus =
+                    "🟠 Độ bền thấp";
 
+            } else if (
+                percent <= 50
+            ) {
 
+                rodStatus =
+                    "🟡 Độ bền trung bình";
 
-}
+            } else {
+
+                rodStatus =
+                    "🟢 Độ bền tốt";
+
+            }
+
+        }
+
+        // ======================================================
+        // DANH HIỆU NGƯ DÂN
+        // ======================================================
+
+        let fishermanTitle =
+            "🎣 Tân Ngư Dân";
+
+        if (totalFish >= 1000) {
+
+            fishermanTitle =
+                "👑 Ngư Vương";
+
+        } else if (totalFish >= 500) {
+
+            fishermanTitle =
+                "🏆 Cao Thủ Câu Cá";
+
+        } else if (totalFish >= 100) {
+
+            fishermanTitle =
+                "🎣 Ngư Dân Chuyên Nghiệp";
+
+        } else if (totalFish >= 25) {
+
+            fishermanTitle =
+                "🐟 Ngư Dân Tập Sự";
+
+        }
+
+        // ======================================================
+        // DANH HIỆU CƯỜNG HÓA
+        // ======================================================
+
+        let upgradeTitle =
+            "⚪ Chưa cường hóa";
+
+        if (rodLevel >= 15) {
+
+            upgradeTitle =
+                "💎 Bậc Thầy Cường Hóa";
+
+        } else if (rodLevel >= 10) {
+
+            upgradeTitle =
+                "🔥 Cường Hóa Cao Cấp";
+
+        } else if (rodLevel >= 5) {
+
+            upgradeTitle =
+                "✨ Cường Hóa Khá";
+
+        } else if (rodLevel > 0) {
+
+            upgradeTitle =
+                "🔨 Đã Cường Hóa";
+
+        }
+
+        // ======================================================
+        // PROFILE EMBED
+        // ======================================================
+
+        const embed =
+            new EmbedBuilder()
+
+                .setColor("#89DDFF")
+
+                .setTitle(
+                    "୨୧ ───────── ୨୧\n" +
+                    `👤 HỒ SƠ ${target.username}\n` +
+                    "୨୧ ───────── ୨୧"
+                )
+
+                .setThumbnail(
+                    target.displayAvatarURL({
+                        dynamic: true,
+                        size: 256
+                    })
+                )
+
+                .setDescription(
+
+                    `✦ ${fishermanTitle}\n\n` +
+
+                    `💰 **TÀI SẢN**\n` +
+                    `${formatMoney(user.money)} ${emoji.money}\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `🎣 **CẦN ĐANG DÙNG**\n` +
+                    `${rodText}\n\n` +
+                    `${rodStatus}\n` +
+                    `${durabilityBar}\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `🐟 **THỐNG KÊ CÂU CÁ**\n` +
+                    `🐟 Cá đã bắt: \`${totalFish.toLocaleString()}\` con\n` +
+                    `📚 Loài đã bắt: \`${fishSpecies}\`\n` +
+                    `⚖️ Tổng cân nặng: \`${totalWeight.toFixed(2)} KG\`\n` +
+                    `🏋️ Cá lớn nhất: \`${biggestFish.toFixed(2)} KG\`\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `🎁 **HOẠT ĐỘNG**\n` +
+                    `🔥 Daily streak: \`${dailyStreak}\` ngày\n` +
+                    `🪱 Tổng mồi: \`${totalBait.toLocaleString()}\`\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `🏅 **THÀNH TÍCH**\n` +
+                    `${fishermanTitle}\n` +
+                    `${upgradeTitle}\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `🪱 **MỒI ĐANG CÓ**\n` +
+                    `${baitText}`
+
+                )
+
+                .setFooter({
+                    text:
+                        "✦ Fishing Adventure · Profile"
+                })
+
+                .setTimestamp();
+
+        return message.reply({
+
+            embeds: [
+                embed
+            ]
+
+        });
+
+    }
 
 };

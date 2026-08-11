@@ -1,621 +1,543 @@
 const fs = require("fs");
 const path = require("path");
 
-
 const { rods } = require("./config");
 
+// ======================================================
+// DATA FILE
+// ======================================================
 
-// luôn lưu đúng thư mục chứa data.js
 const filePath = path.join(
     __dirname,
     "data.json"
 );
 
-
-
 let data = {};
 
-
-
-// ======================
+// ======================================================
 // LOAD DATA
-// ======================
+// ======================================================
 
-if(fs.existsSync(filePath)){
+if (fs.existsSync(filePath)) {
 
-
-    try{
-
+    try {
 
         data = JSON.parse(
-
             fs.readFileSync(
                 filePath,
                 "utf8"
             )
-
         );
 
+        console.log("✅ DATA LOADED");
 
-    }
-    catch(err){
-
+    } catch (err) {
 
         console.log(
-            "⚠️ Data lỗi, tạo mới"
+            "⚠️ Data lỗi, tạo dữ liệu mới."
         );
 
-
-        data={};
-
+        data = {};
 
     }
-
 
 }
 
-
-
-
-
-
-
-
-// ======================
+// ======================================================
 // SAVE DATA
-// ======================
+// ======================================================
 
-function save(){
+function save() {
 
-
-    try{
-
+    try {
 
         fs.writeFileSync(
-
             filePath,
-
             JSON.stringify(
                 data,
                 null,
                 2
             )
-
         );
-
 
         console.log(
             "💾 DATA SAVED"
         );
 
-
-    }
-
-    catch(err){
-
+    } catch (err) {
 
         console.log(
             "❌ SAVE ERROR:",
             err
         );
 
-
     }
-
 
 }
 
+// ======================================================
+// TẠO USER MỚI
+// ======================================================
 
+function createUser() {
 
+    return {
 
+        money: 10000,
 
+        level: 1,
 
+        exp: 0,
 
+        can: {
 
+            dangDung: null,
 
-// ======================
-// CREATE USER
-// ======================
+            danhSach: {}
 
-function createUser(){
+        },
 
+        moi: {
 
-return {
+            worm: 10
 
+        },
 
-    money:5000,
+        fish: {},
 
+        keys: {},
 
-    level:1,
+        chests: {},
 
+        insurance: 0,
 
-    exp:0,
+        inv: {},
 
+        daily: {
 
+            last: 0,
 
+            streak: 0
 
-    // 🎣 CẦN
+        },
 
-    can:{
+        quest: {
 
+            date: "",
 
-        dangDung:null,
+            list: [],
 
+            claim: false
 
-        danhSach:{}
+        },
 
+        rodData: {},
 
-    },
+        stats: {
 
+            catch: 0,
 
+            sell: 0,
 
+            kg: 0
 
+        }
 
-
-    // 🪱 MỒI
-
-    moi:{
-
-
-        moithuong:10,
-
-
-        moibac:0,
-
-
-        moivang:0
-
-
-    },
-
-
-
-
-
-
-    // 🐟 CÁ
-
-    fish:{},
-
-
-
-
-
-
-    // 🗝️ KEY
-
-    keys:{},
-
-
-
-
-
-
-    // 🎁 RƯƠNG
-
-    chests:{},
-
-
-
-
-    // 🎫 VÉ BẢO HIỂM
-
-    insurance:0,
-
-
-
-
-    // 🎒 INVENTORY
-
-    inv:{},
-
-
-
-
-
-
-    // 🎁 DAILY
-
-    daily:{
-
-
-        last:0,
-
-
-        streak:0
-
-
-    },
-
-
-
-
-
-
-    // 📜 QUEST
-
-    quest:{
-
-
-        date:"",
-
-
-        list:[],
-
-
-        claim:false
-
-
-    },
-
-
-
-
-
-
-    // ⭐ CẦN DATA
-
-    rodData:{},
-
-
-
-
-
-
-    // 📊 STATS
-
-    stats:{
-
-
-        catch:0,
-
-
-        sell:0,
-
-
-        kg:0
-
-
-    }
-
-
-};
-
+    };
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-// ======================
+// ======================================================
 // GET USER
-// ======================
+// ======================================================
 
-function getUser(guildID,userID){
+function getUser(userID) {
 
+    if (!data[userID]) {
 
-
-    if(!data[guildID]){
-
-
-        data[guildID]={};
-
-
-    }
-
-
-
-
-
-
-    if(!data[guildID][userID]){
-
-
-        data[guildID][userID] =
-        createUser();
-
+        data[userID] =
+            createUser();
 
         save();
 
+    }
+
+    const user =
+        data[userID];
+
+    // ==================================================
+    // FIX MONEY
+    // ==================================================
+
+    if (
+        typeof user.money !== "number" ||
+        Number.isNaN(user.money)
+    ) {
+
+        user.money = 10000;
 
     }
 
+    // ==================================================
+    // FIX LEVEL
+    // ==================================================
 
+    if (
+        typeof user.level !== "number"
+    ) {
 
+        user.level = 1;
 
+    }
 
+    if (
+        typeof user.exp !== "number"
+    ) {
 
-    const user =
-    data[guildID][userID];
+        user.exp = 0;
 
+    }
 
+    // ==================================================
+    // FIX CẦN
+    // ==================================================
 
+    if (!user.can) {
 
+        user.can = {
 
+            dangDung: null,
 
-
-
-    // ======================
-    // FIX DATA
-    // ======================
-
-
-
-    if(typeof user.money !== "number")
-
-        user.money=5000;
-
-
-
-
-    if(!user.can)
-
-        user.can={
-
-            dangDung:null,
-
-            danhSach:{}
+            danhSach: {}
 
         };
 
+    }
 
+    if (
+        typeof user.can.danhSach !== "object" ||
+        user.can.danhSach === null
+    ) {
 
+        user.can.danhSach = {};
 
+    }
 
-    if(!user.moi)
+    // ==================================================
+    // FIX MỒI
+    // ==================================================
 
-        user.moi={
+    if (!user.moi) {
 
-            moithuong:10,
+        user.moi = {
 
-            moibac:0,
-
-            moivang:0
+            worm: 10
 
         };
 
+    }
 
+    // ==================================================
+    // MIGRATE MỒI CŨ
+    // ==================================================
 
+    if (
+        Number(user.moi.moithuong) > 0
+    ) {
 
+        user.moi.worm =
+            (Number(user.moi.worm) || 0) +
+            Number(user.moi.moithuong);
 
-    if(!user.fish)
+        user.moi.moithuong = 0;
 
-        user.fish={};
+    }
 
+    if (
+        Number(user.moi.moibac) > 0
+    ) {
 
+        user.moi.shrimp =
+            (Number(user.moi.shrimp) || 0) +
+            Number(user.moi.moibac);
 
+        user.moi.moibac = 0;
 
+    }
 
-    if(!user.keys)
+    if (
+        Number(user.moi.moivang) > 0
+    ) {
 
-        user.keys={};
+        user.moi.golden_bait =
+            (Number(user.moi.golden_bait) || 0) +
+            Number(user.moi.moivang);
 
+        user.moi.moivang = 0;
 
+    }
 
+    // ==================================================
+    // FIX FISH
+    // ==================================================
 
+    if (!user.fish) {
 
-    if(!user.chests)
+        user.fish = {};
 
-        user.chests={};
+    }
 
+    // ==================================================
+    // FIX KEYS
+    // ==================================================
 
+    if (!user.keys) {
 
+        user.keys = {};
 
-    if(typeof user.insurance !== "number")
+    }
 
-        user.insurance=0;
+    // ==================================================
+    // FIX CHESTS
+    // ==================================================
 
+    if (!user.chests) {
 
+        user.chests = {};
 
+    }
 
+    // ==================================================
+    // FIX INSURANCE
+    // ==================================================
 
-    if(!user.inv)
+    if (
+        typeof user.insurance !== "number"
+    ) {
 
-        user.inv={};
+        user.insurance = 0;
 
+    }
 
+    // ==================================================
+    // FIX INVENTORY
+    // ==================================================
 
+    if (!user.inv) {
 
+        user.inv = {};
 
-    if(!user.rodData)
+    }
 
-        user.rodData={};
+    // ==================================================
+    // FIX ROD DATA
+    // ==================================================
 
+    if (!user.rodData) {
 
+        user.rodData = {};
 
+    }
 
-    // cần đang trang bị nhưng thiếu rodData
-    // (dữ liệu cũ trước khi có rodData)
+    // ==================================================
+    // KIỂM TRA CẦN ĐANG DÙNG
+    // ==================================================
 
-    if(
-        user.can.dangDung
-        &&
+    if (
+        user.can.dangDung &&
         !user.rodData[user.can.dangDung]
-    ){
+    ) {
 
-        const base=
-        rods[user.can.dangDung];
+        const base =
+            rods?.[
+                user.can.dangDung
+            ];
 
+        if (base) {
 
-        if(base){
+            user.rodData[
+                user.can.dangDung
+            ] = {
 
-            user.rodData[user.can.dangDung]={
+                level: 0,
 
-                level:0,
+                luck:
+                    Number(
+                        base.luck || 0
+                    ),
 
-                luck:base.luck,
+                uses:
+                    Number(
+                        base.uses || 0
+                    ),
 
-                uses:base.uses,
+                maxUses:
+                    Number(
+                        base.uses || 0
+                    ),
 
-                maxUses:base.uses,
-
-                destroyed:false
+                destroyed: false
 
             };
 
+        } else {
+
+            user.can.dangDung =
+                null;
+
         }
-        else{
-
-            user.can.dangDung=null;
-
-        }
-
 
         save();
 
     }
 
+    // ==================================================
+    // FIX DAILY
+    // ==================================================
 
+    if (
+        typeof user.daily === "number"
+    ) {
 
+        user.daily = {
 
+            last:
+                user.daily,
 
-    if(!user.stats)
-
-        user.stats={
-
-            catch:0,
-
-            sell:0,
-
-            kg:0
-
-        };
-
-
-
-
-
-
-
-
-
-    // ======================
-    // DAILY FIX
-    // ======================
-
-
-
-    // data cũ:
-    // "daily":1785944117863
-
-    if(typeof user.daily === "number"){
-
-
-        user.daily={
-
-
-            last:user.daily,
-
-
-            streak:0
-
+            streak: 0
 
         };
-
 
     }
 
+    if (!user.daily) {
 
+        user.daily = {
 
+            last: 0,
 
-
-
-    if(!user.daily){
-
-
-        user.daily={
-
-
-            last:0,
-
-
-            streak:0
-
+            streak: 0
 
         };
-
 
     }
 
+    if (
+        typeof user.daily.last !== "number"
+    ) {
 
+        user.daily.last = 0;
 
+    }
 
+    if (
+        typeof user.daily.streak !== "number"
+    ) {
 
+        user.daily.streak = 0;
 
-    if(typeof user.daily.last !== "number")
+    }
 
-        user.daily.last=0;
+    // ==================================================
+    // FIX QUEST
+    // ==================================================
 
+    if (!user.quest) {
 
+        user.quest = {
 
+            date: "",
 
+            list: [],
 
-    if(typeof user.daily.streak !== "number")
-
-        user.daily.streak=0;
-
-
-
-
-
-
-
-    if(!user.quest)
-
-
-        user.quest={
-
-
-            date:"",
-
-
-            list:[],
-
-
-            claim:false
-
+            claim: false
 
         };
 
+    }
 
+    if (
+        typeof user.quest.date !== "string"
+    ) {
 
+        user.quest.date = "";
 
+    }
 
+    if (
+        !Array.isArray(
+            user.quest.list
+        )
+    ) {
+
+        user.quest.list = [];
+
+    }
+
+    if (
+        typeof user.quest.claim !== "boolean"
+    ) {
+
+        user.quest.claim = false;
+
+    }
+
+    // ==================================================
+    // FIX STATS
+    // ==================================================
+
+    if (!user.stats) {
+
+        user.stats = {
+
+            catch: 0,
+
+            sell: 0,
+
+            kg: 0
+
+        };
+
+    }
+
+    if (
+        typeof user.stats.catch !== "number"
+    ) {
+
+        user.stats.catch = 0;
+
+    }
+
+    if (
+        typeof user.stats.sell !== "number"
+    ) {
+
+        user.stats.sell = 0;
+
+    }
+
+    if (
+        typeof user.stats.kg !== "number"
+    ) {
+
+        user.stats.kg = 0;
+
+    }
 
     return user;
 
-
 }
 
-
-
-
-
-
-
-
-
-// ======================
+// ======================================================
 // EXPORT
-// ======================
+// ======================================================
 
-
-module.exports={
-
+module.exports = {
 
     getUser,
 
     save,
 
     data
-
 
 };

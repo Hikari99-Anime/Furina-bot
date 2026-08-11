@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "prestart": "powershell -NoProfile -ExecutionPolicy Bypass -File stop-bot.ps1",
+    "start": "node index.js",
+    "stop": "powershell -NoProfile -ExecutionPolicy Bypass -File stop-bot.ps1"
   },
   "dependencies": {
+    "@vntk/dictionary": "^1.0.0",
+    "an-array-of-english-words": "^2.0.0",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5"
   }

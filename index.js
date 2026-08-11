@@ -1,26 +1,30 @@
 require("dotenv").config();
 
-
 const {
     chests,
     keys,
     insurance,
     rods,
     baits,
+    rateStone,
     emoji,
-    formatMoney
+    formatMoney,
+    prefix
 } = require("./config");
 
+const PREFIX =
+    String(prefix || "f").toLowerCase();
+
+const noitu =
+    require("./games/noitugame");
 
 const {
     getUser
 } = require("./data");
 
-
 const {
     purchase
 } = require("./commands/fish/buy");
-
 
 const {
     Client,
@@ -35,65 +39,62 @@ const {
     TextInputStyle
 } = require("discord.js");
 
-
-const fs = require("fs");
-
-
-
-const client = new Client({
+const fs =
+    require("fs");
 
 
-    intents:[
+// ==========================================
+// CLIENT
+// ==========================================
 
-        GatewayIntentBits.Guilds,
+const client =
+    new Client({
 
-        GatewayIntentBits.GuildMessages,
+        intents: [
 
-        GatewayIntentBits.MessageContent
+            GatewayIntentBits.Guilds,
 
-    ]
+            GatewayIntentBits.GuildMessages,
+
+            GatewayIntentBits.MessageContent
+
+        ]
+
+    });
 
 
-});
-
-
-
-
-// ======================
+// ==========================================
 // COMMAND LOADER
-// ======================
+// ==========================================
 
+client.commands =
+    new Collection();
 
-client.commands = new Collection();
+function loadCommands(folder) {
 
-
-
-function loadCommands(folder){
-
-
-    if(!fs.existsSync(folder))
-
+    if (!fs.existsSync(folder))
         return;
 
+    const files =
+        fs.readdirSync(folder);
 
+    for (
+        const file
+        of files
+    ) {
 
-    const files = fs.readdirSync(folder);
+        const path =
+            `${folder}/${file}`;
 
+        try {
 
+            // ==================================
+            // FOLDER
+            // ==================================
 
-    for(const file of files){
-
-
-
-        const path = `${folder}/${file}`;
-
-
-
-        try{
-
-
-            if(fs.statSync(path).isDirectory()){
-
+            if (
+                fs.statSync(path).isDirectory()
+            ) {
 
                 loadCommands(path);
 
@@ -102,986 +103,1913 @@ function loadCommands(folder){
             }
 
 
+            // ==================================
+            // ONLY JS
+            // ==================================
 
-            if(!file.endsWith(".js"))
-
-                continue;
-
-
-
-            const command = require(`./${path}`);
-
-
-
-            if(!command.name || !command.execute)
+            if (
+                !file.endsWith(".js")
+            ) {
 
                 continue;
 
+            }
 
+
+            // ==================================
+            // LOAD
+            // ==================================
+
+            const command =
+                require(`./${path}`);
+
+
+            // ==================================
+            // VALIDATE
+            // ==================================
+
+            if (
+                !command.name ||
+                !command.execute
+            ) {
+
+                console.log(
+                    "⚠️ Bỏ qua command:",
+                    path
+                );
+
+                continue;
+
+            }
+
+
+            // ==================================
+            // COMMAND
+            // ==================================
 
             client.commands.set(
 
-                command.name,
+                command.name.toLowerCase(),
 
                 command
 
             );
 
 
+            // ==================================
+            // ALIASES
+            // ==================================
 
-            if(command.aliases){
+            if (
+                Array.isArray(command.aliases)
+            ) {
 
+                for (
+                    const alias
+                    of command.aliases
+                ) {
 
-                for(const alias of command.aliases){
-
+                    if (!alias)
+                        continue;
 
                     client.commands.set(
 
-                        alias,
+                        String(alias).toLowerCase(),
 
                         command
 
                     );
 
-
                 }
-
 
             }
 
 
-
             console.log(
-
                 "✅ Loaded:",
-
                 command.name
-
             );
-
-
 
         }
 
-        catch(err){
-
+        catch (err) {
 
             console.log(
-
                 "❌ Load lỗi:",
-
                 path
-
             );
-
 
             console.error(err);
 
-
         }
-
 
     }
 
-
 }
-
-
 
 loadCommands("commands");
 
 
-
-
-
-
-
-
-
-// ======================
+// ==========================================
 // READY
-// ======================
-
+// ==========================================
 
 client.once(
 
-"ready",
+    "ready",
 
-()=>{
+    async () => {
+
+        await noitu
+            .restoreGames(client)
+            .catch(err => {
+
+                console.log(
+                    "❌ Lỗi khôi phục ván nối từ:",
+                    err
+                );
+
+            });
 
 
-console.log("================");
+        console.log(
+            "=============================="
+        );
 
-console.log(
+        console.log(
+            `🤖 ${client.user.tag} ONLINE`
+        );
 
-`🤖 ${client.user.tag} ONLINE`
+        console.log(
+            `📁 Commands: ${client.commands.size}`
+        );
+
+        console.log(
+            `🎁 Chest: ${
+                Object.keys(chests || {}).length
+            }`
+        );
+
+        console.log(
+            `🔑 Key: ${
+                Object.keys(keys || {}).length
+            }`
+        );
+
+        console.log(
+            `🎣 Rod: ${
+                Object.keys(rods || {}).length
+            }`
+        );
+
+        console.log(
+            `🪱 Bait: ${
+                Object.keys(baits || {}).length
+            }`
+        );
+
+        console.log(
+            `🪨 Rate Stone: ${
+                Object.keys(rateStone || {}).length
+            }`
+        );
+
+        console.log(
+            `⚡ Prefix: ${PREFIX}`
+        );
+
+        console.log(
+            "=============================="
+        );
+
+    }
 
 );
 
 
-console.log(
-
-`📁 Commands: ${client.commands.size}`
-
-);
-
-
-
-console.log(
-
-`🎁 Chest: ${Object.keys(chests).length}`
-
-);
-
-
-
-console.log(
-
-`🔑 Key: ${Object.keys(keys).length}`
-
-);
-
-
-
-console.log("================");
-
-
-}
-
-);
-
-
-
-
-
-
-
-
-
-// ======================
+// ==========================================
 // PREFIX COMMAND
-// ======================
-
+// ==========================================
 
 client.on(
 
-"messageCreate",
+    "messageCreate",
 
-async message=>{
+    async message => {
 
+        try {
 
-if(message.author.bot)
+            // ==================================
+            // BOT
+            // ==================================
 
-return;
+            if (
+                message.author.bot
+            ) {
 
+                return;
 
-
-if(!message.content.startsWith("!"))
-
-return;
-
-
-
-
-const args = message.content
-
-.slice(1)
-
-.trim()
-
-.split(/\s+/);
+            }
 
 
+            // ==================================
+            // NOI TU
+            // ==================================
+
+            if (
+                await noitu.handleMessage(message)
+            ) {
+
+                return;
+
+            }
 
 
-const cmd = args.shift().toLowerCase();
+            // ==================================
+            // CONTENT
+            // ==================================
+
+            const content =
+                message.content.trim();
+
+            if (!content)
+                return;
 
 
+            // ==================================
+            // PREFIX
+            // ==================================
 
-const command = client.commands.get(cmd);
+            if (
+                !content
+                    .toLowerCase()
+                    .startsWith(PREFIX)
+            ) {
+
+                return;
+
+            }
 
 
+            // ==================================
+            // REMOVE PREFIX
+            // ==================================
 
-if(!command)
+            const commandText =
+                content
+                    .slice(PREFIX.length)
+                    .trim();
 
-return;
+            if (!commandText)
+                return;
 
 
+            // ==================================
+            // ARGUMENTS
+            // ==================================
 
-try{
+            const parts =
+                commandText.split(/\s+/);
+
+            const cmd =
+                parts
+                    .shift()
+                    .toLowerCase();
+
+            const args =
+                parts;
 
 
-await command.execute(
+            // ==================================
+            // FIND COMMAND
+            // ==================================
 
-message,
+            const command =
+                client.commands.get(cmd);
 
-args,
+            if (!command)
+                return;
 
-client
+
+            // ==================================
+            // EXECUTE
+            // ==================================
+
+            await command.execute(
+
+                message,
+
+                args,
+
+                client
+
+            );
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "❌ COMMAND ERROR:"
+            );
+
+            console.error(err);
+
+
+            try {
+
+                await message.reply(
+                    "❌ Lệnh xảy ra lỗi."
+                );
+
+            }
+
+            catch {}
+
+        }
+
+    }
 
 );
 
 
+// ==========================================
+// SHOP STYLE
+// ==========================================
+
+function shopFooter(name) {
+
+    return {
+
+        text:
+            `✦ Ocean Adventure · ${name}`
+
+    };
 
 }
 
-catch(err){
+
+// ==========================================
+// MAIN SHOP EMBED
+// ==========================================
+
+function createShopEmbed(user) {
+
+    const balance =
+        Number(
+            user?.money || 0
+        );
 
 
-console.log(
+    return (
 
-"COMMAND ERROR:",
+        new EmbedBuilder()
 
-err
+            .setColor("#A7D8F5")
 
-);
+            .setTitle(
+                "🛒 FISHING MARKET"
+            )
 
+            .setDescription(
 
+                `*Một góc nhỏ giữa đại dương, nơi bạn chuẩn bị cho chuyến ra khơi...* 🌊\n\n` +
 
-message.reply(
+                `୨୧ ───────── ୨୧\n\n` +
 
-"❌ Lệnh lỗi."
+                `🎣 Cần câu · Trang bị chính cho hành trình\n` +
+                `🪱 Mồi câu · Tăng cơ hội gặp cá hiếm\n` +
+                `🎟️ Chìa khóa & Bảo hiểm · Mở kho báu và bảo vệ cần\n` +
+                `🪨 Đá tăng tỉ lệ · Hỗ trợ cường hóa\n\n` +
 
-);
+                `୨୧ ───────── ୨୧\n\n` +
 
+                `💰 Số dư: ${formatMoney(balance)} ${emoji.money}\n\n` +
+
+                `*Chọn một danh mục để xem những món đồ đang chờ bạn.* ✨`
+
+            )
+
+            .setFooter(
+                shopFooter("Cửa hàng")
+            )
+
+    );
 
 }
 
 
+// ==========================================
+// MAIN SHOP BUTTONS
+// ==========================================
+
+function createMainShopRow() {
+
+    return (
+
+        new ActionRowBuilder()
+            .addComponents(
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        "shop_rod"
+                    )
+
+                    .setLabel(
+                        "🎣 Cần câu"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Primary
+                    ),
+
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        "shop_bait"
+                    )
+
+                    .setLabel(
+                        "🪱 Mồi câu"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Success
+                    ),
+
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        "shop_key"
+                    )
+
+                    .setLabel(
+                        "🎟️ Kho báu"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Secondary
+                    ),
+
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        "shop_stone"
+                    )
+
+                    .setLabel(
+                        "🪨 Đá tỉ lệ"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Secondary
+                    )
+
+            )
+
+    );
 
 }
 
-);
+
+// ==========================================
+// BACK BUTTON
+// ==========================================
+
+function createBackRow() {
+
+    return (
+
+        new ActionRowBuilder()
+            .addComponents(
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        "shop_back"
+                    )
+
+                    .setLabel(
+                        "↩ Quay lại"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Secondary
+                    )
+
+            )
+
+    );
+
+}
 
 
+// ==========================================
+// ITEM BUTTON ROWS
+// ==========================================
+
+function createItemRows(
+    ids,
+    getItem,
+    style
+) {
+
+    const rows = [];
 
 
+    for (
+        let i = 0;
+        i < ids.length;
+        i += 5
+    ) {
+
+        const chunk =
+            ids.slice(
+                i,
+                i + 5
+            );
 
 
+        const row =
+            new ActionRowBuilder();
 
 
+        for (
+            const id
+            of chunk
+        ) {
+
+            const item =
+                getItem(id);
 
 
+            row.addComponents(
 
-// ======================
-// SHOP INTERACTION
-// ======================
+                new ButtonBuilder()
 
+                    .setCustomId(
+                        `buy_${id}`
+                    )
+
+                    .setLabel(
+                        item.name
+                    )
+
+                    .setStyle(
+                        style
+                    )
+
+            );
+
+        }
+
+
+        rows.push(row);
+
+    }
+
+
+    rows.push(
+        createBackRow()
+    );
+
+
+    return rows;
+
+}
+
+
+// ==========================================
+// INTERACTION
+// SHOP / BUTTON / MODAL
+// ==========================================
 
 client.on(
 
-"interactionCreate",
+    "interactionCreate",
 
-async interaction=>{
+    async interaction => {
 
+        try {
 
-try{
+            // ==================================
+            // BUTTON
+            // ==================================
 
+            if (
+                interaction.isButton()
+            ) {
 
-
-// ======================
-// BUTTON
-// ======================
-
-
-if(interaction.isButton()){
-
-
-
-// ROD SHOP
-
-if(interaction.customId === "shop_rod"){
+                const id =
+                    interaction.customId;
 
 
+                // ==================================
+                // BACK TO SHOP
+                // ==================================
 
-const rodIds=
-Object.keys(rods);
+                if (
+                    id === "shop_back"
+                ) {
 
-
-
-const embed = new EmbedBuilder()
-
-
-.setColor("#60A5FA")
-
-
-.setTitle(
-
-"╭・🎣 ROD COLLECTION"
-
-)
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
 
 
-.setDescription(
+                    return interaction.update({
 
-rodIds.map(rid=>{
+                        embeds: [
 
-const r=rods[rid];
+                            createShopEmbed(
+                                user
+                            )
 
-return `${r.emoji} **${r.name}**\n💰 ${formatMoney(r.price)} ${emoji.money} · 🍀 Luck ${r.luck}`;
+                        ],
 
-}).join("\n\n━━━━━━━━━━━━\n\n")
+                        components: [
+
+                            createMainShopRow()
+
+                        ]
+
+                    });
+
+                }
+
+
+                // ==================================
+                // ROD SHOP
+                // ==================================
+
+                if (
+                    id === "shop_rod"
+                ) {
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    const balance =
+                        Number(
+                            user?.money || 0
+                        );
+
+
+                    const rodIds =
+                        Object.keys(
+                            rods || {}
+                        );
+
+
+                    const description =
+                        rodIds.length
+
+                            ? rodIds
+                                .map(rid => {
+
+                                    const r =
+                                        rods[rid];
+
+
+                                    return (
+                                        `${r.emoji || "🎣"} ` +
+                                        `**${r.name}** · ` +
+                                        `${formatMoney(r.price)} ${emoji.money}` +
+                                        ` · 🍀 ${r.luck}` +
+                                        ` · ♡ ${r.uses}`
+                                    );
+
+                                })
+                                .join("\n")
+
+                            : "*Hiện chưa có cần câu nào.*";
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#93C5FD")
+
+                            .setTitle(
+                                "🎣 CỬA HÀNG CẦN CÂU"
+                            )
+
+                            .setDescription(
+
+                                `*Những người bạn đồng hành cho chuyến đi xa...* 🌊\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `${description}\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `💰 Số dư: ${formatMoney(balance)} ${emoji.money}\n` +
+                                `*Chọn một chiếc cần để xem thông tin và mua.* ✨`
+
+                            )
+
+                            .setFooter(
+                                shopFooter(
+                                    "Cần câu"
+                                )
+                            );
+
+
+                    const rows =
+                        createItemRows(
+
+                            rodIds,
+
+                            rid =>
+                                rods[rid],
+
+                            ButtonStyle.Primary
+
+                        );
+
+
+                    return interaction.update({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components:
+                            rows
+
+                    });
+
+                }
+
+
+                // ==================================
+                // BAIT SHOP
+                // ==================================
+
+                if (
+                    id === "shop_bait"
+                ) {
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    const balance =
+                        Number(
+                            user?.money || 0
+                        );
+
+
+                    const baitIds =
+                        Object.keys(
+                            baits || {}
+                        );
+
+
+                    const description =
+                        baitIds.length
+
+                            ? baitIds
+                                .map(bid => {
+
+                                    const b =
+                                        baits[bid];
+
+
+                                    return (
+                                        `${b.emoji || "🪱"} ` +
+                                        `**${b.name}** · ` +
+                                        `${formatMoney(b.price)} ${emoji.money}`
+                                    );
+
+                                })
+                                .join("\n")
+
+                            : "*Hiện chưa có loại mồi nào.*";
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#9DE5B0")
+
+                            .setTitle(
+                                "🪱 CỬA HÀNG MỒI CÂU"
+                            )
+
+                            .setDescription(
+
+                                `*Những món mồi nhỏ bé nhưng có thể mang về một bất ngờ lớn...* 🫧\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `${description}\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `💰 Số dư: ${formatMoney(balance)} ${emoji.money}\n` +
+                                `*Chọn mồi rồi nhập số lượng bạn muốn mua.* ✨`
+
+                            )
+
+                            .setFooter(
+                                shopFooter(
+                                    "Mồi câu"
+                                )
+                            );
+
+
+                    const rows =
+                        createItemRows(
+
+                            baitIds,
+
+                            bid =>
+                                baits[bid],
+
+                            ButtonStyle.Success
+
+                        );
+
+
+                    return interaction.update({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components:
+                            rows
+
+                    });
+
+                }
+
+
+                // ==================================
+                // KEY + INSURANCE
+                // ==================================
+
+                if (
+                    id === "shop_key"
+                ) {
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    const balance =
+                        Number(
+                            user?.money || 0
+                        );
+
+
+                    const keyIds =
+                        Object.keys(
+                            keys || {}
+                        );
+
+
+                    const insuranceIds =
+                        Object.keys(
+                            insurance || {}
+                        );
+
+
+                    const sections = [];
+
+
+                    if (
+                        keyIds.length
+                    ) {
+
+                        const keyText =
+                            keyIds
+                                .map(kid => {
+
+                                    const k =
+                                        keys[kid];
+
+
+                                    return (
+                                        `${k.emoji || "🎟️"} ` +
+                                        `**${k.name}** · ` +
+                                        `${formatMoney(k.price)} ${emoji.money}`
+                                    );
+
+                                })
+                                .join("\n");
+
+
+                        sections.push(
+
+                            `🎟️ **Chìa khóa**\n${keyText}`
+
+                        );
+
+                    }
+
+
+                    if (
+                        insuranceIds.length
+                    ) {
+
+                        const insuranceText =
+                            insuranceIds
+                                .map(iid => {
+
+                                    const item =
+                                        insurance[iid];
+
+
+                                    return (
+                                        `${item.emoji || "🪽"} ` +
+                                        `**${item.name}** · ` +
+                                        `${formatMoney(item.price)} ${emoji.money}`
+                                    );
+
+                                })
+                                .join("\n");
+
+
+                        sections.push(
+
+                            `🪽 **Bảo hiểm**\n${insuranceText}`
+
+                        );
+
+                    }
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#C4B5FD")
+
+                            .setTitle(
+                                "🎟️ KHO BÁU & BẢO HIỂM"
+                            )
+
+                            .setDescription(
+
+                                `*Một chút may mắn, một chút bình yên giữa biển cả...* 🌙\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `${
+                                    sections.length
+                                        ? sections.join("\n\n")
+                                        : "*Hiện chưa có vật phẩm nào.*"
+                                }\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `💰 Số dư: ${formatMoney(balance)} ${emoji.money}\n` +
+                                `*Chọn vật phẩm rồi nhập số lượng muốn mua.* ✨`
+
+                            )
+
+                            .setFooter(
+                                shopFooter(
+                                    "Kho báu & Bảo hiểm"
+                                )
+                            );
+
+
+                    const allIds = [
+
+                        ...keyIds,
+
+                        ...insuranceIds
+
+                    ];
+
+
+                    const rows =
+                        createItemRows(
+
+                            allIds,
+
+                            itemId =>
+
+                                keys[itemId] ||
+                                insurance[itemId],
+
+                            ButtonStyle.Secondary
+
+                        );
+
+
+                    return interaction.update({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components:
+                            rows
+
+                    });
+
+                }
+
+
+                // ==================================
+                // RATE STONE SHOP
+                // ==================================
+
+                if (
+                    id === "shop_stone"
+                ) {
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    const balance =
+                        Number(
+                            user?.money || 0
+                        );
+
+
+                    const stoneIds =
+                        Object.keys(
+                            rateStone || {}
+                        );
+
+
+                    const description =
+                        stoneIds.length
+
+                            ? stoneIds
+                                .map(sid => {
+
+                                    const s =
+                                        rateStone[sid];
+
+
+                                    return (
+                                        `${s.emoji || "🪨"} ` +
+                                        `**${s.name}** · ` +
+                                        `${formatMoney(s.price)} ${emoji.money}` +
+                                        ` · 🪨 ${s.uses}` +
+                                        ` · 📈 +${s.rate}%`
+                                    );
+
+                                })
+                                .join("\n")
+
+                            : "*Hiện chưa có đá tăng tỉ lệ nào.*";
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#C4B5FD")
+
+                            .setTitle(
+                                "🪨 ĐÁ TĂNG TỈ LỆ"
+                            )
+
+                            .setDescription(
+
+                                `*Những viên đá mang theo chút may mắn của biển sâu...* ✨\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `${description}\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `💰 Số dư: ${formatMoney(balance)} ${emoji.money}\n` +
+                                `*Chọn đá rồi nhập số lượng muốn mua.* 🌙`
+
+                            )
+
+                            .setFooter(
+                                shopFooter(
+                                    "Đá tăng tỉ lệ"
+                                )
+                            );
+
+
+                    const rows =
+                        createItemRows(
+
+                            stoneIds,
+
+                            sid =>
+                                rateStone[sid],
+
+                            ButtonStyle.Secondary
+
+                        );
+
+
+                    return interaction.update({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components:
+                            rows
+
+                    });
+
+                }
+
+
+                // ==================================
+                // BUY BUTTON
+                // ==================================
+
+                if (
+                    id.startsWith("buy_")
+                ) {
+
+                    const itemID =
+                        id.replace(
+                            "buy_",
+                            ""
+                        );
+
+
+                    // ==================================
+                    // ROD
+                    // Không cần nhập số lượng
+                    // ==================================
+
+                    if (
+                        rods?.[itemID]
+                    ) {
+
+                        const rod =
+                            rods[itemID];
+
+
+                        const embed =
+                            new EmbedBuilder()
+
+                                .setColor("#93C5FD")
+
+                                .setTitle(
+                                    "🎣 XÁC NHẬN MUA CẦN"
+                                )
+
+                                .setDescription(
+
+                                    `*Một người bạn đồng hành mới đang chờ bạn...* 🌊\n\n` +
+
+                                    `୨୧ ───────── ୨୧\n\n` +
+
+                                    `${rod.emoji || "🎣"} **${rod.name}**\n` +
+
+                                    `💰 Giá: ${formatMoney(rod.price)} ${emoji.money}\n` +
+                                    `🍀 Luck: ${rod.luck}\n` +
+                                    `♡ Độ bền: ${rod.uses}\n\n` +
+
+                                    `୨୧ ───────── ୨୧\n\n` +
+
+                                    `Bạn có chắc muốn mua chiếc cần này không? ✨`
+
+                                )
+
+                                .setFooter({
+
+                                    text:
+                                        "✦ Ocean Adventure · Xác nhận mua"
+
+                                });
+
+
+                        const row =
+                            new ActionRowBuilder()
+                                .addComponents(
+
+                                    new ButtonBuilder()
+
+                                        .setCustomId(
+                                            `confirm_buy_${itemID}`
+                                        )
+
+                                        .setLabel(
+                                            "✅ Mua cần"
+                                        )
+
+                                        .setStyle(
+                                            ButtonStyle.Success
+                                        ),
+
+
+                                    new ButtonBuilder()
+
+                                        .setCustomId(
+                                            "cancel_buy"
+                                        )
+
+                                        .setLabel(
+                                            "❌ Hủy"
+                                        )
+
+                                        .setStyle(
+                                            ButtonStyle.Danger
+                                        )
+
+                                );
+
+
+                        return interaction.update({
+
+                            embeds: [
+                                embed
+                            ],
+
+                            components: [
+                                row
+                            ]
+
+                        });
+
+                    }
+
+
+                    // ==================================
+                    // ITEM KHÁC
+                    // Nhập số lượng
+                    // ==================================
+
+                    const modal =
+                        new ModalBuilder()
+
+                            .setCustomId(
+                                `modal_${itemID}`
+                            )
+
+                            .setTitle(
+                                "🛒 Nhập số lượng mua"
+                            );
+
+
+                    const input =
+                        new TextInputBuilder()
+
+                            .setCustomId(
+                                "amount"
+                            )
+
+                            .setLabel(
+                                "Số lượng"
+                            )
+
+                            .setStyle(
+                                TextInputStyle.Short
+                            )
+
+                            .setPlaceholder(
+                                "Ví dụ: 1"
+                            )
+
+                            .setRequired(true);
+
+
+                    modal.addComponents(
+
+                        new ActionRowBuilder()
+                            .addComponents(
+                                input
+                            )
+
+                    );
+
+
+                    return interaction.showModal(
+                        modal
+                    );
+
+                }
+
+
+                // ==================================
+                // CONFIRM BUY ROD
+                // ==================================
+
+                if (
+                    id.startsWith(
+                        "confirm_buy_"
+                    )
+                ) {
+
+                    const itemID =
+                        id.replace(
+                            "confirm_buy_",
+                            ""
+                        );
+
+
+                    const rod =
+                        rods?.[itemID];
+
+
+                    // ==================================
+                    // CHECK ROD
+                    // ==================================
+
+                    if (!rod) {
+
+                        return interaction.update({
+
+                            content:
+                                "❌ Không tìm thấy cần câu này.",
+
+                            embeds: [],
+
+                            components: []
+
+                        });
+
+                    }
+
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    // ==================================
+                    // PURCHASE 1 ROD
+                    // ==================================
+
+                    const result =
+                        purchase(
+
+                            user,
+
+                            itemID,
+
+                            1
+
+                        );
+
+
+                    // ==================================
+                    // FAILED
+                    // ==================================
+
+                    if (!result.ok) {
+
+                        return interaction.update({
+
+                            content:
+                                result.reason,
+
+                            embeds: [],
+
+                            components: []
+
+                        });
+
+                    }
+
+
+                    // ==================================
+                    // SUCCESS
+                    // ==================================
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#86EFAC")
+
+                            .setTitle(
+                                "🎣 MUA CẦN THÀNH CÔNG"
+                            )
+
+                            .setDescription(
+
+                                `*Một chuyến phiêu lưu mới sắp bắt đầu...* 🌊\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `${rod.emoji || "🎣"} **${rod.name}**\n` +
+
+                                `💸 Đã trả: ${formatMoney(result.price)} ${emoji.money}\n` +
+                                `💰 Số dư: ${formatMoney(user.money)} ${emoji.money}\n\n` +
+
+                                `୨୧ ───────── ୨୧\n\n` +
+
+                                `*Chiếc cần đã được thêm vào bộ sưu tập của bạn.* ✨`
+
+                            )
+
+                            .setFooter({
+
+                                text:
+                                    "✦ Ocean Adventure · Mua thành công"
+
+                            });
+
+
+                    return interaction.update({
+
+                        embeds: [
+                            embed
+                        ],
+
+                        components: []
+
+                    });
+
+                }
+
+
+                // ==================================
+                // CANCEL BUY
+                // ==================================
+
+                if (
+                    id === "cancel_buy"
+                ) {
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    return interaction.update({
+
+                        embeds: [
+
+                            createShopEmbed(
+                                user
+                            )
+
+                        ],
+
+                        components: [
+
+                            createMainShopRow()
+
+                        ]
+
+                    });
+
+                }
+
+            }
+
+
+            // ==================================
+            // SHOP MODAL
+            // ==================================
+
+            if (
+                interaction.isModalSubmit()
+            ) {
+
+                if (
+                    interaction.customId
+                        .startsWith("modal_")
+                ) {
+
+                    const itemID =
+                        interaction.customId
+                            .replace(
+                                "modal_",
+                                ""
+                            );
+
+
+                    const amount =
+                        Number(
+
+                            interaction.fields
+                                .getTextInputValue(
+                                    "amount"
+                                )
+
+                        );
+
+
+                    // ==================================
+                    // CHECK AMOUNT
+                    // ==================================
+
+                    if (
+                        !Number.isInteger(amount) ||
+                        amount <= 0
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Số lượng không hợp lệ.",
+
+                            ephemeral: true
+
+                        });
+
+                    }
+
+
+                    const user =
+                        getUser(
+                            interaction.user.id
+                        );
+
+
+                    // ==================================
+                    // PURCHASE
+                    // ==================================
+
+                    const result =
+                        purchase(
+
+                            user,
+
+                            itemID,
+
+                            amount
+
+                        );
+
+
+                    // ==================================
+                    // FAILED
+                    // ==================================
+
+                    if (!result.ok) {
+
+                        return interaction.reply({
+
+                            content:
+                                result.reason,
+
+                            ephemeral: true
+
+                        });
+
+                    }
+
+
+                    // ==================================
+                    // SUCCESS
+                    // ==================================
+
+                    return interaction.reply({
+
+                        content:
+
+                            `୨୧ ───────── ୨୧\n\n` +
+
+                            `🛍️ **Mua thành công**\n\n` +
+
+                            `${result.item.emoji || "✦"} ` +
+                            `${result.item.name} ×${amount}\n` +
+
+                            `💸 Đã trả: ` +
+                            `${formatMoney(result.price)} ` +
+                            `${emoji.money}\n` +
+
+                            `💰 Số dư: ` +
+                            `${formatMoney(user.money)} ` +
+                            `${emoji.money}\n\n` +
+
+                            `୨୧ ───────── ୨୧`,
+
+                        ephemeral: true
+
+                    });
+
+                }
+
+            }
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "❌ INTERACTION ERROR:"
+            );
+
+            console.error(err);
+
+        }
+
+    }
 
 );
 
 
-
-const row = new ActionRowBuilder()
-
-
-.addComponents(
-
-rodIds.map(rid=>
-
-new ButtonBuilder()
-
-.setCustomId("buy_"+rid)
-
-.setLabel(rods[rid].name)
-
-.setStyle(ButtonStyle.Primary)
-
-)
-
-);
-
-
-
-return interaction.reply({
-
-embeds:[embed],
-
-components:[row],
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-
-
-
-// BUY BUTTON
-
-if(interaction.customId.startsWith("buy_")){
-
-
-const item = interaction.customId.replace(
-
-"buy_",
-
-""
-
-);
-
-
-
-const modal = new ModalBuilder()
-
-
-.setCustomId(
-
-"modal_"+item
-
-)
-
-
-.setTitle(
-
-"🛒 Nhập số lượng mua"
-
-);
-
-
-
-
-const input = new TextInputBuilder()
-
-
-.setCustomId(
-
-"amount"
-
-)
-
-
-.setLabel(
-
-"Số lượng"
-
-)
-
-
-.setStyle(
-
-TextInputStyle.Short
-
-)
-
-
-.setPlaceholder(
-
-"Ví dụ: 1"
-
-)
-
-
-.setRequired(true);
-
-
-
-
-modal.addComponents(
-
-new ActionRowBuilder()
-
-.addComponents(input)
-
-);
-
-
-
-return interaction.showModal(modal);
-
-
-}
-
-
-
-
-// BAIT
-
-if(interaction.customId === "shop_bait"){
-
-
-
-const baitIds=
-Object.keys(baits);
-
-
-
-const embed = new EmbedBuilder()
-
-
-.setColor("#86EFAC")
-
-
-.setTitle(
-
-"╭・🪱 BAIT MARKET"
-
-)
-
-
-.setDescription(
-
-baitIds.map(bid=>{
-
-const b=baits[bid];
-
-return `${b.emoji} **${b.name}**\n💰 ${formatMoney(b.price)} ${emoji.money}`;
-
-}).join("\n\n━━━━━━━━━━━━\n\n")
-
-);
-
-
-
-const row = new ActionRowBuilder()
-
-
-.addComponents(
-
-baitIds.map(bid=>
-
-new ButtonBuilder()
-
-.setCustomId("buy_"+bid)
-
-.setLabel(baits[bid].name)
-
-.setStyle(ButtonStyle.Success)
-
-)
-
-);
-
-
-
-return interaction.reply({
-
-embeds:[embed],
-
-components:[row],
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-
-
-// KEY
-
-
-if(interaction.customId === "shop_key"){
-
-
-
-const keyIds=
-Object.keys(keys);
-
-
-const insuranceIds=
-Object.keys(insurance);
-
-
-const allIds=
-[...keyIds, ...insuranceIds];
-
-
-
-const embed = new EmbedBuilder()
-
-
-.setColor("#FACC15")
-
-
-.setTitle(
-
-"╭・🎟️ TREASURE & INSURANCE MARKET"
-
-)
-
-
-.setDescription(
-
-keyIds.map(kid=>{
-
-const k=keys[kid];
-
-return `${k.emoji} **${k.name}**\n💰 ${formatMoney(k.price)} ${emoji.money}`;
-
-}).concat(
-
-insuranceIds.map(iid=>{
-
-const it=insurance[iid];
-
-return `${it.emoji} **${it.name}**\n💰 ${formatMoney(it.price)} ${emoji.money}`;
-
-})
-
-).join("\n\n━━━━━━━━━━━━\n\n")
-
-);
-
-
-
-const rows=[];
-
-
-for(let i=0;i<allIds.length;i+=5){
-
-
-const chunk=
-allIds.slice(i,i+5);
-
-
-rows.push(
-
-new ActionRowBuilder()
-
-.addComponents(
-
-chunk.map(id=>{
-
-const item=
-keys[id] || insurance[id];
-
-
-return new ButtonBuilder()
-
-.setCustomId("buy_"+id)
-
-.setLabel(item.name)
-
-.setStyle(
-keys[id] ? ButtonStyle.Secondary : ButtonStyle.Success
-);
-
-})
-
-)
-
-);
-
-
-}
-
-
-
-return interaction.reply({
-
-embeds:[embed],
-
-components:rows,
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ======================
-// MODAL
-// ======================
-
-
-if(interaction.isModalSubmit()){
-
-
-
-if(interaction.customId.startsWith("modal_")){
-
-
-
-const itemID = interaction.customId.replace(
-
-"modal_",
-
-""
-
-);
-
-
-
-const amount = Number(
-
-interaction.fields.getTextInputValue(
-
-"amount"
-
-)
-
-);
-
-
-
-const user=
-getUser(
-interaction.guild.id,
-interaction.user.id
-);
-
-
-
-const result=
-purchase(user,itemID,amount);
-
-
-
-if(!result.ok)
-
-return interaction.reply({
-
-content:
-result.reason,
-
-ephemeral:true
-
-});
-
-
-
-return interaction.reply({
-
-content:
-
-`
-✅ Mua thành công
-
-${result.item.emoji} ${result.item.name} x${amount}
-
-💸 Đã trả: ${formatMoney(result.price)} ${emoji.money}
-
-💰 Số dư: ${formatMoney(user.money)} ${emoji.money}
-`,
-
-ephemeral:true
-
-});
-
-
-}
-
-
-
-}
-
-
-
-}
-
-catch(err){
-
-
-console.log(
-
-"INTERACTION ERROR:",
-
-err
-
-);
-
-
-}
-
-
-
-}
-
-);
-
-
-
-
-
-
-
-
-
-
-
-// ======================
-// INTERACTION (SLASH COMMAND + TÀI XỈU BET MODAL)
-// ======================
+// ==========================================
+// SLASH + TÀI XỈU MODAL
+// ==========================================
 
 client.on(
-"interactionCreate",
-async interaction=>{
+
+    "interactionCreate",
+
+    async interaction => {
+
+        try {
+
+            // ==================================
+            // PING
+            // ==================================
+
+            if (
+                interaction.isChatInputCommand() &&
+                interaction.commandName === "ping"
+            ) {
+
+                return interaction.reply(
+                    "🏓 Pong! Bot đang online."
+                );
+
+            }
 
 
-try{
+            // ==================================
+            // TÀI XỈU BET
+            // ==================================
+
+            if (
+                interaction.isModalSubmit() &&
+                interaction.customId
+                    .startsWith("txbet_")
+            ) {
+
+                const {
+                    addBet,
+                    getGame,
+                    hasBetType,
+                    totalBetOf
+                } =
+                    require(
+                        "./games/taixiugame"
+                    );
 
 
-if(
-interaction.isChatInputCommand() &&
-interaction.commandName === "ping"
-){
+                const {
+                    getUser
+                } =
+                    require(
+                        "./database"
+                    );
 
-return interaction.reply(
-"🏓 Pong! Bot đang online."
+
+                const type =
+                    interaction.customId
+                        .replace(
+                            "txbet_",
+                            ""
+                        );
+
+
+                const amount =
+                    Number(
+
+                        interaction.fields
+                            .getTextInputValue(
+                                "money"
+                            )
+
+                    );
+
+
+                // ==================================
+                // CHECK MONEY
+                // ==================================
+
+                if (
+                    !Number.isInteger(amount) ||
+                    amount <= 0
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Số tiền cược không hợp lệ",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                let number =
+                    null;
+
+
+                // ==================================
+                // NUMBER BET
+                // ==================================
+
+                if (
+                    type === "so"
+                ) {
+
+                    number =
+                        Number(
+
+                            interaction.fields
+                                .getTextInputValue(
+                                    "sonum"
+                                )
+
+                        );
+
+
+                    if (
+                        !Number.isInteger(number) ||
+                        number < 3 ||
+                        number > 18
+                    ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Số dự đoán phải từ 3 đến 18",
+
+                            flags: 64
+
+                        });
+
+                    }
+
+                }
+
+
+                // ==================================
+                // CHECK GAME
+                // ==================================
+
+                if (
+                    !getGame()
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Ván tài xỉu đã kết thúc",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                // ==================================
+                // CHECK DUPLICATE
+                // ==================================
+
+                if (
+                    hasBetType(
+
+                        interaction.user.id,
+
+                        type
+
+                    )
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Bạn đã cược cửa này rồi",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                const user =
+                    getUser(
+                        interaction.user.id
+                    );
+
+
+                const daCuoc =
+                    totalBetOf(
+                        interaction.user.id
+                    );
+
+
+                // ==================================
+                // CHECK BALANCE
+                // ==================================
+
+                if (
+                    user.money <
+                    daCuoc + amount
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            "❌ Không đủ tiền",
+
+                        flags: 64
+
+                    });
+
+                }
+
+
+                // ==================================
+                // BET LABEL
+                // ==================================
+
+                const label =
+
+                    type === "tai"
+                        ? "🔴 TÀI"
+
+                    : type === "xiu"
+                        ? "🔵 XỈU"
+
+                    : type === "chan"
+                        ? "⚫ CHẴN"
+
+                    : type === "le"
+                        ? "⚪ LẺ"
+
+                    : `🔢 SỐ ${number}`;
+
+
+                // ==================================
+                // ADD BET
+                // ==================================
+
+                addBet({
+
+                    id:
+                        interaction.user.id,
+
+                    type,
+
+                    number,
+
+                    money:
+                        amount
+
+                });
+
+
+                return interaction.reply({
+
+                    content:
+                        `✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${label}**`,
+
+                    flags: 64
+
+                });
+
+            }
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "❌ INTERACTION ERROR:"
+            );
+
+            console.error(err);
+
+        }
+
+    }
+
 );
 
-}
 
-
-
-if(
-interaction.isModalSubmit() &&
-interaction.customId.startsWith("txbet_")
-){
-
-
-const {
-addBet,
-getGame,
-hasBetType,
-totalBetOf
-} = require("./games/taixiugame");
-
-
-const {
-getUser
-} = require("./database");
-
-
-const type =
-interaction.customId.replace(
-"txbet_",
-""
-);
-
-
-const amount =
-Number(
-interaction.fields
-.getTextInputValue("money")
-);
-
-
-if(
-!Number.isInteger(amount)
-||
-amount<=0
-){
-
-return interaction.reply({
-content:
-"❌ Số tiền cược không hợp lệ",
-flags:64
-});
-
-}
-
-
-let number = null;
-
-
-if(type==="so"){
-
-
-number =
-Number(
-interaction.fields
-.getTextInputValue("sonum")
-);
-
-
-if(
-!Number.isInteger(number)
-||
-number<3
-||
-number>18
-){
-
-return interaction.reply({
-content:
-"❌ Số dự đoán phải từ 3 đến 18",
-flags:64
-});
-
-}
-
-
-}
-
-
-if(!getGame()){
-
-return interaction.reply({
-content:
-"❌ Ván tài xỉu đã kết thúc",
-flags:64
-});
-
-}
-
-
-if(
-hasBetType(interaction.user.id,type)
-){
-
-return interaction.reply({
-content:
-"❌ Bạn đã cược cửa này rồi",
-flags:64
-});
-
-}
-
-
-const user =
-getUser(
-interaction.guild.id,
-interaction.user.id
-);
-
-
-const daCuoc =
-totalBetOf(interaction.user.id);
-
-
-if(user.money < daCuoc+amount){
-
-return interaction.reply({
-content:
-"❌ Không đủ tiền",
-flags:64
-});
-
-}
-
-
-const label =
-
-type==="tai" ? "🔴 TÀI" :
-
-type==="xiu" ? "🔵 XỈU" :
-
-type==="chan" ? "⚫ CHẴN" :
-
-type==="le" ? "⚪ LẺ" :
-
-`🔢 SỐ ${number}`;
-
-
-addBet({
-id:interaction.user.id,
-type,
-number,
-money:amount
-});
-
-
-return interaction.reply({
-content:
-`✅ Đã đặt cược **${amount.toLocaleString()} xu** vào **${label}**`,
-flags:64
-});
-
-
-}
-
-
-}catch(err){
-
-console.log(
-"INTERACTION ERROR:",
-err
-);
-
-}
-
-
-}
-
-);
-
-
-
-
-// ======================
+// ==========================================
 // LOGIN
-// ======================
-
+// ==========================================
 
 client.login(
-
-process.env.TOKEN
-
+    process.env.TOKEN
 );

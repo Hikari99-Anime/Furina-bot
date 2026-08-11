@@ -1,235 +1,458 @@
 const {
-EmbedBuilder
-}=require("discord.js");
-
-
-const {
-emoji,
-formatMoney
-}=require("../../config");
-
+    EmbedBuilder
+} = require("discord.js");
 
 const {
-data
-}=require("../../data");
+    emoji,
+    formatMoney
+} = require("../../config");
 
+const {
+    data
+} = require("../../data");
 
 
-module.exports={
+// ======================================================
+// MODULE
+// ======================================================
 
-name:"top",
+module.exports = {
 
-aliases:[
-"leaderboard",
-"bxh"
-],
+    name: "top",
 
+    aliases: [
+        "leaderboard",
+        "bxh"
+    ],
 
+    async execute(message, args) {
 
-async execute(message,args){
+        // ==================================================
+        // TYPE
+        // ==================================================
 
+        const type =
+            String(
+                args?.[0] || "money"
+            ).toLowerCase();
 
-const type=
-args[0] || "money";
 
+        // ==================================================
+        // KIỂM TRA
+        // ==================================================
 
+        if (
+            ![
+                "money",
+                "fish",
+                "kg"
+            ].includes(type)
+        ) {
 
-let list=[];
+            return message.reply({
 
+                embeds: [
 
+                    new EmbedBuilder()
 
-for(const guild in data){
+                        .setColor("#ff6b81")
 
+                        .setTitle(
+                            "❌ `INVALID TYPE`"
+                        )
 
-for(const id in data[guild]){
+                        .setDescription(
 
+                            "Loại BXH không hợp lệ.\n\n" +
 
-const user=
-data[guild][id];
+                            "୨୧ ───────── ୨୧\n\n" +
 
+                            `💰 \`${"top money"}\` · Giàu có\n` +
+                            `🐟 \`${"top fish"}\` · Số cá\n` +
+                            `⚖️ \`${"top kg"}\` · Cân nặng\n\n` +
 
-let value=0;
+                            "୨୧ ───────── ୨୧"
 
+                        )
 
+                        .setFooter({
 
-if(type==="fish"){
+                            text:
+                                "✦ Fishing Adventure · Leaderboard"
 
-for(const x in user.fish){
+                        })
 
-value+=
-user.fish[x].length;
+                ]
 
-}
+            });
 
-}
+        }
 
 
-else if(type==="kg"){
+        // ==================================================
+        // TÍNH DỮ LIỆU
+        // ==================================================
 
+        const list = [];
 
-for(const x in user.fish){
 
-value+=
-user.fish[x]
-.reduce(
-(a,b)=>a+b,
-0
-);
+        for (
+            const id in data
+        ) {
 
-}
+            const user =
+                data[id];
 
-}
+            let value = 0;
 
 
-else{
+            // ==============================================
+            // MONEY
+            // ==============================================
 
+            if (
+                type === "money"
+            ) {
 
-value=user.money || 0;
+                value =
+                    Number(
+                        user.money || 0
+                    );
 
+            }
 
-}
 
+            // ==============================================
+            // FISH
+            // ==============================================
 
+            else if (
+                type === "fish"
+            ) {
 
-list.push({
+                for (
+                    const fishId in (
+                        user.fish || {}
+                    )
+                ) {
 
-id,
+                    const fishes =
+                        user.fish[fishId];
 
-value
+                    if (
+                        Array.isArray(fishes)
+                    ) {
 
-});
+                        value +=
+                            fishes.length;
 
+                    }
 
-}
+                }
 
-}
+            }
 
 
+            // ==============================================
+            // KG
+            // ==============================================
 
-list.sort(
-(a,b)=>
-b.value-a.value
-);
+            else if (
+                type === "kg"
+            ) {
 
+                for (
+                    const fishId in (
+                        user.fish || {}
+                    )
+                ) {
 
+                    const fishes =
+                        user.fish[fishId];
 
-list=
-list
-.slice(0,10);
+                    if (
+                        !Array.isArray(fishes)
+                    ) {
+                        continue;
+                    }
 
+                    for (
+                        const weight of fishes
+                    ) {
 
+                        const kg =
+                            Number(weight);
 
-let text="";
+                        if (
+                            Number.isFinite(kg)
+                        ) {
 
+                            value +=
+                                kg;
 
+                        }
 
-let rank=1;
+                    }
 
+                }
 
+            }
 
-for(const x of list){
 
+            // ==============================================
+            // PUSH
+            // ==============================================
 
-const member=
-await message.guild.members
-.fetch(x.id)
-.catch(()=>null);
+            list.push({
 
+                id,
 
+                value
 
-const name=
-member
-?
-member.user.username
-:
-"Người chơi";
+            });
 
+        }
 
 
-let value="";
+        // ==================================================
+        // SORT
+        // ==================================================
 
+        list.sort(
+            (a, b) =>
+                b.value -
+                a.value
+        );
 
 
-if(type==="kg")
+        // ==================================================
+        // TOP 10
+        // ==================================================
 
-value=
-`${x.value.toFixed(2)} KG`;
+        const top =
+            list
+                .filter(
+                    x =>
+                        x.value > 0
+                )
+                .slice(
+                    0,
+                    10
+                );
 
 
-else if(type==="fish")
+        // ==================================================
+        // ICON
+        // ==================================================
 
-value=
-`${x.value} con`;
+        const rankIcon = [
 
+            "🥇",
+            "🥈",
+            "🥉"
 
-else
+        ];
 
-value=
-`${emoji.money} ${formatMoney(x.value)}`;
 
+        // ==================================================
+        // TITLE
+        // ==================================================
 
+        let title;
 
-text+=
-`${rank}. ${name}\n┆ ${value}\n\n`;
+        let subtitle;
 
 
+        if (
+            type === "fish"
+        ) {
 
-rank++;
+            title =
+                "🐟 `FISH LEADERBOARD`";
 
+            subtitle =
+                "Những người câu được nhiều cá nhất.";
 
-}
+        }
 
+        else if (
+            type === "kg"
+        ) {
 
+            title =
+                "⚖️ `WEIGHT LEADERBOARD`";
 
-const title=
+            subtitle =
+                "Những người sở hữu tổng cân nặng cá lớn nhất.";
 
-type==="fish"
-?
-"🐟 BXH CÂU CÁ"
+        }
 
-:
+        else {
 
-type==="kg"
-?
-"⚖️ BXH CÂN NẶNG"
+            title =
+                "💰 `MONEY LEADERBOARD`";
 
-:
+            subtitle =
+                "Những người chơi giàu có nhất.";
 
-"💰 BXH GIÀU CÓ";
+        }
 
 
+        // ==================================================
+        // DANH SÁCH
+        // ==================================================
 
+        let text = "";
 
 
-const embed=
-new EmbedBuilder()
+        for (
+            let i = 0;
+            i < top.length;
+            i++
+        ) {
 
-.setColor("#ffd43b")
+            const player =
+                top[i];
 
-.setTitle(
-`╭・${title}`
-)
 
-.setDescription(
-text ||
-"Chưa có dữ liệu"
-)
+            // ==============================================
+            // MEMBER
+            // ==============================================
 
-.setFooter({
+            const member =
+                await message.guild.members
+                    .fetch(
+                        player.id
+                    )
+                    .catch(
+                        () => null
+                    );
 
-text:"🎣 Fish System"
 
-});
+            const name =
+                member
+                    ? member.user.username
+                    : "Người chơi";
 
 
+            // ==============================================
+            // VALUE
+            // ==============================================
 
-message.reply({
+            let value;
 
-embeds:[embed]
 
-});
+            if (
+                type === "money"
+            ) {
 
+                value =
+                    `${formatMoney(
+                        player.value
+                    )} ${emoji.money}`;
 
-}
+            }
+
+            else if (
+                type === "fish"
+            ) {
+
+                value =
+                    `${player.value} con`;
+
+            }
+
+            else {
+
+                value =
+                    `${player.value.toFixed(2)} KG`;
+
+            }
+
+
+            // ==============================================
+            // RANK
+            // ==============================================
+
+            const rank =
+                rankIcon[i] ||
+                `\`#${i + 1}\``;
+
+
+            // ==============================================
+            // TEXT
+            // ==============================================
+
+            text +=
+
+                `${rank} **${name}**\n` +
+
+                `╰・${value}\n\n`;
+
+        }
+
+
+        // ==================================================
+        // KHÔNG CÓ DATA
+        // ==================================================
+
+        if (!text) {
+
+            text =
+                "╰・Chưa có dữ liệu BXH.";
+
+        }
+
+
+        // ==================================================
+        // EMBED
+        // ==================================================
+
+        const embed =
+            new EmbedBuilder()
+
+                .setColor(
+                    "#FFD43B"
+                )
+
+                .setTitle(
+                    title
+                )
+
+                .setDescription(
+
+                    `*${subtitle}*\n\n` +
+
+                    "୨୧ ───────── ୨୧\n\n" +
+
+                    text +
+
+                    "୨୧ ───────── ୨୧"
+
+                )
+
+                .setFooter({
+
+                    text:
+                        "✦ Fishing Adventure · Leaderboard"
+
+                })
+
+                .setTimestamp();
+
+
+        // ==================================================
+        // REPLY
+        // ==================================================
+
+        return message.reply({
+
+            embeds: [
+                embed
+            ]
+
+        });
+
+    }
 
 };

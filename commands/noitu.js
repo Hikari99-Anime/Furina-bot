@@ -6,17 +6,16 @@ const {
     emoji,
     formatMoney,
     prefix
-} = require("../config");
+} = require("../../config");
 
 const {
     getUser,
     save
-} = require("../database");
+} = require("../../database");
 
 const {
     isAdmin
-} = require("../admin");
-
+} = require("../../admin");
 
 // ======================================================
 // EMBED
@@ -41,13 +40,12 @@ function createEmbed(
         )
 
         .setFooter({
-            text: "✦ Fishing Adventure"
+            text: "✦ Fishing Adventure · Admin"
         })
 
         .setTimestamp();
 
 }
-
 
 // ======================================================
 // COMMAND
@@ -67,9 +65,9 @@ module.exports = {
         args
     ) {
 
-        // ==========================
-        // ADMIN
-        // ==========================
+        // ==================================================
+        // CHECK ADMIN
+        // ==================================================
 
         if (
             !isAdmin(
@@ -87,7 +85,7 @@ module.exports = {
 
                         "❌ KHÔNG CÓ QUYỀN",
 
-                        `Bạn không có quyền sử dụng lệnh này.`
+                        "Bạn cần quyền **Admin** để sử dụng lệnh này."
 
                     )
 
@@ -97,31 +95,29 @@ module.exports = {
 
         }
 
-
-        // ==========================
+        // ==================================================
         // TARGET
-        // ==========================
+        // ==================================================
 
         const target =
             message.mentions.users.first();
 
-
-        // ==========================
+        // ==================================================
         // AMOUNT
-        // ==========================
+        // ==================================================
 
         const amount =
-            Number(args[1]);
+            Number(
+                args[1]
+            );
 
-
-        // ==========================
-        // CHECK
-        // ==========================
+        // ==================================================
+        // CHECK INPUT
+        // ==================================================
 
         if (
             !target ||
-            args[1] === undefined ||
-            !Number.isSafeInteger(amount)
+            args[1] === undefined
         ) {
 
             return message.reply({
@@ -132,13 +128,15 @@ module.exports = {
 
                         "#F59E0B",
 
-                        "⚠️ SAI CÚ PHÁP",
+                        "⚠️ THIẾU THÔNG TIN",
 
-                        `Cách dùng:\n` +
+                        `Cách sử dụng:\n\n` +
+
                         `\`${prefix}setmoney @user <số tiền>\`\n\n` +
 
                         `💡 Ví dụ:\n` +
-                        `\`${prefix}setmoney @user 100000\``
+
+                        `\`${prefix}setmoney @Furina 50000\``
 
                     )
 
@@ -148,12 +146,40 @@ module.exports = {
 
         }
 
-
-        // ==========================
-        // CHECK MONEY
-        // ==========================
+        // ==================================================
+        // CHECK TARGET BOT
+        // ==================================================
 
         if (
+            target.bot
+        ) {
+
+            return message.reply({
+
+                embeds: [
+
+                    createEmbed(
+
+                        "#EF4444",
+
+                        "❌ KHÔNG HỢP LỆ",
+
+                        "Không thể đặt tiền cho tài khoản **Bot**."
+
+                    )
+
+                ]
+
+            });
+
+        }
+
+        // ==================================================
+        // CHECK AMOUNT
+        // ==================================================
+
+        if (
+            !Number.isSafeInteger(amount) ||
             amount < 0
         ) {
 
@@ -167,7 +193,11 @@ module.exports = {
 
                         "❌ SỐ TIỀN KHÔNG HỢP LỆ",
 
-                        `Số tiền phải lớn hơn hoặc bằng **0**.`
+                        `Số tiền phải là **số nguyên từ 0 trở lên**.\n\n` +
+
+                        `💡 Ví dụ:\n` +
+
+                        `\`${prefix}setmoney @user 100000\``
 
                     )
 
@@ -177,16 +207,14 @@ module.exports = {
 
         }
 
-
-        // ==========================
+        // ==================================================
         // GET USER
-        // ==========================
+        // ==================================================
 
         const user =
             getUser(
                 target.id
             );
-
 
         if (!user) {
 
@@ -198,9 +226,9 @@ module.exports = {
 
                         "#EF4444",
 
-                        "❌ KHÔNG TÌM THẤY",
+                        "❌ KHÔNG TÌM THẤY DỮ LIỆU",
 
-                        `Không tìm thấy dữ liệu của ${target}.`
+                        "Không tìm thấy dữ liệu người chơi này."
 
                     )
 
@@ -210,28 +238,25 @@ module.exports = {
 
         }
 
-
-        // ==========================
+        // ==================================================
         // OLD MONEY
-        // ==========================
+        // ==================================================
 
         const oldMoney =
             Number(
                 user.money || 0
             );
 
-
-        // ==========================
+        // ==================================================
         // SET MONEY
-        // ==========================
+        // ==================================================
 
         user.money =
             amount;
 
-
-        // ==========================
+        // ==================================================
         // SAVE
-        // ==========================
+        // ==================================================
 
         try {
 
@@ -240,9 +265,11 @@ module.exports = {
         } catch (err) {
 
             console.error(
-                "❌ SETMONEY ERROR:",
+                "❌ SETMONEY SAVE ERROR:",
                 err
             );
+
+            // rollback
 
             user.money =
                 oldMoney;
@@ -257,8 +284,8 @@ module.exports = {
 
                         "❌ KHÔNG THỂ LƯU",
 
-                        `Đã xảy ra lỗi khi lưu dữ liệu.\n` +
-                        `Số dư của ${target} vẫn được giữ nguyên.`
+                        "Không thể lưu thay đổi số dư.\n" +
+                        "Số tiền của người chơi **chưa được thay đổi**."
 
                     )
 
@@ -268,10 +295,9 @@ module.exports = {
 
         }
 
-
-        // ==========================
+        // ==================================================
         // SUCCESS
-        // ==========================
+        // ==================================================
 
         return message.reply({
 
@@ -281,19 +307,17 @@ module.exports = {
 
                     "#86EFAC",
 
-                    "💰 SET MONEY THÀNH CÔNG",
+                    "💰 ĐẶT SỐ DƯ THÀNH CÔNG",
 
                     `👤 **Người chơi:** ${target}\n\n` +
 
-                    `💳 **Số dư cũ:** ` +
+                    `💵 **Số dư cũ:** ` +
                     `${formatMoney(oldMoney)} ${emoji.money}\n\n` +
 
                     `💰 **Số dư mới:** ` +
                     `${formatMoney(amount)} ${emoji.money}\n\n` +
 
-                    `🛠️ **Admin:** ${message.author}\n\n` +
-
-                    `✦ Đã cập nhật số dư thành công.`
+                    `🛠️ **Admin thực hiện:** ${message.author}`
 
                 )
 

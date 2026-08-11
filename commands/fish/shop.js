@@ -5,107 +5,228 @@ const {
     ButtonStyle
 } = require("discord.js");
 
-
 const {
     emoji
 } = require("../../config");
 
+const {
+    getUser
+} = require("../../data");
 
+// ======================================================
+// SHOP COMMAND
+// ======================================================
 
 module.exports = {
 
+    name: "shop",
 
-name:"shop",
+    aliases: [
+        "cuahang",
+        "shopca"
+    ],
 
+    async execute(message) {
 
-aliases:[
+        // ==================================================
+        // USER
+        // ==================================================
 
-"cuahang",
-"shopca"
+        const user =
+            getUser(
+                message.author.id
+            );
 
-],
-
-
-
-async execute(message){
-
-
-const embed = new EmbedBuilder()
-
-.setColor("#7DD3FC")
-
-.setTitle(
-"╭・🌊 FISHING MARKET"
-)
-
-.setDescription(
-`> Chào mừng ngư dân đến với đại dương ✨
-
-╭・🎣 **Cần câu** · Tăng sức mạnh câu cá
-╭・🪱 **Mồi câu** · Tăng cơ hội cá hiếm
-╭・🎟️ **Chìa khóa & Bảo hiểm** · Mở rương, bảo vệ cần khi cường hóa
-
-━━━━━━━━━━━━
-📖 **Cách mua**
-1️⃣ Chọn danh mục → 2️⃣ Chọn vật phẩm → 3️⃣ Nhập số lượng → 4️⃣ Xác nhận mua
-
-💰 Tiền: ${emoji.money} Fcoin`
-)
-
-.setFooter({
-
-text:
-"✦ Ocean Adventure"
-
-});
+        const balance =
+            Number(
+                user?.money || 0
+            );
 
 
+        // ==================================================
+        // EMBED
+        // ==================================================
 
-const row = new ActionRowBuilder()
+        const embed =
+            new EmbedBuilder()
 
-.addComponents(
+                .setColor(
+                    "#7DD3FC"
+                )
 
-new ButtonBuilder()
+                .setAuthor({
 
-.setCustomId("shop_rod")
+                    name:
+                        `${message.author.username} · Fishing Shop`,
 
-.setLabel("🎣 Cần câu")
+                    iconURL:
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 128
+                        })
 
-.setStyle(ButtonStyle.Primary),
+                })
+
+                .setTitle(
+                    "🛒 `FISHING MARKET`"
+                )
+
+                .setDescription(
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `Chào mừng đến với cửa hàng của ngư dân.\n` +
+                    `Hãy chọn danh mục bạn muốn xem.\n\n` +
+
+                    `💰 Số dư: **${balance.toLocaleString()} Fcoin** ${emoji.money}\n\n` +
+
+                    `୨୧ ───────── ୨୧\n\n` +
+
+                    `🎣 Cần câu\n` +
+                    `> Trang bị và nâng cấp cần câu.\n\n` +
+
+                    `🪱 Mồi câu\n` +
+                    `> Hỗ trợ tăng cơ hội câu cá.\n\n` +
+
+                    `🎟️ Chìa khóa & Bảo hiểm\n` +
+                    `> Vật phẩm đặc biệt và bảo vệ cần câu.\n\n` +
+
+                    `🪨 Đá tăng tỉ lệ\n` +
+                    `> Hỗ trợ cường hóa và tăng Luck.\n\n` +
+
+                    `୨୧ ───────── ୨୧`
+
+                )
+
+                .setFooter({
+
+                    text:
+                        "✦ Fishing Adventure · Shop"
+
+                })
+
+                .setTimestamp();
 
 
+        // ==================================================
+        // BUTTON
+        // ==================================================
 
-new ButtonBuilder()
+        const row =
+            new ActionRowBuilder()
 
-.setCustomId("shop_bait")
+                .addComponents(
 
-.setLabel("🪱 Mồi câu")
+                    // ======================================
+                    // CẦN CÂU
+                    // ======================================
 
-.setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
 
+                        .setCustomId(
+                            "shop_rod"
+                        )
 
+                        .setLabel(
+                            "Cần câu"
+                        )
 
-new ButtonBuilder()
+                        .setEmoji(
+                            "🎣"
+                        )
 
-.setCustomId("shop_key")
-
-.setLabel("🎟️ Chìa khóa & Bảo hiểm")
-
-.setStyle(ButtonStyle.Secondary)
-
-);
-
-
-
-message.reply({
-
-embeds:[embed],
-
-components:[row]
-
-});
+                        .setStyle(
+                            ButtonStyle.Primary
+                        ),
 
 
-}
+                    // ======================================
+                    // MỒI CÂU
+                    // ======================================
+
+                    new ButtonBuilder()
+
+                        .setCustomId(
+                            "shop_bait"
+                        )
+
+                        .setLabel(
+                            "Mồi câu"
+                        )
+
+                        .setEmoji(
+                            "🪱"
+                        )
+
+                        .setStyle(
+                            ButtonStyle.Success
+                        ),
+
+
+                    // ======================================
+                    // CHÌA KHÓA
+                    // ======================================
+
+                    new ButtonBuilder()
+
+                        .setCustomId(
+                            "shop_key"
+                        )
+
+                        .setLabel(
+                            "Chìa khóa"
+                        )
+
+                        .setEmoji(
+                            "🎟️"
+                        )
+
+                        .setStyle(
+                            ButtonStyle.Secondary
+                        ),
+
+
+                    // ======================================
+                    // ĐÁ TĂNG TỈ LỆ
+                    // ======================================
+
+                    new ButtonBuilder()
+
+                        .setCustomId(
+                            "shop_stone"
+                        )
+
+                        .setLabel(
+                            "Đá tăng tỉ lệ"
+                        )
+
+                        .setEmoji(
+                            "🪨"
+                        )
+
+                        .setStyle(
+                            ButtonStyle.Secondary
+                        )
+
+                );
+
+
+        // ==================================================
+        // SEND
+        // ==================================================
+
+        return message.reply({
+
+            embeds: [
+                embed
+            ],
+
+            components: [
+                row
+            ]
+
+        });
+
+    }
 
 };
