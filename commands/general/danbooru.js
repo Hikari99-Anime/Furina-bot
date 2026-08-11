@@ -84,11 +84,23 @@ function isNsfwChannel(channel) {
 // ======================================================
 // LỌC RATING THEO CHANNEL (SFW hoặc NSFW)
 //
-// Không gửi "-rating:..." lên Danbooru vì mỗi rating: cũng tính vào
-// giới hạn số tag cho request ẩn danh (dễ bị HTTP 422 khi kết hợp
-// với tag khác). Thay vào đó lấy list (mọi rating) về rồi tự lọc
-// lại bằng filterValidPosts() ở dưới.
+// Dùng "rating:g,s" / "rating:q,e" (cú pháp OR bằng dấu phẩy) chỉ
+// tốn ĐÚNG 1 tag - thay vì 2 tag "-rating:x -rating:y" như trước,
+// để không vượt giới hạn số tag cho request ẩn danh.
+//
+// QUAN TRỌNG: phải lọc ngay trong query (không chỉ lọc phía client
+// sau khi fetch) - nếu không, top 20 ảnh theo order:score có thể
+// toàn là NSFW (art nổi tiếng thường bị vậy), lọc phía client sẽ
+// còn lại 0 ảnh dù nhân vật đó có hàng nghìn ảnh SFW khác.
 // ======================================================
+
+function ratingTag(nsfw) {
+
+    return nsfw
+        ? "rating:q,e"
+        : "rating:g,s";
+
+}
 
 
 // ======================================================
@@ -176,7 +188,7 @@ module.exports = {
 
                 const posts =
                     await fetchPosts(
-                        "order:score",
+                        `order:score ${ratingTag(nsfw)}`,
                         20
                     );
 
@@ -199,17 +211,12 @@ module.exports = {
                         args.join(" ")
                     );
 
-                console.log(
-                    `🔍 [art] step1 candidates for "${args.join(" ")}":`,
-                    candidates
-                );
-
 
                 for (const candidate of candidates) {
 
                     const posts =
                         await fetchPosts(
-                            `${candidate} order:score`,
+                            `${candidate} order:score ${ratingTag(nsfw)}`,
                             20
                         );
 
@@ -219,10 +226,6 @@ module.exports = {
                             posts,
                             nsfw
                         );
-
-                    console.log(
-                        `🔍 [art] step1 candidate="${candidate}" rawPosts=${posts.length} valid=${valid.length}`
-                    );
 
 
                     if (valid.length)
@@ -273,7 +276,7 @@ module.exports = {
 
                         const posts =
                             await fetchPosts(
-                                `${resolved} order:score`,
+                                `${resolved} order:score ${ratingTag(nsfw)}`,
                                 20
                             );
 

@@ -80,11 +80,6 @@ async function searchDanbooruTags(query) {
         const results =
             await res.json();
 
-        console.log(
-            `🔍 [autocomplete] query="${normalized}" raw=` +
-            JSON.stringify(results).slice(0, 1500)
-        );
-
         if (!Array.isArray(results))
             return [];
 
