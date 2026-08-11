@@ -190,6 +190,20 @@ async function joinSession(message) {
 
         console.log(`🔊 [Voice] ${oldState.status} -> ${newState.status}`);
 
+        const networking = newState.networking;
+
+        if (networking && !networking._loggedClose) {
+
+            networking._loggedClose = true;
+
+            networking.on("close", code => {
+
+                console.log("🔊 [Voice] NW close code:", code);
+
+            });
+
+        }
+
     });
 
     connection.on("debug", msg => {
