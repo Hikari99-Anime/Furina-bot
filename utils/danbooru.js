@@ -32,6 +32,12 @@ const TAG_CATEGORY = {
 
 // ======================================================
 // TRA TAG THẬT TRÊN DANBOORU (dùng chung cho các hàm dưới)
+//
+// Dùng endpoint autocomplete (giống ô search trên web Danbooru) vì
+// nó tra được cả ALIAS - VD gõ "elaina" vẫn ra đúng tag chính
+// "elaina_(majo_no_tabitabi)" (1.7k bài), trong khi tags.json với
+// name_matches chỉ khớp tên tag y nguyên và có thể vớ nhầm tag khác
+// chỉ tình cờ chứa cùng chuỗi con (VD "melaina_(tarakanovich)").
 // ======================================================
 
 async function searchDanbooruTags(query) {
@@ -48,10 +54,10 @@ async function searchDanbooruTags(query) {
     try {
 
         const url =
-            `https://danbooru.donmai.us/tags.json` +
-            `?search[name_matches]=${encodeURIComponent(`*${normalized}*`)}` +
-            `&search[order]=count` +
-            `&limit=30`;
+            `https://danbooru.donmai.us/autocomplete.json` +
+            `?search[query]=${encodeURIComponent(normalized)}` +
+            `&search[type]=tag_query` +
+            `&limit=20`;
 
 
         const res =
@@ -71,12 +77,34 @@ async function searchDanbooruTags(query) {
             return [];
 
 
-        const tags =
+        const results =
             await res.json();
 
-        return Array.isArray(tags)
-            ? tags
-            : [];
+        console.log(
+            `🔍 [autocomplete] query="${normalized}" raw=` +
+            JSON.stringify(results).slice(0, 1500)
+        );
+
+        if (!Array.isArray(results))
+            return [];
+
+
+        return results
+            .filter(t =>
+                t &&
+                t.value
+            )
+            .map(t => ({
+
+                name: t.value,
+
+                category:
+                    Number(t.category),
+
+                post_count:
+                    Number(t.post_count) || 0
+
+            }));
 
     }
     catch (err) {
