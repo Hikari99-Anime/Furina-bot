@@ -85,7 +85,7 @@ function isNsfwChannel(channel) {
 
 module.exports = {
 
-    name: "danbooru",
+    name: "art",
 
     aliases: [
         "booru",

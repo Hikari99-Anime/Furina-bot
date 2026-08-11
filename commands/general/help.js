@@ -224,7 +224,7 @@ module.exports = {
 
                     `🖼️ ẢNH\n\n` +
 
-                    `${prefix}danbooru [tag] · Ảnh phổ biến Danbooru\n\n` +
+                    `${prefix}art [tag] · Ảnh phổ biến Danbooru\n\n` +
 
                     `🛑 ADMIN\n\n` +
 
