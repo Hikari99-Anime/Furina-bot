@@ -4,20 +4,44 @@ on:
   workflow_dispatch:
     inputs:
       lines:
-        description: "Số dòng log gần nhất"
+        description: "Số dòng pm2 log gần nhất"
         required: false
         default: "150"
+      mode:
+        description: "logs = pm2 logs | diag = kiểm tra node_modules/disk/git"
+        required: false
+        default: "logs"
 
 jobs:
   fetch-logs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fetch pm2 logs from VPS
+      - name: Fetch from VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
+            if [ "${{ github.event.inputs.mode }}" = "diag" ]; then
+              cd /root/Furina-bot
+              echo "--- df -h ---"
+              df -h /
+              echo "--- du -sh node_modules ---"
+              du -sh node_modules 2>/dev/null
+              echo "--- @discordjs/voice present? ---"
+              ls -la node_modules/@discordjs/voice 2>&1 | head -5
+              echo "--- @discordjs dir listing ---"
+              ls -la node_modules/@discordjs 2>&1
+              echo "--- package.json dependencies ---"
+              cat package.json
+              echo "--- git status ---"
+              git status
+              echo "--- git log -1 ---"
+              git log -1 --oneline
+              echo "--- node -e require check ---"
+              node -e "console.log(require.resolve('@discordjs/voice'))" 2>&1
+            else
+              pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
+            fi
