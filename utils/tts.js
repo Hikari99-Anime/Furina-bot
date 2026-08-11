@@ -1,6 +1,9 @@
 const dns =
     require("dns");
 
+const { Readable } =
+    require("stream");
+
 // Nhiều VPS gán IPv6 nhưng không route được, khiến UDP discovery
 // của @discordjs/voice bị treo tới khi timeout. Ưu tiên IPv4 để né lỗi này.
 dns.setDefaultResultOrder("ipv4first");
@@ -10,23 +13,18 @@ const {
     createAudioPlayer,
     createAudioResource,
     entersState,
-    StreamType,
     AudioPlayerStatus,
     VoiceConnectionStatus
 } = require("@discordjs/voice");
-
-const {
-    MsEdgeTTS,
-    OUTPUT_FORMAT
-} = require("msedge-tts");
 
 
 // ======================================================
 // CONFIG
 // ======================================================
 
-const VOICE_NAME =
-    "vi-VN-HoaiMyNeural";
+const GTTS_LANG = "vi";
+
+const GTTS_CHUNK_LENGTH = 200;
 
 const MAX_LENGTH = 300;
 
@@ -64,6 +62,100 @@ function sanitizeText(text) {
 
 
 // ======================================================
+// CHIA CÂU DÀI THÀNH ĐOẠN NGẮN (giới hạn của Google TTS)
+// ======================================================
+
+function splitGttsChunks(text) {
+
+    const chunks = [];
+
+    let remaining =
+        text.trim();
+
+    while (remaining.length > GTTS_CHUNK_LENGTH) {
+
+        let cut =
+            remaining.lastIndexOf(" ", GTTS_CHUNK_LENGTH);
+
+        if (cut <= 0)
+            cut = GTTS_CHUNK_LENGTH;
+
+        chunks.push(remaining.slice(0, cut).trim());
+
+        remaining =
+            remaining.slice(cut).trim();
+
+    }
+
+    if (remaining)
+        chunks.push(remaining);
+
+    return chunks;
+
+}
+
+
+// ======================================================
+// GỌI GOOGLE TRANSLATE TTS CHO 1 ĐOẠN
+// ======================================================
+
+async function fetchGttsChunk(text) {
+
+    const params =
+        new URLSearchParams({
+            ie: "UTF-8",
+            q: text,
+            tl: GTTS_LANG,
+            client: "tw-ob"
+        });
+
+    const res =
+        await fetch(
+            `https://translate.google.com/translate_tts?${params.toString()}`,
+            {
+                headers: {
+                    "User-Agent":
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+                }
+            }
+        );
+
+    if (!res.ok) {
+
+        throw new Error(`gTTS HTTP ${res.status}`);
+
+    }
+
+    return Buffer.from(await res.arrayBuffer());
+
+}
+
+
+// ======================================================
+// TẠO AUDIO MP3 CHO CẢ CÂU (GHÉP CÁC ĐOẠN)
+// ======================================================
+
+async function synthesizeGtts(text) {
+
+    const chunks =
+        splitGttsChunks(text);
+
+    const buffers = [];
+
+    for (const chunk of chunks) {
+
+        buffers.push(
+            await fetchGttsChunk(chunk)
+        );
+
+    }
+
+    return Buffer.concat(buffers);
+
+}
+
+
+// ======================================================
 // XỬ LÝ HÀNG ĐỢI ĐỌC
 // ======================================================
 
@@ -82,21 +174,13 @@ async function processQueue(session) {
 
     try {
 
-        const tts =
-            new MsEdgeTTS();
-
-        await tts.setMetadata(
-            VOICE_NAME,
-            OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS
-        );
-
-        const { audioStream } =
-            tts.toStream(text);
+        const mp3 =
+            await synthesizeGtts(text);
 
         const resource =
-            createAudioResource(audioStream, {
-                inputType: StreamType.WebmOpus
-            });
+            createAudioResource(
+                Readable.from(mp3)
+            );
 
         session.player.play(resource);
 
@@ -182,35 +266,8 @@ async function joinSession(message) {
         joinVoiceChannel({
             channelId: voiceChannel.id,
             guildId,
-            adapterCreator: message.guild.voiceAdapterCreator,
-            debug: true
+            adapterCreator: message.guild.voiceAdapterCreator
         });
-
-    connection.on("stateChange", (oldState, newState) => {
-
-        console.log(`🔊 [Voice] ${oldState.status} -> ${newState.status}`);
-
-        const networking = newState.networking;
-
-        if (networking && !networking._loggedClose) {
-
-            networking._loggedClose = true;
-
-            networking.on("close", code => {
-
-                console.log("🔊 [Voice] NW close code:", code);
-
-            });
-
-        }
-
-    });
-
-    connection.on("debug", msg => {
-
-        console.log("🔊 [Voice debug]", msg);
-
-    });
 
     connection.on("error", err => {
 
