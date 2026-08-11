@@ -31,10 +31,10 @@ const TAG_CATEGORY = {
 
 
 // ======================================================
-// TÌM TAG THẬT KHỚP VỚI CÂU TÌM (character trước, copyright sau)
+// TRA TAG THẬT TRÊN DANBOORU (dùng chung cho các hàm dưới)
 // ======================================================
 
-async function findBestTags(query) {
+async function searchDanbooruTags(query) {
 
     const normalized =
         String(query || "")
@@ -74,8 +74,36 @@ async function findBestTags(query) {
         const tags =
             await res.json();
 
-        if (!Array.isArray(tags))
-            return [];
+        return Array.isArray(tags)
+            ? tags
+            : [];
+
+    }
+    catch (err) {
+
+        console.error(
+            "❌ Lỗi tra tag Danbooru:",
+            err
+        );
+
+        return [];
+
+    }
+
+}
+
+
+// ======================================================
+// TÌM TAG THẬT KHỚP VỚI CÂU TÌM (character trước, copyright sau)
+// CHỈ 2 NHÓM NÀY - DÙNG CHO CẢ CÂU (VD: "fart mobius")
+// ======================================================
+
+async function findBestTags(query) {
+
+    try {
+
+        const tags =
+            await searchDanbooruTags(query);
 
 
         const byCount =
@@ -120,6 +148,56 @@ async function findBestTags(query) {
         return [];
 
     }
+
+}
+
+
+// ======================================================
+// TÌM 1 TAG THẬT CHO 1 TỪ ĐƠN (mọi nhóm, ưu tiên character/copyright)
+// TRẢ VỀ null NẾU TỪ NÀY KHÔNG KHỚP TAG NÀO TRÊN DANBOORU
+// - Dùng để tránh gửi wildcard "rỗng" cho Danbooru: Danbooru sẽ tự
+//   BỎ QUA wildcard không khớp tag nào thay vì trả về 0 kết quả,
+//   khiến search AND nhiều từ hoá ra chỉ còn lọc theo từ còn lại.
+// ======================================================
+
+async function resolveWordTag(word) {
+
+    const tags =
+        await searchDanbooruTags(word);
+
+    if (!tags.length)
+        return null;
+
+
+    const byCount =
+        (a, b) =>
+            (b.post_count || 0) -
+            (a.post_count || 0);
+
+
+    const priority =
+        t =>
+
+            t.category === TAG_CATEGORY.CHARACTER
+                ? 0
+
+            : t.category === TAG_CATEGORY.COPYRIGHT
+                ? 1
+
+            : 2;
+
+
+    const best =
+        [...tags]
+            .sort((a, b) =>
+
+                priority(a) - priority(b) ||
+                byCount(a, b)
+
+            )[0];
+
+
+    return best?.name || null;
 
 }
 
@@ -310,5 +388,6 @@ module.exports = {
     fetchPosts,
     filterValidPosts,
     buildPostEmbed,
-    findBestTags
+    findBestTags,
+    resolveWordTag
 };

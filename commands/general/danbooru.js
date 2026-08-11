@@ -6,7 +6,8 @@ const {
     fetchPosts,
     filterValidPosts,
     buildPostEmbed,
-    findBestTags
+    findBestTags,
+    resolveWordTag
 } = require("../../utils/danbooru");
 
 
@@ -108,50 +109,6 @@ module.exports = {
 
             const userTags =
                 args
-                    .map(rawTag => {
-
-                        const tag =
-                            String(rawTag || "");
-
-                        if (!tag)
-                            return "";
-
-
-                        const negate =
-                            tag.startsWith("-")
-                                ? "-"
-                                : "";
-
-                        const core =
-                            negate
-                                ? tag.slice(1)
-                                : tag;
-
-
-                        // ==================================================
-                        // GIỮ NGUYÊN META TAG (rating:, order:...)
-                        // HOẶC TAG ĐÃ CÓ WILDCARD
-                        // ==================================================
-
-                        if (
-                            core.includes(":") ||
-                            core.includes("*")
-                        ) {
-
-                            return tag;
-
-                        }
-
-
-                        // ==================================================
-                        // THÊM WILDCARD ĐỂ KHỚP GẦN ĐÚNG
-                        // VD: furina -> furina* (khớp furina_(genshin_impact))
-                        // ==================================================
-
-                        return `${negate}${core}*`;
-
-                    })
-                    .filter(Boolean)
                     .join(" ")
                     .trim();
 
@@ -165,12 +122,31 @@ module.exports = {
             let valid = [];
 
 
-            // ==================================================
-            // ƯU TIÊN TÌM THEO TAG CHARACTER, RỒI COPYRIGHT
-            // (VD: "fart mobius" -> tag character/copyright thật)
-            // ==================================================
+            if (!args.length) {
 
-            if (args.length) {
+                // ==================================================
+                // KHÔNG CÓ TỪ KHOÁ -> DUYỆT TOP ẢNH BẤT KỲ
+                // ==================================================
+
+                const posts =
+                    await fetchPosts(
+                        `order:rank${ratingFilter}`,
+                        20
+                    );
+
+                valid =
+                    filterValidPosts(
+                        posts,
+                        nsfw
+                    );
+
+            }
+            else {
+
+                // ==================================================
+                // BƯỚC 1: CẢ CÂU LÀ 1 TÊN CHARACTER/COPYRIGHT
+                // (VD: "fart mobius" -> tag character/copyright thật)
+                // ==================================================
 
                 const candidates =
                     await findBestTags(
@@ -199,124 +175,98 @@ module.exports = {
 
                 }
 
-            }
+
+                // ==================================================
+                // BƯỚC 2: TỪNG TỪ LÀ 1 TAG RIÊNG (VD: "furina elysia")
+                // TRA TỪNG TỪ THÀNH TAG THẬT RỒI AND LẠI.
+                //
+                // Không dùng wildcard mù cho từ không tra được tag
+                // nào - Danbooru sẽ tự BỎ QUA wildcard rỗng thay vì
+                // trả 0 kết quả, khiến search AND hoá ra chỉ còn lọc
+                // theo (các) từ còn lại và ra ảnh không liên quan gì.
+                // ==================================================
+
+                if (!valid.length) {
+
+                    const resolvedParts = [];
+
+                    let unresolvable =
+                        false;
 
 
-            // ==================================================
-            // NHIỀU TỪ KHOÁ RIÊNG (VD: "furina elysia")
-            // TRA TỪNG TỪ THÀNH TAG THẬT RỒI AND LẠI
-            // ==================================================
+                    for (const rawTag of args) {
 
-            if (
-                !valid.length &&
-                args.length > 1
-            ) {
+                        const tag =
+                            String(rawTag || "");
 
-                const resolvedParts = [];
+                        if (!tag)
+                            continue;
 
-                for (const rawTag of args) {
 
-                    const tag =
-                        String(rawTag || "");
+                        const negate =
+                            tag.startsWith("-")
+                                ? "-"
+                                : "";
 
-                    if (!tag) {
+                        const core =
+                            negate
+                                ? tag.slice(1)
+                                : tag;
 
-                        continue;
+
+                        // ==========================================
+                        // GIỮ NGUYÊN META TAG / WILDCARD ĐÃ CÓ
+                        // ==========================================
+
+                        if (
+                            core.includes(":") ||
+                            core.includes("*")
+                        ) {
+
+                            resolvedParts.push(tag);
+                            continue;
+
+                        }
+
+
+                        const resolved =
+                            await resolveWordTag(core);
+
+                        if (!resolved) {
+
+                            unresolvable = true;
+                            break;
+
+                        }
+
+                        resolvedParts.push(
+                            `${negate}${resolved}`
+                        );
 
                     }
 
-
-                    const negate =
-                        tag.startsWith("-")
-                            ? "-"
-                            : "";
-
-                    const core =
-                        negate
-                            ? tag.slice(1)
-                            : tag;
-
-
-                    // ==========================================
-                    // GIỮ NGUYÊN META TAG / WILDCARD ĐÃ CÓ
-                    // ==========================================
 
                     if (
-                        core.includes(":") ||
-                        core.includes("*")
+                        !unresolvable &&
+                        resolvedParts.length
                     ) {
 
-                        resolvedParts.push(tag);
-                        continue;
+                        const posts =
+                            await fetchPosts(
+                                `${resolvedParts.join(" ")} order:rank${ratingFilter}`,
+                                20
+                            );
+
+
+                        valid =
+                            filterValidPosts(
+                                posts,
+                                nsfw
+                            );
 
                     }
 
-
-                    // ==========================================
-                    // TRA TAG THẬT CHO TỪNG TỪ, ƯU TIÊN CHARACTER
-                    // ==========================================
-
-                    const wordCandidates =
-                        await findBestTags(core);
-
-                    resolvedParts.push(
-
-                        wordCandidates.length
-                            ? `${negate}${wordCandidates[0]}`
-                            : `${negate}${core}*`
-
-                    );
-
                 }
-
-
-                if (resolvedParts.length > 1) {
-
-                    const posts =
-                        await fetchPosts(
-                            `${resolvedParts.join(" ")} order:rank${ratingFilter}`,
-                            20
-                        );
-
-
-                    valid =
-                        filterValidPosts(
-                            posts,
-                            nsfw
-                        );
-
-                }
-
-            }
-
-
-            // ==================================================
-            // FALLBACK: TÌM THEO WILDCARD TỪNG TỪ NHƯ CŨ
-            // ==================================================
-
-            if (!valid.length) {
-
-                const tags =
-                    (
-                        userTags
-                            ? `${userTags} order:rank`
-                            : "order:rank"
-                    ) +
-                    ratingFilter;
-
-
-                const posts =
-                    await fetchPosts(
-                        tags,
-                        20
-                    );
-
-
-                valid =
-                    filterValidPosts(
-                        posts,
-                        nsfw
-                    );
 
             }
 
