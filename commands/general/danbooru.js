@@ -66,17 +66,51 @@ function createEmbed(
 
 
 // ======================================================
-// CHECK NSFW CHANNEL
+// LUÔN CHỈ LẤY ẢNH AN TOÀN (SFW)
 // ======================================================
 
-function isNsfwChannel(channel) {
+const RATING_FILTER =
+    " -rating:explicit -rating:questionable";
 
-    return !!(
 
-        channel?.nsfw ||
-        channel?.parent?.nsfw
+// ======================================================
+// TRÁNH LẶP ẢNH ĐÃ GỬI TRONG CÙNG CHANNEL
+// (channelId -> Set<postId>)
+// ======================================================
 
-    );
+const shownPostIds = new Map();
+
+function pickUnseenPost(channelId, valid) {
+
+    const shown =
+        shownPostIds.get(channelId) ||
+        new Set();
+
+
+    let pool =
+        valid.filter(p =>
+            !shown.has(p.id)
+        );
+
+    if (!pool.length)
+        pool = valid;
+
+
+    const post =
+        pool[
+
+            Math.floor(
+                Math.random() *
+                pool.length
+            )
+
+        ];
+
+
+    shown.add(post.id);
+    shownPostIds.set(channelId, shown);
+
+    return post;
 
 }
 
@@ -101,22 +135,10 @@ module.exports = {
 
         try {
 
-            const nsfw =
-                isNsfwChannel(
-                    message.channel
-                );
-
-
             const userTags =
                 args
                     .join(" ")
                     .trim();
-
-
-            const ratingFilter =
-                nsfw
-                    ? " -rating:general -rating:sensitive"
-                    : " -rating:explicit -rating:questionable";
 
 
             let valid = [];
@@ -125,27 +147,27 @@ module.exports = {
             if (!args.length) {
 
                 // ==================================================
-                // KHÔNG CÓ TỪ KHOÁ -> DUYỆT TOP ẢNH BẤT KỲ
+                // KHÔNG CÓ TỪ KHOÁ -> DUYỆT TOP ẢNH ĐIỂM CAO NHẤT
                 // ==================================================
 
                 const posts =
                     await fetchPosts(
-                        `order:score${ratingFilter}`,
+                        `order:score${RATING_FILTER}`,
                         20
                     );
 
                 valid =
                     filterValidPosts(
                         posts,
-                        nsfw
+                        false
                     );
 
             }
             else {
 
                 // ==================================================
-                // BƯỚC 1: CẢ CÂU LÀ 1 TÊN CHARACTER/COPYRIGHT
-                // (VD: "fart mobius" -> tag character/copyright thật)
+                // BƯỚC 1: CẢ CÂU LÀ 1 TAG CHARACTER/COPYRIGHT THẬT
+                // (VD: "astra yao" -> tag "astra_yao")
                 // ==================================================
 
                 const candidates =
@@ -158,7 +180,7 @@ module.exports = {
 
                     const posts =
                         await fetchPosts(
-                            `${candidate} order:score${ratingFilter}`,
+                            `${candidate} order:score${RATING_FILTER}`,
                             20
                         );
 
@@ -166,7 +188,7 @@ module.exports = {
                     valid =
                         filterValidPosts(
                             posts,
-                            nsfw
+                            false
                         );
 
 
@@ -177,22 +199,12 @@ module.exports = {
 
 
                 // ==================================================
-                // BƯỚC 2: TỪNG TỪ LÀ 1 TAG RIÊNG (VD: "furina elysia")
-                // TRA TỪNG TỪ THÀNH TAG THẬT RỒI AND LẠI.
-                //
-                // Không dùng wildcard mù cho từ không tra được tag
-                // nào - Danbooru sẽ tự BỎ QUA wildcard rỗng thay vì
-                // trả 0 kết quả, khiến search AND hoá ra chỉ còn lọc
-                // theo (các) từ còn lại và ra ảnh không liên quan gì.
+                // BƯỚC 2: KHÔNG GHÉP ĐƯỢC 1 TAG CHUNG -> THỬ TỪNG TỪ
+                // RIÊNG (VD: "mobius elysia"), NHƯNG VẪN CHỈ DÙNG
+                // ĐÚNG 1 TAG CHO MỖI LẦN TÌM - KHÔNG AND NHIỀU TAG.
                 // ==================================================
 
                 if (!valid.length) {
-
-                    const resolvedParts = [];
-
-                    let unresolvable =
-                        false;
-
 
                     for (const rawTag of args) {
 
@@ -203,27 +215,17 @@ module.exports = {
                             continue;
 
 
-                        const negate =
-                            tag.startsWith("-")
-                                ? "-"
-                                : "";
-
                         const core =
-                            negate
+                            tag.startsWith("-")
                                 ? tag.slice(1)
                                 : tag;
 
-
-                        // ==========================================
-                        // GIỮ NGUYÊN META TAG / WILDCARD ĐÃ CÓ
-                        // ==========================================
 
                         if (
                             core.includes(":") ||
                             core.includes("*")
                         ) {
 
-                            resolvedParts.push(tag);
                             continue;
 
                         }
@@ -232,35 +234,13 @@ module.exports = {
                         const resolved =
                             await resolveWordTag(core);
 
-                        if (!resolved) {
+                        if (!resolved)
+                            continue;
 
-                            unresolvable = true;
-                            break;
-
-                        }
-
-                        resolvedParts.push(
-                            `${negate}${resolved}`
-                        );
-
-                    }
-
-
-                    if (
-                        !unresolvable &&
-                        resolvedParts.length
-                    ) {
-
-                        // Danbooru giới hạn số tag/metatag cho request ẩn
-                        // danh - "order:" tính vào giới hạn đó, nên khi đã
-                        // có 2 tag character/copyright + 2 -rating: thì bỏ
-                        // order: ra để không vượt giới hạn (lỗi HTTP 422).
-                        const finalTags =
-                            `${resolvedParts.join(" ")}${ratingFilter}`;
 
                         const posts =
                             await fetchPosts(
-                                finalTags,
+                                `${resolved} order:score${RATING_FILTER}`,
                                 20
                             );
 
@@ -268,8 +248,12 @@ module.exports = {
                         valid =
                             filterValidPosts(
                                 posts,
-                                nsfw
+                                false
                             );
+
+
+                        if (valid.length)
+                            break;
 
                     }
 
@@ -296,11 +280,7 @@ module.exports = {
                                     : "Không tìm thấy ảnh phù hợp."
                             ) +
 
-                            (
-                                !nsfw
-                                    ? `\n\n*Channel này không phải NSFW nên chỉ hiển thị ảnh an toàn.*`
-                                    : ""
-                            )
+                            `\n\n*Chỉ hiển thị ảnh an toàn (SFW).*`
 
                         )
 
@@ -312,18 +292,14 @@ module.exports = {
 
 
             // ==================================================
-            // CHỌN NGẪU NHIÊN TRONG TOP
+            // CHỌN NGẪU NHIÊN, TRÁNH LẶP ẢNH ĐÃ GỬI TRONG CHANNEL
             // ==================================================
 
             const post =
-                valid[
-
-                    Math.floor(
-                        Math.random() *
-                        valid.length
-                    )
-
-                ];
+                pickUnseenPost(
+                    message.channel.id,
+                    valid
+                );
 
 
             return message.reply({
