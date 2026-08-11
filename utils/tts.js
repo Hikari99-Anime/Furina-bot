@@ -182,7 +182,8 @@ async function joinSession(message) {
         joinVoiceChannel({
             channelId: voiceChannel.id,
             guildId,
-            adapterCreator: message.guild.voiceAdapterCreator
+            adapterCreator: message.guild.voiceAdapterCreator,
+            debug: true
         });
 
     connection.on("stateChange", (oldState, newState) => {
