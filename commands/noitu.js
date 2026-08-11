@@ -6,16 +6,16 @@ const {
     emoji,
     formatMoney,
     prefix
-} = require("../../config");
+} = require("../config");
 
 const {
     getUser,
     save
-} = require("../../database");
+} = require("../database");
 
 const {
     isAdmin
-} = require("../../admin");
+} = require("../admin");
 
 // ======================================================
 // EMBED
