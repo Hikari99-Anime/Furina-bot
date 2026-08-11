@@ -107,6 +107,50 @@ module.exports = {
 
             const userTags =
                 args
+                    .map(rawTag => {
+
+                        const tag =
+                            String(rawTag || "");
+
+                        if (!tag)
+                            return "";
+
+
+                        const negate =
+                            tag.startsWith("-")
+                                ? "-"
+                                : "";
+
+                        const core =
+                            negate
+                                ? tag.slice(1)
+                                : tag;
+
+
+                        // ==================================================
+                        // GIỮ NGUYÊN META TAG (rating:, order:...)
+                        // HOẶC TAG ĐÃ CÓ WILDCARD
+                        // ==================================================
+
+                        if (
+                            core.includes(":") ||
+                            core.includes("*")
+                        ) {
+
+                            return tag;
+
+                        }
+
+
+                        // ==================================================
+                        // THÊM WILDCARD ĐỂ KHỚP GẦN ĐÚNG
+                        // VD: furina -> furina* (khớp furina_(genshin_impact))
+                        // ==================================================
+
+                        return `${negate}${core}*`;
+
+                    })
+                    .filter(Boolean)
                     .join(" ")
                     .trim();
 
