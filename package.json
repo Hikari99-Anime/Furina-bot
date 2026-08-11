@@ -8,7 +8,7 @@
     "stop": "powershell -NoProfile -ExecutionPolicy Bypass -File stop-bot.ps1"
   },
   "dependencies": {
-    "@discordjs/voice": "^0.18.0",
+    "@discordjs/voice": "^0.19.2",
     "@vntk/dictionary": "^1.0.0",
     "an-array-of-english-words": "^2.0.0",
     "discord.js": "^14.16.3",
