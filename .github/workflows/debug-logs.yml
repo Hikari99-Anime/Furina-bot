@@ -8,7 +8,7 @@ on:
         required: false
         default: "150"
       mode:
-        description: "logs = pm2 logs | diag = kiểm tra node_modules/disk/git"
+        description: "logs = pm2 logs | diag = kiểm tra node_modules/disk/git | net = test kết nối tới discord.media"
         required: false
         default: "logs"
 
@@ -42,6 +42,19 @@ jobs:
               git log -1 --oneline
               echo "--- node -e require check ---"
               node -e "console.log(require.resolve('@discordjs/voice'))" 2>&1
+            elif [ "${{ github.event.inputs.mode }}" = "net" ]; then
+              echo "--- DNS resolve discord.media ---"
+              getent hosts discord.media || true
+              echo "--- curl -v https://discord.media (port 443, base domain) ---"
+              curl -vk --connect-timeout 6 https://discord.media 2>&1 | tail -40
+              echo "--- curl -v https://discord.media:2096 (voice gateway alt port) ---"
+              curl -vk --connect-timeout 6 https://discord.media:2096 2>&1 | tail -40
+              echo "--- curl -v https://gateway.discord.gg (text gateway, control) ---"
+              curl -vk --connect-timeout 6 https://gateway.discord.gg 2>&1 | tail -20
+              echo "--- ufw status ---"
+              (ufw status verbose || echo "ufw not active/installed") 2>&1
+              echo "--- iptables OUTPUT rules ---"
+              (iptables -L OUTPUT -n -v || echo "no iptables access") 2>&1
             else
               pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
             fi
