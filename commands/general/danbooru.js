@@ -153,6 +153,11 @@ module.exports = {
                         args.join(" ")
                     );
 
+                console.log(
+                    "🔍 [art] whole-phrase candidates:",
+                    candidates
+                );
+
 
                 for (const candidate of candidates) {
 
@@ -168,6 +173,10 @@ module.exports = {
                             posts,
                             nsfw
                         );
+
+                    console.log(
+                        `🔍 [art] candidate="${candidate}" rawPosts=${posts.length} valid=${valid.length}`
+                    );
 
 
                     if (valid.length)
@@ -232,6 +241,10 @@ module.exports = {
                         const resolved =
                             await resolveWordTag(core);
 
+                        console.log(
+                            `🔍 [art] word="${core}" resolved="${resolved}"`
+                        );
+
                         if (!resolved) {
 
                             unresolvable = true;
@@ -251,9 +264,12 @@ module.exports = {
                         resolvedParts.length
                     ) {
 
+                        const finalTags =
+                            `${resolvedParts.join(" ")} order:score${ratingFilter}`;
+
                         const posts =
                             await fetchPosts(
-                                `${resolvedParts.join(" ")} order:score${ratingFilter}`,
+                                finalTags,
                                 20
                             );
 
@@ -263,6 +279,10 @@ module.exports = {
                                 posts,
                                 nsfw
                             );
+
+                        console.log(
+                            `🔍 [art] finalTags="${finalTags}" rawPosts=${posts.length} valid=${valid.length}`
+                        );
 
                     }
 
