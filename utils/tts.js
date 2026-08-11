@@ -185,16 +185,36 @@ async function joinSession(message) {
             adapterCreator: message.guild.voiceAdapterCreator
         });
 
+    connection.on("stateChange", (oldState, newState) => {
+
+        console.log(`🔊 [Voice] ${oldState.status} -> ${newState.status}`);
+
+    });
+
+    connection.on("debug", msg => {
+
+        console.log("🔊 [Voice debug]", msg);
+
+    });
+
+    connection.on("error", err => {
+
+        console.error("❌ [Voice error]", err);
+
+    });
+
     try {
 
         await entersState(
             connection,
             VoiceConnectionStatus.Ready,
-            10_000
+            15_000
         );
 
     }
     catch (err) {
+
+        console.error("❌ [Voice] Không vào được voice channel:", err);
 
         connection.destroy();
 
