@@ -8,7 +8,7 @@ on:
         required: false
         default: "150"
       mode:
-        description: "logs = pm2 logs | diag = kiểm tra node_modules/disk/git | net = test kết nối tới discord.media"
+        description: "logs | diag | net | disable-ipv6 | enable-ipv6"
         required: false
         default: "logs"
 
@@ -55,6 +55,18 @@ jobs:
               (ufw status verbose || echo "ufw not active/installed") 2>&1
               echo "--- iptables OUTPUT rules ---"
               (iptables -L OUTPUT -n -v || echo "no iptables access") 2>&1
+            elif [ "${{ github.event.inputs.mode }}" = "disable-ipv6" ]; then
+              sysctl -w net.ipv6.conf.all.disable_ipv6=1
+              sysctl -w net.ipv6.conf.default.disable_ipv6=1
+              sysctl -w net.ipv6.conf.lo.disable_ipv6=1
+              echo "IPv6 disabled at runtime (resets on reboot). Restarting bot to pick it up."
+              pm2 restart furina-bot
+            elif [ "${{ github.event.inputs.mode }}" = "enable-ipv6" ]; then
+              sysctl -w net.ipv6.conf.all.disable_ipv6=0
+              sysctl -w net.ipv6.conf.default.disable_ipv6=0
+              sysctl -w net.ipv6.conf.lo.disable_ipv6=0
+              echo "IPv6 re-enabled at runtime. Restarting bot to pick it up."
+              pm2 restart furina-bot
             else
               pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
             fi
