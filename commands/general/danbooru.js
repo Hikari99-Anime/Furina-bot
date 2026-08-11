@@ -130,7 +130,7 @@ module.exports = {
 
                 const posts =
                     await fetchPosts(
-                        `order:rank${ratingFilter}`,
+                        `order:score${ratingFilter}`,
                         20
                     );
 
@@ -158,7 +158,7 @@ module.exports = {
 
                     const posts =
                         await fetchPosts(
-                            `${candidate} order:rank${ratingFilter}`,
+                            `${candidate} order:score${ratingFilter}`,
                             20
                         );
 
@@ -253,7 +253,7 @@ module.exports = {
 
                         const posts =
                             await fetchPosts(
-                                `${resolvedParts.join(" ")} order:rank${ratingFilter}`,
+                                `${resolvedParts.join(" ")} order:score${ratingFilter}`,
                                 20
                             );
 
