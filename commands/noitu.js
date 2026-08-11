@@ -2,322 +2,113 @@ const {
     EmbedBuilder
 } = require("discord.js");
 
-const {
-    emoji,
-    formatMoney,
-    prefix
-} = require("../config");
 
 const {
-    getUser,
-    save
-} = require("../database");
+    createGame,
+    getGame,
+    stopGame,
+    getRoundCount,
+    pickStarter
+} = require("../games/noitugame");
+
 
 const {
     isAdmin
 } = require("../admin");
 
-// ======================================================
-// EMBED
-// ======================================================
 
-function createEmbed(
-    color,
-    title,
-    description
-) {
+const {
+    prefix
+} = require("../config");
 
-    return new EmbedBuilder()
 
-        .setColor(color)
 
-        .setTitle(title)
-
-        .setDescription(
-            `୨୧ ───────── ୨୧\n\n` +
-            description +
-            `\n\n୨୧ ───────── ୨୧`
-        )
-
-        .setFooter({
-            text: "✦ Fishing Adventure · Admin"
-        })
-
-        .setTimestamp();
-
-}
-
-// ======================================================
-// COMMAND
-// ======================================================
 
 module.exports = {
 
-    name: "setmoney",
+    name:"noitu",
 
-    aliases: [
-        "setxu",
-        "setcoin"
-    ],
+    aliases:["wordchain"],
 
-    async execute(
-        message,
-        args
-    ) {
+    async execute(message,args){
 
-        // ==================================================
-        // CHECK ADMIN
-        // ==================================================
+        const lang = (args[0] || "").toLowerCase();
 
-        if (
-            !isAdmin(
-                message.author.id
-            )
-        ) {
 
-            return message.reply({
+        if(lang === "stop"){
 
-                embeds: [
+            if(!isAdmin(message.author.id))
 
-                    createEmbed(
+                return message.reply(
+                    "╰・❌ Chỉ admin mới được dừng ván nối từ"
+                );
 
-                        "#EF4444",
 
-                        "❌ KHÔNG CÓ QUYỀN",
+            if(!stopGame(message.channel.id))
 
-                        "Bạn cần quyền **Admin** để sử dụng lệnh này."
+                return message.reply(
+                    "╰・❌ Không có ván nối từ nào đang diễn ra ở channel này"
+                );
 
-                    )
 
-                ]
-
-            });
-
-        }
-
-        // ==================================================
-        // TARGET
-        // ==================================================
-
-        const target =
-            message.mentions.users.first();
-
-        // ==================================================
-        // AMOUNT
-        // ==================================================
-
-        const amount =
-            Number(
-                args[1]
+            return message.reply(
+                "╰・✅ Đã dừng ván nối từ ở channel này và reset round"
             );
 
-        // ==================================================
-        // CHECK INPUT
-        // ==================================================
-
-        if (
-            !target ||
-            args[1] === undefined
-        ) {
-
-            return message.reply({
-
-                embeds: [
-
-                    createEmbed(
-
-                        "#F59E0B",
-
-                        "⚠️ THIẾU THÔNG TIN",
-
-                        `Cách sử dụng:\n\n` +
-
-                        `\`${prefix}setmoney @user <số tiền>\`\n\n` +
-
-                        `💡 Ví dụ:\n` +
-
-                        `\`${prefix}setmoney @Furina 50000\``
-
-                    )
-
-                ]
-
-            });
-
         }
 
-        // ==================================================
-        // CHECK TARGET BOT
-        // ==================================================
 
-        if (
-            target.bot
-        ) {
+        if(lang !== "vi" && lang !== "en")
 
-            return message.reply({
-
-                embeds: [
-
-                    createEmbed(
-
-                        "#EF4444",
-
-                        "❌ KHÔNG HỢP LỆ",
-
-                        "Không thể đặt tiền cho tài khoản **Bot**."
-
-                    )
-
-                ]
-
-            });
-
-        }
-
-        // ==================================================
-        // CHECK AMOUNT
-        // ==================================================
-
-        if (
-            !Number.isSafeInteger(amount) ||
-            amount < 0
-        ) {
-
-            return message.reply({
-
-                embeds: [
-
-                    createEmbed(
-
-                        "#EF4444",
-
-                        "❌ SỐ TIỀN KHÔNG HỢP LỆ",
-
-                        `Số tiền phải là **số nguyên từ 0 trở lên**.\n\n` +
-
-                        `💡 Ví dụ:\n` +
-
-                        `\`${prefix}setmoney @user 100000\``
-
-                    )
-
-                ]
-
-            });
-
-        }
-
-        // ==================================================
-        // GET USER
-        // ==================================================
-
-        const user =
-            getUser(
-                target.id
+            return message.reply(
+                `╰・❌ Cách dùng: \`${prefix}noitu vi\` (nối từ tiếng Việt), \`${prefix}noitu en\` (word chain tiếng Anh) hoặc \`${prefix}noitu stop\` (admin)`
             );
 
-        if (!user) {
 
-            return message.reply({
+        if(getGame(message.channel.id))
 
-                embeds: [
-
-                    createEmbed(
-
-                        "#EF4444",
-
-                        "❌ KHÔNG TÌM THẤY DỮ LIỆU",
-
-                        "Không tìm thấy dữ liệu người chơi này."
-
-                    )
-
-                ]
-
-            });
-
-        }
-
-        // ==================================================
-        // OLD MONEY
-        // ==================================================
-
-        const oldMoney =
-            Number(
-                user.money || 0
+            return message.reply(
+                "╰・❌ Đang có ván nối từ diễn ra ở channel này!"
             );
 
-        // ==================================================
-        // SET MONEY
-        // ==================================================
 
-        user.money =
-            amount;
+        const starter = pickStarter(lang);
 
-        // ==================================================
-        // SAVE
-        // ==================================================
 
-        try {
+        createGame(lang,message.channel,starter);
 
-            save();
 
-        } catch (err) {
+        return message.channel.send({
 
-            console.error(
-                "❌ SETMONEY SAVE ERROR:",
-                err
-            );
+            embeds:[
 
-            // rollback
+                new EmbedBuilder()
 
-            user.money =
-                oldMoney;
+                .setColor("Blue")
 
-            return message.reply({
+                .setTitle(
+                    lang === "vi"
+                    ?
+                    "🔗 NỐI TỪ TIẾNG VIỆT"
+                    :
+                    "🔗 WORD CHAIN (ENGLISH)"
+                )
 
-                embeds: [
+                .setDescription(
 
-                    createEmbed(
+lang === "vi"
+?
+`Từ bắt đầu: **${starter}**
 
-                        "#EF4444",
+Nhập cụm 2 từ, từ đầu phải là từ cuối của cụm trên (VD: **${starter}** → **${starter.split(" ")[1]} ...**)
+Nối đúng: +300 xu · Nối được từ cuối (hết từ để nối tiếp): +1,000 xu
+📊 Round: ${getRoundCount("vi")}/10 · Không tự dừng, chơi đến khi hết từ hoặc admin gõ \`${prefix}noitu stop\``
+:
+`Starting word: **${starter}**
 
-                        "❌ KHÔNG THỂ LƯU",
-
-                        "Không thể lưu thay đổi số dư.\n" +
-                        "Số tiền của người chơi **chưa được thay đổi**."
-
-                    )
-
-                ]
-
-            });
-
-        }
-
-        // ==================================================
-        // SUCCESS
-        // ==================================================
-
-        return message.reply({
-
-            embeds: [
-
-                createEmbed(
-
-                    "#86EFAC",
-
-                    "💰 ĐẶT SỐ DƯ THÀNH CÔNG",
-
-                    `👤 **Người chơi:** ${target}\n\n` +
-
-                    `💵 **Số dư cũ:** ` +
-                    `${formatMoney(oldMoney)} ${emoji.money}\n\n` +
-
-                    `💰 **Số dư mới:** ` +
-                    `${formatMoney(amount)} ${emoji.money}\n\n` +
-
-                    `🛠️ **Admin thực hiện:** ${message.author}`
+Type a word starting with **${starter[starter.length-1]}**, no repeats.
+Correct word: +300 xu · Word that ends the chain (no continuation left): +1,000 xu
+📊 Round: ${getRoundCount("en")}/10 · No auto-stop, keeps going until dead-end or an admin runs \`${prefix}noitu stop\``
 
                 )
 
