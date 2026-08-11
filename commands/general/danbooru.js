@@ -153,11 +153,6 @@ module.exports = {
                         args.join(" ")
                     );
 
-                console.log(
-                    "🔍 [art] whole-phrase candidates:",
-                    candidates
-                );
-
 
                 for (const candidate of candidates) {
 
@@ -173,10 +168,6 @@ module.exports = {
                             posts,
                             nsfw
                         );
-
-                    console.log(
-                        `🔍 [art] candidate="${candidate}" rawPosts=${posts.length} valid=${valid.length}`
-                    );
 
 
                     if (valid.length)
@@ -241,10 +232,6 @@ module.exports = {
                         const resolved =
                             await resolveWordTag(core);
 
-                        console.log(
-                            `🔍 [art] word="${core}" resolved="${resolved}"`
-                        );
-
                         if (!resolved) {
 
                             unresolvable = true;
@@ -264,8 +251,12 @@ module.exports = {
                         resolvedParts.length
                     ) {
 
+                        // Danbooru giới hạn số tag/metatag cho request ẩn
+                        // danh - "order:" tính vào giới hạn đó, nên khi đã
+                        // có 2 tag character/copyright + 2 -rating: thì bỏ
+                        // order: ra để không vượt giới hạn (lỗi HTTP 422).
                         const finalTags =
-                            `${resolvedParts.join(" ")} order:score${ratingFilter}`;
+                            `${resolvedParts.join(" ")}${ratingFilter}`;
 
                         const posts =
                             await fetchPosts(
@@ -279,10 +270,6 @@ module.exports = {
                                 posts,
                                 nsfw
                             );
-
-                        console.log(
-                            `🔍 [art] finalTags="${finalTags}" rawPosts=${posts.length} valid=${valid.length}`
-                        );
 
                     }
 
