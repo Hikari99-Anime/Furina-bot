@@ -35,6 +35,11 @@ const {
 } = require("./commands/fish/buy");
 
 const {
+    getSession,
+    speakText
+} = require("./utils/tts");
+
+const {
     Client,
     GatewayIntentBits,
     Collection,
@@ -405,6 +410,35 @@ client.on(
 
             if (!content)
                 return;
+
+
+            // ==================================
+            // TTS - ĐỌC TIN NHẮN TRONG VOICE
+            // ==================================
+
+            if (message.guild) {
+
+                const session =
+                    getSession(message.guild.id);
+
+                if (
+                    session &&
+                    session.textChannelId === message.channel.id &&
+                    !content
+                        .toLowerCase()
+                        .startsWith(PREFIX)
+                ) {
+
+                    speakText(
+                        message.guild.id,
+                        message.cleanContent
+                    );
+
+                    return;
+
+                }
+
+            }
 
 
             // ==================================

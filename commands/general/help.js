@@ -226,6 +226,11 @@ module.exports = {
 
                     `${prefix}art [tag] · Ảnh phổ biến Danbooru\n\n` +
 
+                    `🔊 VOICE / TTS\n\n` +
+
+                    `${prefix}voicejoin · Bot vào voice, đọc to tin nhắn kênh này\n` +
+                    `${prefix}voiceleave · Bot dừng đọc, rời voice\n\n` +
+
                     `🛑 ADMIN\n\n` +
 
                     `${prefix}noitu stop · Dừng mini-game\n` +
