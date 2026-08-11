@@ -66,12 +66,28 @@ function createEmbed(
 
 
 // ======================================================
-// LUÔN CHỈ LẤY ẢNH AN TOÀN (SFW)
+// CHECK NSFW CHANNEL
+// ======================================================
+
+function isNsfwChannel(channel) {
+
+    return !!(
+
+        channel?.nsfw ||
+        channel?.parent?.nsfw
+
+    );
+
+}
+
+
+// ======================================================
+// LỌC RATING THEO CHANNEL (SFW hoặc NSFW)
 //
-// Không gửi "-rating:explicit -rating:questionable" lên Danbooru vì
-// mỗi rating: cũng tính vào giới hạn số tag cho request ẩn danh
-// (dễ bị HTTP 422 khi kết hợp với tag khác). Thay vào đó lấy list
-// (mọi rating) về rồi tự lọc lại bằng filterValidPosts() ở dưới.
+// Không gửi "-rating:..." lên Danbooru vì mỗi rating: cũng tính vào
+// giới hạn số tag cho request ẩn danh (dễ bị HTTP 422 khi kết hợp
+// với tag khác). Thay vào đó lấy list (mọi rating) về rồi tự lọc
+// lại bằng filterValidPosts() ở dưới.
 // ======================================================
 
 
@@ -137,6 +153,12 @@ module.exports = {
 
         try {
 
+            const nsfw =
+                isNsfwChannel(
+                    message.channel
+                );
+
+
             const userTags =
                 args
                     .join(" ")
@@ -161,7 +183,7 @@ module.exports = {
                 valid =
                     filterValidPosts(
                         posts,
-                        false
+                        nsfw
                     );
 
             }
@@ -190,7 +212,7 @@ module.exports = {
                     valid =
                         filterValidPosts(
                             posts,
-                            false
+                            nsfw
                         );
 
 
@@ -250,7 +272,7 @@ module.exports = {
                         valid =
                             filterValidPosts(
                                 posts,
-                                false
+                                nsfw
                             );
 
 
@@ -282,7 +304,11 @@ module.exports = {
                                     : "Không tìm thấy ảnh phù hợp."
                             ) +
 
-                            `\n\n*Chỉ hiển thị ảnh an toàn (SFW).*`
+                            (
+                                nsfw
+                                    ? `\n\n*Channel NSFW nên chỉ hiển thị ảnh nhạy cảm (questionable/explicit).*`
+                                    : `\n\n*Chỉ hiển thị ảnh an toàn (SFW).*`
+                            )
 
                         )
 
