@@ -1,138 +1,43 @@
 {
   "743028655097380895": {
-    "money": 174160272,
+    "money": 22830,
     "level": 1,
     "exp": 0,
     "can": {
-      "dangDung": "mythic",
+      "dangDung": "wood",
       "danhSach": {
-        "wood": 1,
-        "mythic": 1
+        "wood": 1
       }
     },
     "moi": {
-      "worm": 41
+      "worm": 49
     },
-    "fish": {
-      "ca142": [
-        17.73,
-        12,
-        5.15,
-        8.58,
-        7.94,
-        12.02
-      ],
-      "ca141": [
-        13.85,
-        6.96,
-        7.37,
-        12.15,
-        7.7
-      ],
-      "ca137": [
-        5.82,
-        3.09,
-        8.68,
-        2.14
-      ],
-      "ca143": [
-        11.34,
-        18.68,
-        17.94,
-        14.91,
-        8.78
-      ],
-      "ca139": [
-        8.54,
-        11.05,
-        12.92,
-        14.16,
-        9.1
-      ],
-      "ca138": [
-        8.07,
-        10,
-        10.2,
-        6.95,
-        5.72,
-        7.14,
-        8.91,
-        11.97
-      ],
-      "ca140": [
-        3.54,
-        13.6,
-        8.52,
-        14.45
-      ],
-      "ca136": [
-        7.85,
-        9.24,
-        7.59,
-        5.14,
-        3.59,
-        6.66,
-        6.87,
-        9.37
-      ],
-      "ca144": [
-        18.68,
-        18.08,
-        11.37
-      ],
-      "ca146": [
-        21.37
-      ],
-      "ca145": [
-        22.86
-      ]
-    },
+    "fish": {},
     "keys": {},
     "chests": {},
     "insurance": 0,
     "inv": {},
     "daily": {
-      "last": 1786275345851,
+      "last": 1786357738101,
       "streak": 1
     },
     "quest": {
-      "date": "2026-08-09",
+      "date": "2026-08-10",
       "quests": [
         {
-          "id": "fish_big_1786267214458_yginuwh8z7c",
-          "templateId": "fish_big",
-          "type": "fish",
-          "target": 55,
-          "reward": 13336,
-          "title": "⚓ Đội trưởng đánh cá",
-          "emoji": "⚓",
+          "id": "mixed_4_1786357727738_x8du5m68vc",
+          "templateId": "mixed_4",
+          "type": "mixed",
+          "target": 54,
+          "reward": 35131,
+          "title": "👑 Bá chủ biển cả",
+          "emoji": "👑",
           "claimed": false,
-          "description": "Bắt 55 con cá"
+          "kgTarget": 118.8,
+          "description": "Bắt 54 cá · 118.8 KG"
         },
         {
-          "id": "rod_2_1786267214459_81i3dp0gmel",
-          "templateId": "rod_2",
-          "type": "rod",
-          "target": 5,
-          "reward": 10000,
-          "title": "⭐ Tân binh cường hóa",
-          "emoji": "⭐",
-          "claimed": false,
-          "description": "Có một cần câu đạt +5"
-        },
-        {
-          "id": "kg_big_1786267214459_bk4e45854k5",
-          "templateId": "kg_big",
-          "type": "kg",
-          "target": 78,
-          "reward": 11916,
-          "title": "🐋 Săn cá lớn",
-          "emoji": "🐋",
-          "claimed": false,
-          "description": "Câu đủ 78 KG cá"
-        },
-        {
-          "id": "rod_3_1786267214459_uk4jqz93y9",
+          "id": "rod_3_1786357727739_v6p5zykiv8",
           "templateId": "rod_3",
           "type": "rod",
           "target": 10,
@@ -143,327 +48,44 @@
           "description": "Có một cần câu đạt +10"
         },
         {
-          "id": "rare_6_1786267214459_tzdzcjab2i",
-          "templateId": "rare_6",
-          "type": "specific_rarity",
-          "target": 3,
-          "reward": 31470,
-          "title": "👑 Đại săn cá quý",
-          "emoji": "👑",
-          "claimed": false,
-          "fishId": "ca8",
-          "fishName": "Cá nóc",
-          "fishEmoji": "🐡",
-          "description": "Bắt 3 Cá nóc"
-        }
-      ],
-      "completed": 0,
-      "claimed": [],
-      "list": [],
-      "claim": false
-    },
-    "rodData": {
-      "wood": {
-        "level": 0,
-        "luck": 1,
-        "uses": 10,
-        "maxUses": 20,
-        "destroyed": false
-      },
-      "mythic": {
-        "level": 3,
-        "luck": 5.3,
-        "uses": 41,
-        "maxUses": 500,
-        "destroyed": false
-      }
-    },
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    },
-    "items": {},
-    "collection": {
-      "ca142": true,
-      "ca139": true,
-      "ca141": true,
-      "ca150": true,
-      "ca137": true,
-      "ca136": true,
-      "ca145": true,
-      "ca140": true,
-      "ca143": true,
-      "ca138": true,
-      "ca144": true,
-      "ca148": true,
-      "ca146": true
-    }
-  },
-  "648015392115261460": {
-    "money": 32732645,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": "mythic",
-      "danhSach": {
-        "wood": 1,
-        "mythic": 1
-      }
-    },
-    "moi": {
-      "worm": 9749
-    },
-    "fish": {
-      "ca62": [
-        3.68,
-        4.56,
-        13.19,
-        13.74,
-        12.07,
-        5.85,
-        14.55,
-        6.69,
-        6.56,
-        12.28,
-        13.7,
-        3.64,
-        13.61,
-        14.82,
-        6.73,
-        7.41,
-        8.28,
-        3.5,
-        10.53,
-        10.52,
-        9.63,
-        4.92
-      ],
-      "ca63": [
-        5.34,
-        17.39,
-        16.27,
-        7.87,
-        12.03,
-        21.72,
-        10.3,
-        18.33,
-        9.15,
-        6.88,
-        12.54,
-        8.69,
-        13.49,
-        11.88
-      ],
-      "ca64": [
-        32.42,
-        9.93,
-        25.81,
-        19.87,
-        27.16,
-        36.29,
-        25.51,
-        16.81,
-        23.99,
-        35.88,
-        37.06
-      ],
-      "ca65": [
-        33.63,
-        45.74,
-        78.65
-      ]
-    },
-    "keys": {},
-    "chests": {},
-    "insurance": 90,
-    "inv": {},
-    "daily": {
-      "last": 1786267160464,
-      "streak": 1
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {
-      "wood": {
-        "level": 0,
-        "luck": 1,
-        "uses": 0,
-        "maxUses": 20,
-        "destroyed": true
-      },
-      "mythic": {
-        "level": 15,
-        "luck": 7.6,
-        "uses": 450,
-        "maxUses": 500,
-        "destroyed": false
-      }
-    },
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    },
-    "items": {
-      "da_rate": 35
-    }
-  },
-  "1127224247450873987": {
-    "money": 10000,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": null,
-      "danhSach": {}
-    },
-    "moi": {
-      "worm": 10
-    },
-    "fish": {},
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 0,
-      "streak": 0
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {},
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "398030689905278977": {
-    "money": 64000,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": null,
-      "danhSach": {}
-    },
-    "moi": {
-      "worm": 10
-    },
-    "fish": {},
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 0,
-      "streak": 0
-    },
-    "quest": {
-      "date": "",
-      "list": [],
-      "claim": false
-    },
-    "rodData": {},
-    "stats": {
-      "catch": 0,
-      "sell": 0,
-      "kg": 0
-    }
-  },
-  "1479063104934645782": {
-    "money": 190786378,
-    "level": 1,
-    "exp": 0,
-    "can": {
-      "dangDung": "mythic",
-      "danhSach": {
-        "gold": 1,
-        "mythic": 1
-      }
-    },
-    "moi": {
-      "worm": 9849,
-      "shrimp": 50
-    },
-    "fish": {},
-    "keys": {},
-    "chests": {},
-    "insurance": 0,
-    "inv": {},
-    "daily": {
-      "last": 1786276271850,
-      "streak": 1
-    },
-    "quest": {
-      "date": "2026-08-09",
-      "quests": [
-        {
-          "id": "legendary_2_1786276282596_ev21fvcun77",
-          "templateId": "legendary_2",
-          "type": "specific_rarity",
-          "target": 1,
-          "reward": 34620,
-          "title": "🔥 Sinh vật truyền thuyết",
-          "emoji": "🔥",
-          "claimed": false,
-          "fishId": "ca27",
-          "fishName": "Cá hoàng kim băng",
-          "fishEmoji": "🐠",
-          "description": "Bắt 1 Cá hoàng kim băng"
-        },
-        {
-          "id": "specific_8_1786276282596_y9iezzakh5l",
-          "templateId": "specific_8",
-          "type": "specific",
-          "target": 3,
-          "reward": 13778,
-          "title": "⭐ Mục tiêu vàng",
-          "emoji": "⭐",
-          "claimed": false,
-          "fishId": "ca49",
-          "fishName": "Cá thủy tinh",
-          "fishEmoji": "🐠",
-          "description": "Bắt 3 Cá thủy tinh"
-        },
-        {
-          "id": "kg_easy_1786276282597_b4tx3qip6cv",
-          "templateId": "kg_easy",
-          "type": "kg",
-          "target": 30,
-          "reward": 3648,
-          "title": "⚖️ Mẻ cá đầu tiên",
-          "emoji": "⚖️",
-          "claimed": false,
-          "description": "Câu đủ 30 KG cá"
-        },
-        {
-          "id": "mixed_2_1786276282597_0kiuwd9flhfj",
+          "id": "mixed_2_1786357727739_0ptt78gmnai9",
           "templateId": "mixed_2",
           "type": "mixed",
-          "target": 25,
-          "reward": 13199,
+          "target": 29,
+          "reward": 14643,
           "title": "⚓ Mẻ cá bội thu",
           "emoji": "⚓",
           "claimed": false,
-          "kgTarget": 45,
-          "description": "Bắt 25 cá · 45 KG"
+          "kgTarget": 52.2,
+          "description": "Bắt 29 cá · 52.2 KG"
         },
         {
-          "id": "kg_normal_1786276282597_hk8lcn81lzs",
-          "templateId": "kg_normal",
-          "type": "kg",
-          "target": 60,
-          "reward": 6470,
-          "title": "⚖️ Thợ săn khổng lồ",
-          "emoji": "⚖️",
+          "id": "specific_5_1786357727740_mvqkygw948",
+          "templateId": "specific_5",
+          "type": "specific",
+          "target": 8,
+          "reward": 14708,
+          "title": "🔥 Săn đến cùng",
+          "emoji": "🔥",
           "claimed": false,
-          "description": "Câu đủ 60 KG cá"
+          "fishId": "ca141",
+          "fishName": "Cá lửa xanh",
+          "fishEmoji": "🔥",
+          "description": "Bắt 8 Cá lửa xanh"
+        },
+        {
+          "id": "rare_4_1786357727741_ymxb23d0r6g",
+          "templateId": "rare_4",
+          "type": "specific_rarity",
+          "target": 3,
+          "reward": 25416,
+          "title": "💎 Bộ sưu tập quý",
+          "emoji": "💎",
+          "claimed": false,
+          "fishId": "ca21",
+          "fishName": "Cá kiếm",
+          "fishEmoji": "🐟",
+          "description": "Bắt 3 Cá kiếm"
         }
       ],
       "completed": 0,
@@ -472,18 +94,11 @@
       "claim": false
     },
     "rodData": {
-      "gold": {
+      "wood": {
         "level": 0,
-        "luck": 2,
-        "uses": 90,
-        "maxUses": 100,
-        "destroyed": false
-      },
-      "mythic": {
-        "level": 0,
-        "luck": 5,
-        "uses": 350,
-        "maxUses": 500,
+        "luck": 1,
+        "uses": 19,
+        "maxUses": 20,
         "destroyed": false
       }
     },
@@ -491,20 +106,28 @@
       "catch": 0,
       "sell": 0,
       "kg": 0
-    }
+    },
+    "collection": {
+      "ca88": true,
+      "ca93": true,
+      "ca92": true,
+      "ca87": true,
+      "ca103": true,
+      "ca96": true,
+      "ca89": true
+    },
+    "items": {}
   },
-  "1354445434759942269": {
-    "money": 29540960,
+  "398030689905278977": {
+    "money": 10950,
     "level": 1,
     "exp": 0,
     "can": {
-      "dangDung": "wood",
-      "danhSach": {
-        "wood": 1
-      }
+      "dangDung": null,
+      "danhSach": {}
     },
     "moi": {
-      "worm": 0
+      "worm": 10
     },
     "fish": {},
     "keys": {},
@@ -520,15 +143,39 @@
       "list": [],
       "claim": false
     },
-    "rodData": {
-      "wood": {
-        "level": 0,
-        "luck": 1,
-        "uses": 10,
-        "maxUses": 20,
-        "destroyed": false
-      }
+    "rodData": {},
+    "stats": {
+      "catch": 0,
+      "sell": 0,
+      "kg": 0
+    }
+  },
+  "934279092314996747": {
+    "money": 10300,
+    "level": 1,
+    "exp": 0,
+    "can": {
+      "dangDung": null,
+      "danhSach": {}
     },
+    "moi": {
+      "worm": 10
+    },
+    "fish": {},
+    "keys": {},
+    "chests": {},
+    "insurance": 0,
+    "inv": {},
+    "daily": {
+      "last": 0,
+      "streak": 0
+    },
+    "quest": {
+      "date": "",
+      "list": [],
+      "claim": false
+    },
+    "rodData": {},
     "stats": {
       "catch": 0,
       "sell": 0,

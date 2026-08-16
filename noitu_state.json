@@ -6,7 +6,10 @@
   "usedHistory": {
     "vi": [
       [
-        "bà xơ"
+        "bà xơ",
+        "xơ múi",
+        "múi giờ",
+        "giờ giấc"
       ],
       [],
       [],
@@ -26,7 +29,8 @@
         "roll",
         "leaf",
         "face",
-        "ea"
+        "ea",
+        "ass"
       ],
       [],
       [],
@@ -43,21 +47,24 @@
     {
       "channelId": "1508430174415360172",
       "lang": "en",
-      "current": "ea",
-      "chainLength": 7,
-      "lastUser": "743028655097380895",
+      "current": "ass",
+      "chainLength": 8,
+      "lastUser": "398030689905278977",
       "scores": {
-        "398030689905278977": 3,
+        "398030689905278977": 4,
         "743028655097380895": 3
       }
     },
     {
       "channelId": "1529187492694065434",
       "lang": "vi",
-      "current": "bà xơ",
-      "chainLength": 1,
-      "lastUser": null,
-      "scores": {}
+      "current": "giờ giấc",
+      "chainLength": 4,
+      "lastUser": "398030689905278977",
+      "scores": {
+        "398030689905278977": 2,
+        "934279092314996747": 1
+      }
     }
   ]
 }

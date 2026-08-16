@@ -221,14 +221,10 @@ function getQuickRepairPrice(
         valueFee +
         timeFee;
 
-    return Math.min(
-        Math.max(
-            price,
-            repairPrice + 1
-        ),
-        Math.floor(
-            base.price * 0.8
-        )
+    // Sửa nhanh luôn phải đắt hơn sửa thường
+    return Math.max(
+        price,
+        repairPrice + 1
     );
 }
 
