@@ -8,7 +8,7 @@ on:
         required: false
         default: "150"
       mode:
-        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2 | nahida-diag | set-tokens"
+        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2 | nahida-diag | set-tokens | git-conflict-diag | git-resolve-keep-live"
         required: false
         default: "logs"
       env_line:
@@ -140,6 +140,56 @@ jobs:
               pm2 logs nahida-bot --lines 20 --nostream
               echo "--- furina-bot log gần nhất ---"
               pm2 logs furina-bot --lines 10 --nostream
+            elif [ "${{ github.event.inputs.mode }}" = "git-conflict-diag" ]; then
+              cd /root/Furina-bot
+              echo "--- git status ---"
+              git status
+              echo "--- .git/MERGE_HEAD tồn tại? (stash pop conflict thường KHÔNG tạo cái này) ---"
+              ls -la .git/MERGE_HEAD 2>&1 || echo "không có MERGE_HEAD"
+              echo "--- git stash list ---"
+              git stash list
+              echo "--- HEAD commit (bản đã pull, phía sẽ là 'ours' trong xung đột) - data.json ---"
+              git show HEAD:data.json 2>&1 | head -20
+              echo "--- HEAD commit - noitu_state.json ---"
+              git show HEAD:noitu_state.json 2>&1 | head -20
+              echo "--- FILE HIỆN TẠI TRÊN DISK (có thể đang chứa conflict marker) - data.json ---"
+              head -20 data.json
+              echo "--- FILE HIỆN TẠI TRÊN DISK - noitu_state.json ---"
+              head -20 noitu_state.json
+              echo "--- so sánh kích thước file ---"
+              wc -l data.json noitu_state.json
+            elif [ "${{ github.event.inputs.mode }}" = "git-resolve-keep-live" ]; then
+              cd /root/Furina-bot
+              TS=$(date +%Y%m%d_%H%M%S)
+              echo "--- backup data.json/noitu_state.json/giftcodes.json truoc khi dong ---"
+              cp data.json /root/data.json.bak.$TS 2>&1
+              cp noitu_state.json /root/noitu_state.json.bak.$TS 2>&1
+              cp giftcodes.json /root/giftcodes.json.bak.$TS 2>&1
+              echo "Backup luu tai /root/*.bak.$TS"
+
+              echo "--- git checkout --theirs (giu ban dang co tren VPS - live data) ---"
+              git checkout --theirs -- data.json noitu_state.json 2>&1
+              git add data.json noitu_state.json
+
+              echo "--- git status sau khi resolve ---"
+              git status
+
+              echo "--- stash list truoc khi drop ---"
+              git stash list
+              git stash drop 2>&1 || echo "khong co stash de drop"
+
+              echo "--- git pull origin main ---"
+              git pull origin main
+
+              echo "--- git log -1 sau pull ---"
+              git log -1 --oneline
+
+              echo "--- git status cuoi cung ---"
+              git status
+
+              echo "--- npm install + pm2 restart ---"
+              npm install
+              pm2 restart furina-bot
             else
               pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
             fi
