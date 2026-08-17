@@ -14,7 +14,7 @@ const {
 } = require("../../data");
 
 // ======================================================
-// SHOP COMMAND
+// 🛒 SHOP
 // ======================================================
 
 module.exports = {
@@ -29,7 +29,7 @@ module.exports = {
     async execute(message) {
 
         // ==================================================
-        // USER
+        // 👤 USER
         // ==================================================
 
         const user =
@@ -37,27 +37,58 @@ module.exports = {
                 message.author.id
             );
 
-        const balance =
-            Number(
-                user?.money || 0
-            );
+        if (!user) {
 
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor("#ff6b81")
+
+                        .setTitle(
+                            "୨୧ ───────────── ୨୧\n" +
+                            "❌ KHÔNG TÌM THẤY\n" +
+                            "୨୧ ───────────── ୨୧"
+                        )
+
+                        .setDescription(
+                            "Không tìm thấy dữ liệu người chơi."
+                        )
+
+                        .setFooter({
+                            text: "✦ Fishing Adventure"
+                        })
+
+                ]
+
+            });
+
+        }
 
         // ==================================================
-        // EMBED
+        // 💰 BALANCE
+        // ==================================================
+
+        const balance =
+            Number(
+                user.money || 0
+            );
+
+        // ==================================================
+        // 🛒 EMBED
         // ==================================================
 
         const embed =
             new EmbedBuilder()
 
-                .setColor(
-                    "#7DD3FC"
-                )
+                .setColor("#7DD3FC")
 
                 .setAuthor({
 
                     name:
-                        `${message.author.username} · Fishing Shop`,
+                        `${message.author.username} · Shop`,
 
                     iconURL:
                         message.author.displayAvatarURL({
@@ -67,34 +98,21 @@ module.exports = {
 
                 })
 
-                .setTitle(
-                    "🛒 `FISHING MARKET`"
-                )
-
                 .setDescription(
 
-                    `୨୧ ───────── ୨୧\n\n` +
+                    `୨୧ ───────────── ୨୧\n` +
+                    `🛒 **FISHING SHOP**\n` +
+                    `୨୧ ───────────── ୨୧\n\n` +
 
-                    `Chào mừng đến với cửa hàng của ngư dân.\n` +
-                    `Hãy chọn danh mục bạn muốn xem.\n\n` +
+                    `💰 **Số dư**\n` +
+                    `${balance.toLocaleString()} Fcoin ${emoji.money}\n\n` +
 
-                    `💰 Số dư: **${balance.toLocaleString()} Fcoin** ${emoji.money}\n\n` +
+                    `🎣 **Cần câu**  ·  🪱 **Mồi câu**\n` +
+                    `🎟️ **Chìa khóa**  ·  🪨 **Đá tăng tỉ lệ**\n\n` +
 
-                    `୨୧ ───────── ୨୧\n\n` +
+                    `Chọn danh mục bên dưới để xem vật phẩm.\n\n` +
 
-                    `🎣 Cần câu\n` +
-                    `> Trang bị và nâng cấp cần câu.\n\n` +
-
-                    `🪱 Mồi câu\n` +
-                    `> Hỗ trợ tăng cơ hội câu cá.\n\n` +
-
-                    `🎟️ Chìa khóa & Bảo hiểm\n` +
-                    `> Vật phẩm đặc biệt và bảo vệ cần câu.\n\n` +
-
-                    `🪨 Đá tăng tỉ lệ\n` +
-                    `> Hỗ trợ cường hóa và tăng Luck.\n\n` +
-
-                    `୨୧ ───────── ୨୧`
+                    `୨୧ ───────────── ୨୧`
 
                 )
 
@@ -107,19 +125,14 @@ module.exports = {
 
                 .setTimestamp();
 
-
         // ==================================================
-        // BUTTON
+        // 🔘 BUTTONS
         // ==================================================
 
         const row =
             new ActionRowBuilder()
 
                 .addComponents(
-
-                    // ======================================
-                    // CẦN CÂU
-                    // ======================================
 
                     new ButtonBuilder()
 
@@ -139,11 +152,6 @@ module.exports = {
                             ButtonStyle.Primary
                         ),
 
-
-                    // ======================================
-                    // MỒI CÂU
-                    // ======================================
-
                     new ButtonBuilder()
 
                         .setCustomId(
@@ -162,11 +170,6 @@ module.exports = {
                             ButtonStyle.Success
                         ),
 
-
-                    // ======================================
-                    // CHÌA KHÓA
-                    // ======================================
-
                     new ButtonBuilder()
 
                         .setCustomId(
@@ -184,11 +187,6 @@ module.exports = {
                         .setStyle(
                             ButtonStyle.Secondary
                         ),
-
-
-                    // ======================================
-                    // ĐÁ TĂNG TỈ LỆ
-                    // ======================================
 
                     new ButtonBuilder()
 
@@ -210,9 +208,8 @@ module.exports = {
 
                 );
 
-
         // ==================================================
-        // SEND
+        // 📤 SEND
         // ==================================================
 
         return message.reply({

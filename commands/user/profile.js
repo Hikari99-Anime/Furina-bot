@@ -91,7 +91,7 @@ module.exports = {
         // ======================================================
 
         let rodText =
-            "Chưa trang bị";
+            "🎣 Chưa trang bị";
 
         let rodLevel = 0;
         let rodLuck = 0;
@@ -129,9 +129,7 @@ module.exports = {
                         : "";
 
                 rodText =
-                    `${base.emoji || "🎣"} ${base.name} +${rodLevel}${title}\n` +
-                    `🍀 May mắn: \`${rodLuck}\`\n` +
-                    `🛠️ Độ bền: \`${rodUses}/${rodMaxUses}\``;
+                    `${base.emoji || "🎣"} ${base.name} +${rodLevel}${title}`;
 
             }
 
@@ -200,22 +198,7 @@ module.exports = {
             );
 
         // ======================================================
-        // TỔNG MỒI
-        // ======================================================
-
-        let totalBait = 0;
-
-        for (const id in user.moi) {
-
-            totalBait +=
-                Number(
-                    user.moi[id] || 0
-                );
-
-        }
-
-        // ======================================================
-        // HIỂN THỊ MỒI
+        // MỒI
         // ======================================================
 
         const baitText =
@@ -242,15 +225,10 @@ module.exports = {
         // ĐỘ BỀN
         // ======================================================
 
-        let durabilityBar =
+        let durability =
             "Chưa trang bị";
 
-        let rodStatus =
-            "⚪ Chưa trang bị";
-
-        if (
-            rodMaxUses > 0
-        ) {
+        if (rodMaxUses > 0) {
 
             const percent =
                 Math.max(
@@ -265,41 +243,8 @@ module.exports = {
                     )
                 );
 
-            const filled =
-                Math.round(
-                    percent / 10
-                );
-
-            durabilityBar =
-                "▰".repeat(filled) +
-                "▱".repeat(10 - filled) +
-                ` ${percent}%`;
-
-            if (rodUses <= 0) {
-
-                rodStatus =
-                    "🔴 Cần đã gãy";
-
-            } else if (
-                percent <= 20
-            ) {
-
-                rodStatus =
-                    "🟠 Độ bền thấp";
-
-            } else if (
-                percent <= 50
-            ) {
-
-                rodStatus =
-                    "🟡 Độ bền trung bình";
-
-            } else {
-
-                rodStatus =
-                    "🟢 Độ bền tốt";
-
-            }
+            durability =
+                `${percent}%`;
 
         }
 
@@ -333,35 +278,6 @@ module.exports = {
         }
 
         // ======================================================
-        // DANH HIỆU CƯỜNG HÓA
-        // ======================================================
-
-        let upgradeTitle =
-            "⚪ Chưa cường hóa";
-
-        if (rodLevel >= 15) {
-
-            upgradeTitle =
-                "💎 Bậc Thầy Cường Hóa";
-
-        } else if (rodLevel >= 10) {
-
-            upgradeTitle =
-                "🔥 Cường Hóa Cao Cấp";
-
-        } else if (rodLevel >= 5) {
-
-            upgradeTitle =
-                "✨ Cường Hóa Khá";
-
-        } else if (rodLevel > 0) {
-
-            upgradeTitle =
-                "🔨 Đã Cường Hóa";
-
-        }
-
-        // ======================================================
         // PROFILE EMBED
         // ======================================================
 
@@ -369,12 +285,6 @@ module.exports = {
             new EmbedBuilder()
 
                 .setColor("#89DDFF")
-
-                .setTitle(
-                    "୨୧ ───────── ୨୧\n" +
-                    `👤 HỒ SƠ ${target.username}\n` +
-                    "୨୧ ───────── ୨୧"
-                )
 
                 .setThumbnail(
                     target.displayAvatarURL({
@@ -385,51 +295,29 @@ module.exports = {
 
                 .setDescription(
 
+                    `୨୧ ───────────── ୨୧\n` +
+
+                    `👤 **HỒ SƠ ${target.username}**\n` +
                     `✦ ${fishermanTitle}\n\n` +
 
-                    `💰 **TÀI SẢN**\n` +
-                    `${formatMoney(user.money)} ${emoji.money}\n\n` +
+                    `💰 ${formatMoney(user.money)} ${emoji.money}\n` +
 
-                    `୨୧ ───────── ୨୧\n\n` +
+                    `🎣 ${rodText}  ·  🍀 ${rodLuck}  ·  🛠️ ${durability}\n\n` +
 
-                    `🎣 **CẦN ĐANG DÙNG**\n` +
-                    `${rodText}\n\n` +
-                    `${rodStatus}\n` +
-                    `${durabilityBar}\n\n` +
+                    `🐟 ${totalFish.toLocaleString()} cá  ·  📚 ${fishSpecies} loài\n` +
+                    `⚖️ ${totalWeight.toFixed(2)} KG  ·  🏆 ${biggestFish.toFixed(2)} KG\n\n` +
 
-                    `୨୧ ───────── ୨୧\n\n` +
+                    `🪱 ${baitText}\n` +
+                    `🔥 Daily ${dailyStreak} ngày\n\n` +
 
-                    `🐟 **THỐNG KÊ CÂU CÁ**\n` +
-                    `🐟 Cá đã bắt: \`${totalFish.toLocaleString()}\` con\n` +
-                    `📚 Loài đã bắt: \`${fishSpecies}\`\n` +
-                    `⚖️ Tổng cân nặng: \`${totalWeight.toFixed(2)} KG\`\n` +
-                    `🏋️ Cá lớn nhất: \`${biggestFish.toFixed(2)} KG\`\n\n` +
-
-                    `୨୧ ───────── ୨୧\n\n` +
-
-                    `🎁 **HOẠT ĐỘNG**\n` +
-                    `🔥 Daily streak: \`${dailyStreak}\` ngày\n` +
-                    `🪱 Tổng mồi: \`${totalBait.toLocaleString()}\`\n\n` +
-
-                    `୨୧ ───────── ୨୧\n\n` +
-
-                    `🏅 **THÀNH TÍCH**\n` +
-                    `${fishermanTitle}\n` +
-                    `${upgradeTitle}\n\n` +
-
-                    `୨୧ ───────── ୨୧\n\n` +
-
-                    `🪱 **MỒI ĐANG CÓ**\n` +
-                    `${baitText}`
+                    `୨୧ ───────────── ୨୧`
 
                 )
 
                 .setFooter({
                     text:
                         "✦ Fishing Adventure · Profile"
-                })
-
-                .setTimestamp();
+                });
 
         return message.reply({
 

@@ -14,10 +14,13 @@ const {
     prefix
 } = require("../../config");
 
-const { getUser, save } = require("../../data");
+const {
+    getUser,
+    save
+} = require("../../data");
 
 // ======================================================
-// 🎨 EMBED CONFIG
+// CONFIG
 // ======================================================
 
 const COLORS = {
@@ -31,10 +34,6 @@ const COLORS = {
     mythical: "#e056fd"
 };
 
-const FOOTER = {
-    text: "✦ Fishing Adventure · Fishing"
-};
-
 const RARITY_ORDER = {
     common: 1,
     rare: 2,
@@ -45,47 +44,69 @@ const RARITY_ORDER = {
 
 const fishingLocks = new Set();
 
+const FOOTER = {
+    text: "✦ Fishing Adventure · Fishing"
+};
+
 // ======================================================
-// 🧩 UTILS
+// UTILS
 // ======================================================
 
-function roundNumber(value, decimals = 2) {
-    const number = Number(value);
+function num(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+}
 
-    if (!Number.isFinite(number)) {
-        return 0;
+function round(value, decimal = 2) {
+    return Number(num(value).toFixed(decimal));
+}
+
+function luck(value) {
+    return Math.max(0, round(value));
+}
+
+// ======================================================
+// EMBED
+// ======================================================
+
+function createEmbed({
+    message,
+    color = COLORS.primary,
+    title,
+    description,
+    image = null
+}) {
+    const embed = new EmbedBuilder()
+        .setColor(color)
+        .setAuthor({
+            name: `${message.author.username} · Fishing`,
+            iconURL: message.author.displayAvatarURL({
+                extension: "png",
+                size: 128
+            })
+        })
+        .setTitle(`୨୧ ───────── ୨୧\n${title}`)
+        .setDescription(description)
+        .setFooter(FOOTER)
+        .setTimestamp();
+
+    if (image) {
+        embed.setImage(image);
     }
 
-    return Number(
-        number.toFixed(decimals)
-    );
-}
-
-function formatLuck(value) {
-    return roundNumber(
-        Math.max(
-            0,
-            Number(value) || 0
-        ),
-        2
-    );
+    return embed;
 }
 
 // ======================================================
-// 🌊 CURRENT ZONE
+// ZONE
 // ======================================================
 
 function getCurrentZone() {
-    if (!fishingZones) {
-        return null;
-    }
+    if (!fishingZones) return null;
 
     const now = new Date();
 
-    if (
-        now.getDay() === 0 &&
-        fishingZones.volcano
-    ) {
+    if (now.getDay() === 0 && fishingZones.volcano) {
         return fishingZones.volcano;
     }
 
@@ -96,175 +117,93 @@ function getCurrentZone() {
         fishingZones.deep
     ].filter(Boolean);
 
-    if (!zones.length) {
-        return null;
-    }
+    if (!zones.length) return null;
 
     return zones[
-        Math.floor(
-            now.getHours() / 6
-        ) % zones.length
+        Math.floor(now.getHours() / 6) % zones.length
     ];
 }
 
 // ======================================================
-// 🎣 ROD
+// ROD
 // ======================================================
 
-function formatRod(baseRod, rod) {
-    const level =
-        Number(rod.level || 0);
-
-    const luck =
-        formatLuck(
-            rod.luck ??
-            baseRod.luck ??
-            0
-        );
-
+function formatRod(base, rod) {
     return (
-        `${baseRod.emoji || "🎣"} ` +
-        `${baseRod.name} +${level} · ` +
-        `🍀 ${luck}`
+        `${base.emoji || "🎣"} ${base.name} +${num(rod.level)} · ` +
+        `🍀 ${luck(rod.luck ?? base.luck)}`
     );
 }
 
-function getRodDurabilityBar(
-    current,
-    max
-) {
-    current = Math.max(
+function durabilityBar(current, max) {
+    current = Math.max(0, num(current));
+    max = Math.max(1, num(max, 1));
+
+    const percent = Math.max(
         0,
-        Number(current) || 0
+        Math.min(100, current / max * 100)
     );
 
-    max = Math.max(
-        1,
-        Number(max) || 1
-    );
+    const filled = Math.round(percent / 10);
 
-    const percent =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                current / max * 100
-            )
-        );
+    let emoji = "🟩";
 
-    const blocks = 10;
-
-    const filled =
-        Math.round(
-            percent /
-            100 *
-            blocks
-        );
-
-    const empty =
-        blocks - filled;
-
-    let color = "🟩";
-
-    if (percent <= 50) {
-        color = "🟨";
-    }
-
-    if (percent <= 25) {
-        color = "🟥";
-    }
+    if (percent <= 50) emoji = "🟨";
+    if (percent <= 25) emoji = "🟥";
 
     return (
-        `${color.repeat(filled)}` +
-        `${"⬛".repeat(empty)} ` +
+        `${emoji.repeat(filled)}` +
+        `${"⬛".repeat(10 - filled)} ` +
         `**${percent.toFixed(0)}%**`
     );
 }
 
 // ======================================================
-// 🐟 FISH RATE
+// FISH
 // ======================================================
 
-function getFishRate(fish) {
+function fishRate(fish) {
     return Math.max(
         0,
-        Number(
-            fish.catchRate ??
-            fish.rate ??
-            0
-        )
+        num(fish.catchRate ?? fish.rate)
     );
 }
 
-// ======================================================
-// ⚖️ FISH WEIGHT
-// ======================================================
-
-function getFishWeight(fish) {
-    const fishMin =
-        Number(fish.min);
-
-    const fishMax =
-        Number(fish.max);
+function fishWeight(fish) {
+    const min = num(fish.min);
+    const max = num(fish.max);
 
     if (
-        Number.isFinite(fishMin) &&
-        Number.isFinite(fishMax) &&
-        fishMax > fishMin
+        Number.isFinite(min) &&
+        Number.isFinite(max) &&
+        max > min
     ) {
-        return Number(
-            (
-                Math.random() *
-                (
-                    fishMax -
-                    fishMin
-                ) +
-                fishMin
-            ).toFixed(2)
+        return round(
+            Math.random() * (max - min) + min
         );
     }
 
-    const min =
-        Number(
-            fishingConfig?.minWeight
-        ) || 0.5;
+    const fallbackMin =
+        num(fishingConfig?.minWeight, 0.5);
 
-    const max =
-        Number(
-            fishingConfig?.maxWeight
-        ) || 20;
+    const fallbackMax =
+        num(fishingConfig?.maxWeight, 20);
 
-    return Number(
-        (
-            Math.random() *
-            (
-                max -
-                min
-            ) +
-            min
-        ).toFixed(2)
+    return round(
+        Math.random() *
+        (fallbackMax - fallbackMin) +
+        fallbackMin
     );
 }
 
 // ======================================================
-// ⭐ RARITY MULTIPLIER
+// LUCK / RARITY
 // ======================================================
 
-function getRarityMultiplier(
-    fish,
-    luck
-) {
-    const rarity =
-        String(
-            fish.rarity ||
-            "common"
-        ).toLowerCase();
-
-    const safeLuck =
-        Math.max(
-            0,
-            Number(luck) || 0
-        );
+function rarityMultiplier(fish, luckValue) {
+    const rarity = String(
+        fish.rarity || "common"
+    ).toLowerCase();
 
     const multipliers = {
         rare: 0.05,
@@ -275,112 +214,70 @@ function getRarityMultiplier(
 
     return (
         1 +
-        safeLuck *
-        (
-            multipliers[
-                rarity
-            ] || 0
-        )
+        Math.max(0, num(luckValue)) *
+        (multipliers[rarity] || 0)
     );
 }
 
-// ======================================================
-// 🎣 RANDOM FISH
-// ======================================================
+function randomFish(zoneFish, luckValue) {
+    const weighted = zoneFish
+        .map(fish => ({
+            fish,
+            rate:
+                fishRate(fish) *
+                rarityMultiplier(
+                    fish,
+                    luckValue
+                )
+        }))
+        .filter(x => x.rate > 0);
 
-function randomFish(
-    zoneFish,
-    luck
-) {
-    const weightedFish =
-        zoneFish
-            .map(fish => ({
-                fish,
+    if (!weighted.length) return null;
 
-                rate:
-                    getFishRate(fish) *
-                    getRarityMultiplier(
-                        fish,
-                        luck
-                    )
-            }))
-            .filter(
-                item =>
-                    item.rate > 0
-            );
+    const total = weighted.reduce(
+        (sum, x) => sum + x.rate,
+        0
+    );
 
-    if (
-        !weightedFish.length
-    ) {
-        return null;
-    }
+    let random = Math.random() * total;
 
-    const totalRate =
-        weightedFish.reduce(
-            (sum, item) =>
-                sum + item.rate,
-            0
-        );
+    for (const item of weighted) {
+        random -= item.rate;
 
-    let random =
-        Math.random() *
-        totalRate;
-
-    for (
-        const item
-        of weightedFish
-    ) {
-        random -=
-            item.rate;
-
-        if (
-            random <= 0
-        ) {
+        if (random <= 0) {
             return item.fish;
         }
     }
 
-    return weightedFish[
-        weightedFish.length - 1
-    ].fish;
+    return weighted[weighted.length - 1].fish;
 }
 
-// ======================================================
-// ⭐ RARITY DISPLAY
-// ======================================================
+function rarityDisplay(fish) {
+    const rarity = String(
+        fish?.rarity || "common"
+    ).toLowerCase();
 
-function getRarityDisplay(fish) {
-    const rarity =
-        String(
-            fish?.rarity ||
-            "common"
-        ).toLowerCase();
-
-    const rarityMap = {
+    const map = {
         common: {
             name: "COMMON",
             emoji: "⚪",
             color: COLORS.success
         },
-
         rare: {
             name: "RARE",
             emoji: "🔵",
             color: COLORS.info
         },
-
         epic: {
             name: "EPIC",
             emoji: "🟣",
             color: COLORS.primary
         },
-
         legendary: {
             name: "LEGENDARY",
             emoji: "🌟",
             color: COLORS.legendary
         },
-
         mythical: {
             name: "MYTHICAL",
             emoji: "💜",
@@ -388,42 +285,23 @@ function getRarityDisplay(fish) {
         }
     };
 
-    return (
-        rarityMap[rarity] ||
-        rarityMap.common
-    );
+    return map[rarity] || map.common;
 }
 
-// ======================================================
-// 🏆 BEST RARITY
-// ======================================================
-
-function getBestRarity(
-    summaryList
-) {
+function bestRarity(list) {
     let best = null;
-    let bestValue = 0;
+    let value = 0;
 
-    for (
-        const item
-        of summaryList
-    ) {
-        const rarity =
-            String(
-                item.fish?.rarity ||
-                "common"
-            ).toLowerCase();
+    for (const item of list) {
+        const rarity = String(
+            item.fish?.rarity || "common"
+        ).toLowerCase();
 
-        const value =
-            RARITY_ORDER[
-                rarity
-            ] || 1;
+        const current =
+            RARITY_ORDER[rarity] || 1;
 
-        if (
-            value >
-            bestValue
-        ) {
-            bestValue = value;
+        if (current > value) {
+            value = current;
             best = rarity;
         }
     }
@@ -432,186 +310,56 @@ function getBestRarity(
 }
 
 // ======================================================
-// 🏆 SORT CHIẾN LỢI PHẨM
+// BAIT
 // ======================================================
 
-function sortCatchSummary(
-    summaryList
-) {
-    return summaryList.sort(
-        (a, b) => {
+function baitName(id) {
+    const bait = baits?.[id];
 
-            const rarityA =
-                String(
-                    a.fish?.rarity ||
-                    "common"
-                ).toLowerCase();
-
-            const rarityB =
-                String(
-                    b.fish?.rarity ||
-                    "common"
-                ).toLowerCase();
-
-            const rarityValueA =
-                RARITY_ORDER[
-                    rarityA
-                ] || 1;
-
-            const rarityValueB =
-                RARITY_ORDER[
-                    rarityB
-                ] || 1;
-
-            // 1. Hiếm nhất đứng trước
-            if (
-                rarityValueA !==
-                rarityValueB
-            ) {
-                return (
-                    rarityValueB -
-                    rarityValueA
-                );
-            }
-
-            // 2. Cùng rarity:
-            // số lượng nhiều đứng trước
-            if (
-                a.count !==
-                b.count
-            ) {
-                return (
-                    b.count -
-                    a.count
-                );
-            }
-
-            // 3. Cùng số lượng:
-            // tổng cân nặng lớn đứng trước
-            if (
-                a.weight !==
-                b.weight
-            ) {
-                return (
-                    b.weight -
-                    a.weight
-                );
-            }
-
-            // 4. Cuối cùng sort theo tên
-            return String(
-                a.fish?.name || ""
-            ).localeCompare(
-                String(
-                    b.fish?.name || ""
-                ),
-                "vi"
-            );
-        }
-    );
+    return bait
+        ? `${bait.emoji || "🪱"} ${bait.name}`
+        : "🪱 Mồi";
 }
 
-// ======================================================
-// 🪱 BAIT
-// ======================================================
-
-function getBaitName(
-    baitID
-) {
-    const info =
-        baits?.[baitID];
-
-    if (!info) {
-        return "🪱 Mồi";
-    }
-
-    return (
-        `${info.emoji || "🪱"} ` +
-        `${info.name}`
-    );
+function baitEmoji(id) {
+    return baits?.[id]?.emoji || "🪱";
 }
 
-function getBaitEmoji(
-    baitID
-) {
-    return (
-        baits?.[baitID]?.emoji ||
-        "🪱"
-    );
-}
-
-function getBaitCount(
-    user,
-    baitID
-) {
+function baitCount(user, id) {
     return Math.max(
         0,
-        Number(
-            user.moi?.[baitID] ||
-            0
-        )
+        num(user.moi?.[id])
     );
 }
 
-// ======================================================
-// 🔘 BAIT BUTTONS
-// ======================================================
-
-function createBaitButtons(
-    user,
-    ownerID
-) {
-    const baitIds =
-        Object.keys(
-            baits || {}
-        );
-
+function createBaitButtons(user, ownerID) {
+    const ids = Object.keys(baits || {});
     const rows = [];
 
-    for (
-        let i = 0;
-        i < baitIds.length;
-        i += 5
-    ) {
-        const row =
-            new ActionRowBuilder();
+    for (let i = 0; i < ids.length; i += 5) {
+        const row = new ActionRowBuilder();
 
-        for (
-            const baitID
-            of baitIds.slice(
-                i,
-                i + 5
-            )
-        ) {
-            const info =
-                baits[baitID];
-
-            const count =
-                getBaitCount(
-                    user,
-                    baitID
-                );
+        for (const id of ids.slice(i, i + 5)) {
+            const bait = baits[id];
+            const count = baitCount(user, id);
 
             row.addComponents(
                 new ButtonBuilder()
                     .setCustomId(
-                        `fishbait_${ownerID}_${baitID}`
+                        `fishbait_${ownerID}_${id}`
                     )
                     .setLabel(
-                        `${info.name} (${count})`
+                        `${bait.name} (${count})`
                     )
                     .setEmoji(
-                        info.emoji ||
-                        "🪱"
+                        bait.emoji || "🪱"
                     )
                     .setStyle(
                         count > 0
                             ? ButtonStyle.Primary
                             : ButtonStyle.Secondary
                     )
-                    .setDisabled(
-                        count <= 0
-                    )
+                    .setDisabled(count <= 0)
             );
         }
 
@@ -622,105 +370,36 @@ function createBaitButtons(
 }
 
 // ======================================================
-// 🖼️ EMBED
+// COLLECTION
 // ======================================================
 
-function createEmbed({
-    message,
-    color = COLORS.primary,
-    title,
-    description,
-    image = null
-}) {
-    const embed =
-        new EmbedBuilder()
-            .setColor(color)
-            .setAuthor({
-                name:
-                    `${message.author.username} · Fishing`,
-
-                iconURL:
-                    message.author.displayAvatarURL({
-                        extension: "png",
-                        size: 128
-                    })
-            })
-            .setTitle(title)
-            .setDescription(description)
-            .setFooter(FOOTER)
-            .setTimestamp();
-
-    if (
-        image &&
-        typeof image === "string"
-    ) {
-        embed.setImage(image);
-    }
-
-    return embed;
+function saveCollection(user, fishID) {
+    user.collection ??= {};
+    user.collection[fishID] = true;
 }
 
 // ======================================================
-// 💾 COLLECTION
+// COUNTDOWN
 // ======================================================
 
-function saveToCollection(
-    user,
-    fishID
-) {
-    user.collection =
-        user.collection || {};
-
-    user.collection[
-        fishID
-    ] = true;
-}
-
-// ======================================================
-// ⏳ COUNTDOWN BAR
-// ======================================================
-
-function createCountdownBar(
-    remaining,
-    total
-) {
-    const percent =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                100 -
-                (
-                    remaining /
-                    total *
-                    100
-                )
-            )
-        );
-
-    const blocks = 10;
-
-    const filled =
-        Math.round(
-            percent /
-            100 *
-            blocks
-        );
-
-    return (
-        "🟦".repeat(
-            filled
-        ) +
-        "⬛".repeat(
-            blocks -
-            filled
+function countdownBar(remaining, total) {
+    const percent = Math.max(
+        0,
+        Math.min(
+            100,
+            100 - remaining / total * 100
         )
     );
-}
 
-// ======================================================
-// ⏳ FISHING COUNTDOWN
-// ======================================================
+    const filled = Math.round(
+        percent / 10
+    );
+
+    return (
+        "🟦".repeat(filled) +
+        "⬛".repeat(10 - filled)
+    );
+}
 
 async function fishingCountdown({
     baitMessage,
@@ -730,69 +409,47 @@ async function fishingCountdown({
     baitID,
     totalMs
 }) {
-    const start =
-        Date.now();
-
+    const start = Date.now();
     let lastSecond = -1;
 
     while (true) {
-        const elapsed =
-            Date.now() -
-            start;
+        const remaining = Math.max(
+            0,
+            totalMs - (Date.now() - start)
+        );
 
-        const remaining =
-            Math.max(
-                0,
-                totalMs -
-                elapsed
-            );
-
-        const second =
-            Math.ceil(
-                remaining /
-                1000
-            );
+        const second = Math.ceil(
+            remaining / 1000
+        );
 
         if (
-            second !==
-                lastSecond ||
+            second !== lastSecond ||
             remaining <= 0
         ) {
-            lastSecond =
-                second;
-
-            const progress =
-                createCountdownBar(
-                    remaining,
-                    totalMs
-                );
-
-            const timeText =
-                remaining <= 0
-                    ? "🎣 **Cá đã cắn câu!**"
-                    : `⏳ **${(
-                        remaining /
-                        1000
-                    ).toFixed(1)}s**`;
+            lastSecond = second;
 
             try {
                 await baitMessage.edit({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.info,
-                            title:
-                                "🎣 `ĐANG CÂU`",
+                            color: COLORS.info,
+                            title: "🎣 `ĐANG CÂU`",
                             description:
                                 `🌊 **${zone.name}**\n\n` +
-                                `${progress}\n` +
-                                `${timeText}\n\n` +
-                                `🎯 **${amount} lần câu** · ` +
-                                `${getBaitName(
-                                    baitID
-                                )}\n\n` +
-                                `*Đang chờ cá cắn câu...*`
+                                `${countdownBar(
+                                    remaining,
+                                    totalMs
+                                )}\n` +
+                                (
+                                    remaining <= 0
+                                        ? "🎣 **Cá đã cắn câu!**"
+                                        : `⏳ **${(
+                                            remaining / 1000
+                                        ).toFixed(1)}s**`
+                                ) +
+                                `\n\n🎯 **${amount} lần câu** · ` +
+                                `${baitName(baitID)}`
                         })
                     ],
                     components: []
@@ -800,27 +457,19 @@ async function fishingCountdown({
             } catch {}
         }
 
-        if (
-            remaining <= 0
-        ) {
-            break;
-        }
+        if (remaining <= 0) break;
 
-        await new Promise(
-            resolve =>
-                setTimeout(
-                    resolve,
-                    Math.min(
-                        500,
-                        remaining
-                    )
-                )
+        await new Promise(resolve =>
+            setTimeout(
+                resolve,
+                Math.min(500, remaining)
+            )
         );
     }
 }
 
 // ======================================================
-// 🎣 MODULE
+// MODULE
 // ======================================================
 
 module.exports = {
@@ -831,35 +480,21 @@ module.exports = {
         "cau"
     ],
 
-    async execute(
-        message,
-        args
-    ) {
-        const userID =
-            message.author.id;
+    async execute(message, args) {
+        const userID = message.author.id;
 
         // ==================================================
-        // 🔒 ANTI SPAM
+        // ANTI SPAM
         // ==================================================
 
-        if (
-            fishingLocks.has(
-                userID
-            )
-        ) {
+        if (fishingLocks.has(userID)) {
             try {
-                const warning =
-                    await message.reply(
-                        "⏳ Bạn đang câu cá, hãy đợi lượt hiện tại hoàn tất."
-                    );
+                const warning = await message.reply(
+                    "⏳ Bạn đang câu cá, hãy đợi lượt hiện tại hoàn tất."
+                );
 
                 setTimeout(
-                    () =>
-                        warning
-                            .delete()
-                            .catch(
-                                () => {}
-                            ),
+                    () => warning.delete().catch(() => {}),
                     3000
                 );
             } catch {}
@@ -867,87 +502,55 @@ module.exports = {
             return;
         }
 
-        fishingLocks.add(
-            userID
-        );
+        fishingLocks.add(userID);
 
         try {
             // ==================================================
-            // 👤 USER
+            // USER
             // ==================================================
 
-            const user =
-                getUser(
-                    userID
-                );
+            const user = getUser(userID);
 
             if (!user) {
                 return message.reply({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "❌ `NO PLAYER DATA`",
+                            color: COLORS.error,
+                            title: "❌ `NO PLAYER DATA`",
                             description:
-                                "Không thể tải dữ liệu người chơi của bạn."
+                                "Không thể tải dữ liệu người chơi."
                         })
                     ]
                 });
             }
 
-            // ==================================================
-            // 🧱 DATA
-            // ==================================================
-
-            user.moi =
-                user.moi || {};
-
-            user.fish =
-                user.fish || {};
-
-            user.can =
-                user.can || {};
-
-            user.rodData =
-                user.rodData || {};
-
-            user.collection =
-                user.collection || {};
+            user.moi ??= {};
+            user.fish ??= {};
+            user.can ??= {};
+            user.rodData ??= {};
+            user.collection ??= {};
 
             // ==================================================
-            // 🎯 AMOUNT
+            // AMOUNT
             // ==================================================
 
-            const MAX_AMOUNT =
-                50;
-
+            const MAX_AMOUNT = 50;
             let amount = 1;
 
-            if (
-                args?.[0] !==
-                undefined
-            ) {
-                amount =
-                    Number(
-                        args[0]
-                    );
+            if (args?.[0] !== undefined) {
+                amount = Number(args[0]);
 
                 if (
-                    !Number.isInteger(
-                        amount
-                    ) ||
+                    !Number.isInteger(amount) ||
                     amount <= 0
                 ) {
                     return message.reply({
                         embeds: [
                             createEmbed({
                                 message,
-                                color:
-                                    COLORS.error,
-                                title:
-                                    "❌ `SỐ LẦN CÂU KHÔNG HỢP LỆ`",
+                                color: COLORS.error,
+                                title: "❌ `SỐ LẦN CÂU KHÔNG HỢP LỆ`",
                                 description:
                                     `Số lần câu phải là số nguyên dương.\n\n` +
                                     `💡 Ví dụ: \`${prefix}fish 10\``
@@ -956,21 +559,15 @@ module.exports = {
                     });
                 }
 
-                if (
-                    amount >
-                    MAX_AMOUNT
-                ) {
+                if (amount > MAX_AMOUNT) {
                     return message.reply({
                         embeds: [
                             createEmbed({
                                 message,
-                                color:
-                                    COLORS.error,
-                                title:
-                                    "❌ `VƯỢT QUÁ GIỚI HẠN`",
+                                color: COLORS.error,
+                                title: "❌ `VƯỢT QUÁ GIỚI HẠN`",
                                 description:
-                                    `Mỗi lượt chỉ được câu tối đa **${MAX_AMOUNT} lần**.\n\n` +
-                                    `💡 Hãy nhập từ **1 đến ${MAX_AMOUNT}**.`
+                                    `Mỗi lượt chỉ được câu tối đa **${MAX_AMOUNT} lần**.`
                             })
                         ]
                     });
@@ -978,21 +575,18 @@ module.exports = {
             }
 
             // ==================================================
-            // 🌊 ZONE
+            // ZONE
             // ==================================================
 
-            const zone =
-                getCurrentZone();
+            const zone = getCurrentZone();
 
             if (!zone) {
                 return message.reply({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "🌊 `KHÔNG CÓ KHU VỰC`",
+                            color: COLORS.error,
+                            title: "🌊 `KHÔNG CÓ KHU VỰC`",
                             description:
                                 "Hiện chưa có khu vực câu cá khả dụng."
                         })
@@ -1001,106 +595,73 @@ module.exports = {
             }
 
             // ==================================================
-            // 🎣 EQUIPPED ROD
+            // ROD
             // ==================================================
 
-            const rodID =
-                user.can?.dangDung;
+            const rodID = user.can.dangDung;
 
             if (!rodID) {
                 return message.reply({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "🎣 `CHƯA TRANG BỊ CẦN`",
+                            color: COLORS.error,
+                            title: "🎣 `CHƯA TRANG BỊ CẦN`",
                             description:
                                 `Bạn chưa trang bị cần câu.\n\n` +
-                                `💡 Dùng \`${prefix}rod\` để kiểm tra và trang bị cần.`
+                                `💡 Dùng \`${prefix}rod\` để trang bị.`
                         })
                     ]
                 });
             }
 
-            const baseRod =
-                rods?.[rodID];
+            const baseRod = rods?.[rodID];
+            const rod = user.rodData?.[rodID];
 
-            const rod =
-                user.rodData?.[rodID];
-
-            if (
-                !baseRod ||
-                !rod
-            ) {
+            if (!baseRod || !rod) {
                 return message.reply({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "❌ `DỮ LIỆU CẦN LỖI`",
+                            color: COLORS.error,
+                            title: "❌ `DỮ LIỆU CẦN LỖI`",
                             description:
-                                "Không tìm thấy dữ liệu cần câu đang trang bị."
+                                "Không tìm thấy dữ liệu cần câu."
                         })
                     ]
                 });
             }
 
             // ==================================================
-            // 🍀 ROD STATS
+            // ROD DATA
             // ==================================================
 
-            rod.level =
-                Number(
-                    rod.level || 0
-                );
+            rod.level = num(rod.level);
+            rod.luck = luck(
+                rod.luck ?? baseRod.luck
+            );
 
-            rod.luck =
-                formatLuck(
-                    rod.luck ??
-                    baseRod.luck ??
-                    0
-                );
+            const maxUses = Math.max(
+                1,
+                num(baseRod.uses, 1)
+            );
 
-            const configMaxUses =
-                Math.max(
-                    1,
-                    Number(
-                        baseRod.uses
-                    ) || 1
-                );
-
-            let currentUses =
-                Number(
-                    rod.uses
-                );
-
-            if (
-                !Number.isFinite(
-                    currentUses
-                )
-            ) {
-                currentUses =
-                    configMaxUses;
-            }
-
-            rod.uses =
-                Math.max(
+            rod.uses = Number.isFinite(
+                Number(rod.uses)
+            )
+                ? Math.max(
                     0,
                     Math.min(
-                        currentUses,
-                        configMaxUses
+                        num(rod.uses),
+                        maxUses
                     )
-                );
+                )
+                : maxUses;
 
-            rod.maxUses =
-                configMaxUses;
+            rod.maxUses = maxUses;
 
             // ==================================================
-            // 💥 BROKEN ROD
+            // BROKEN
             // ==================================================
 
             if (
@@ -1111,128 +672,78 @@ module.exports = {
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.danger,
-                            title:
-                                "💥 `CẦN CÂU ĐÃ GÃY`",
+                            color: COLORS.danger,
+                            title: "💥 `CẦN CÂU ĐÃ GÃY`",
                             description:
-                                `🎣 **${formatRod(
-                                    baseRod,
-                                    {
-                                        ...rod,
-                                        uses: 0
-                                    }
-                                )}**\n` +
-                                `${getRodDurabilityBar(
-                                    0,
-                                    configMaxUses
-                                )}\n\n` +
+                                `🎣 **${formatRod(baseRod, rod)}**\n` +
+                                `${durabilityBar(0, maxUses)}\n\n` +
                                 `🔧 Trạng thái: **💥 Đã gãy**\n\n` +
-                                `💡 Hãy sửa hoặc mua cần mới trước khi tiếp tục.`
+                                `💡 Hãy sửa hoặc mua cần mới.`
                         })
                     ]
                 });
             }
 
             // ==================================================
-            // 🎯 LOW DURABILITY
+            // DURABILITY
             // ==================================================
 
-            if (
-                rod.uses <
-                amount
-            ) {
+            if (rod.uses < amount) {
                 return message.reply({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.warning,
-                            title:
-                                "🎯 `ĐỘ BỀN KHÔNG ĐỦ`",
+                            color: COLORS.warning,
+                            title: "🎯 `ĐỘ BỀN KHÔNG ĐỦ`",
                             description:
-                                `🎣 **${formatRod(
-                                    baseRod,
-                                    rod
-                                )}**\n` +
-                                `${getRodDurabilityBar(
+                                `🎣 **${formatRod(baseRod, rod)}**\n` +
+                                `${durabilityBar(
                                     rod.uses,
-                                    configMaxUses
+                                    maxUses
                                 )}\n\n` +
                                 `🎣 Muốn câu: **${amount} lần**\n` +
-                                `🎯 Độ bền: **${rod.uses}/${configMaxUses}**\n\n` +
-                                `💡 Cần ít nhất **${amount}** độ bền.`
+                                `🛠️ Độ bền: **${rod.uses}/${maxUses}**`
                         })
                     ]
                 });
             }
 
             // ==================================================
-            // 🪱 BAIT DATA
+            // BAIT DATA
             // ==================================================
 
-            const baitIds =
-                Object.keys(
-                    baits || {}
-                );
-
-            const baitCounts = {};
+            const baitIDs = Object.keys(baits || {});
 
             let totalBait = 0;
 
-            for (
-                const id
-                of baitIds
-            ) {
-                const count =
-                    getBaitCount(
-                        user,
-                        id
-                    );
-
-                baitCounts[id] =
-                    count;
-
-                totalBait +=
-                    count;
+            for (const id of baitIDs) {
+                totalBait += baitCount(user, id);
             }
 
-            // ==================================================
-            // ❌ NO BAIT
-            // ==================================================
-
-            if (
-                totalBait <= 0
-            ) {
-                const baitText =
-                    baitIds
-                        .map(
-                            id =>
-                                `${getBaitEmoji(
-                                    id
-                                )} ${baits[id].name}: **0**`
-                        )
-                        .join("\n");
+            if (totalBait <= 0) {
+                const text = baitIDs
+                    .map(
+                        id =>
+                            `${baitEmoji(id)} ${baits[id].name}: **0**`
+                    )
+                    .join("\n");
 
                 return message.reply({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "🪱 `KHÔNG CÓ MỒI`",
+                            color: COLORS.error,
+                            title: "🪱 `KHÔNG CÓ MỒI`",
                             description:
                                 `🎣 **${formatRod(
                                     baseRod,
                                     rod
                                 )}**\n` +
-                                `${getRodDurabilityBar(
+                                `${durabilityBar(
                                     rod.uses,
-                                    configMaxUses
+                                    maxUses
                                 )}\n\n` +
-                                `🪱 **MỒI HIỆN CÓ**\n\n` +
-                                `${baitText || "*Không có mồi.*"}\n\n` +
+                                `🪱 **MỒI HIỆN CÓ**\n${text}\n\n` +
                                 `💡 Hãy mua thêm mồi rồi thử lại.`
                         })
                     ]
@@ -1240,147 +751,112 @@ module.exports = {
             }
 
             // ==================================================
-            // 🐟 ZONE FISH
+            // ZONE FISH
             // ==================================================
 
-            const zoneFish =
-                Array.isArray(
-                    fishList
+            const zoneFish = Array.isArray(fishList)
+                ? fishList.filter(
+                    fish =>
+                        Array.isArray(zone.fish) &&
+                        zone.fish.includes(fish.id)
                 )
-                    ? fishList.filter(
-                        fish =>
-                            Array.isArray(
-                                zone.fish
-                            ) &&
-                            zone.fish.includes(
-                                fish.id
-                            )
-                    )
-                    : [];
+                : [];
 
-            if (
-                !zoneFish.length
-            ) {
+            if (!zoneFish.length) {
                 return message.reply({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "❌ `KHÔNG CÓ DỮ LIỆU CÁ`",
+                            color: COLORS.error,
+                            title: "❌ `KHÔNG CÓ DỮ LIỆU CÁ`",
                             description:
                                 `🌊 **${zone.name}**\n\n` +
-                                `Không tìm thấy cá tương ứng với khu vực này.`
+                                "Không tìm thấy cá trong khu vực này."
                         })
                     ]
                 });
             }
 
             // ==================================================
-            // 🪱 BAIT SELECT
+            // CHOOSE BAIT
             // ==================================================
 
-            const ownerID =
-                message.author.id;
+            const ownerID = message.author.id;
 
-            const baitListText =
-                baitIds
-                    .map(
-                        id =>
-                            `${getBaitEmoji(
-                                id
-                            )} ${baits[id].name} x${baitCounts[id]}`
-                    )
-                    .join("\n");
-
-            const baitMessage =
-                await message.reply({
-                    embeds: [
-                        createEmbed({
-                            message,
-                            color:
-                                COLORS.info,
-                            title:
-                                "🪱 `CHỌN MỒI`",
-                            description:
-                                `🌊 **${zone.name}**\n` +
-                                `${zone.description || "*Một vùng nước bí ẩn...*"}\n\n` +
-                                `🎣 ${formatRod(
-                                    baseRod,
-                                    rod
-                                )}\n` +
-                                `${getRodDurabilityBar(
-                                    rod.uses,
-                                    configMaxUses
-                                )}\n\n` +
-                                `🎯 Số lần câu: **${amount}**\n` +
-                                `🍀 Luck: **${formatLuck(
-                                    rod.luck
-                                )}**\n\n` +
-                                `🪱 **MỒI HIỆN CÓ**\n\n` +
-                                `${baitListText}\n\n` +
-                                `👇 **Chọn loại mồi:**`,
-                            image:
-                                zone.image
-                        })
-                    ],
-                    components:
-                        createBaitButtons(
+            const baitText = baitIDs
+                .map(
+                    id =>
+                        `${baitEmoji(id)} ${baits[id].name} x${baitCount(
                             user,
-                            ownerID
-                        )
-                });
+                            id
+                        )}`
+                )
+                .join("\n");
+
+            const baitMessage = await message.reply({
+                embeds: [
+                    createEmbed({
+                        message,
+                        color: COLORS.info,
+                        title: "🪱 `CHỌN MỒI`",
+                        description:
+                            `🌊 **${zone.name}**\n` +
+                            `${zone.description || "*Một vùng nước bí ẩn...*"}\n\n` +
+                            `🎣 ${formatRod(baseRod, rod)}\n` +
+                            `${durabilityBar(
+                                rod.uses,
+                                maxUses
+                            )}\n\n` +
+                            `🎯 Số lần câu: **${amount}**\n` +
+                            `🍀 Luck: **${rod.luck}**\n\n` +
+                            `🪱 **MỒI HIỆN CÓ**\n${baitText}\n\n` +
+                            `👇 Chọn loại mồi:`,
+                        image: zone.image
+                    })
+                ],
+                components: createBaitButtons(
+                    user,
+                    ownerID
+                )
+            });
 
             // ==================================================
-            // 🪱 WAIT BAIT
+            // WAIT BAIT
             // ==================================================
 
-            let baitID = null;
+            let baitID;
 
             try {
                 const interaction =
                     await baitMessage.awaitMessageComponent({
-                        filter:
-                            buttonInteraction =>
-                                buttonInteraction.user.id ===
-                                ownerID &&
-                                buttonInteraction.customId.startsWith(
-                                    `fishbait_${ownerID}_`
-                                ),
+                        filter: i =>
+                            i.user.id === ownerID &&
+                            i.customId.startsWith(
+                                `fishbait_${ownerID}_`
+                            ),
                         time: 30000
                     });
 
-                baitID =
-                    interaction.customId
-                        .split("_")
-                        .pop();
+                baitID = interaction.customId
+                    .split("_")
+                    .pop();
 
-                const selectedBaitCount =
-                    getBaitCount(
-                        user,
-                        baitID
-                    );
+                const count = baitCount(
+                    user,
+                    baitID
+                );
 
-                if (
-                    selectedBaitCount <
-                    amount
-                ) {
+                if (count < amount) {
                     await interaction.update({
                         embeds: [
                             createEmbed({
                                 message,
-                                color:
-                                    COLORS.error,
-                                title:
-                                    "❌ `KHÔNG ĐỦ MỒI`",
+                                color: COLORS.error,
+                                title: "❌ `KHÔNG ĐỦ MỒI`",
                                 description:
-                                    `${getBaitName(
-                                        baitID
-                                    )}\n\n` +
+                                    `${baitName(baitID)}\n\n` +
                                     `🎣 Cần: **${amount}**\n` +
-                                    `🪱 Hiện có: **${selectedBaitCount}**\n\n` +
-                                    `💡 Không đủ mồi để câu **${amount} lần**.`
+                                    `🪱 Hiện có: **${count}**`
                             })
                         ],
                         components: []
@@ -1393,10 +869,8 @@ module.exports = {
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.info,
-                            title:
-                                "⚡ `CHUẨN BỊ CÂU`",
+                            color: COLORS.info,
+                            title: "⚡ `CHUẨN BỊ CÂU`",
                             description:
                                 `🌊 **${zone.name}**\n\n` +
                                 `🎣 ${formatRod(
@@ -1404,7 +878,7 @@ module.exports = {
                                     rod
                                 )}\n` +
                                 `🎯 **${amount} lần câu**\n` +
-                                `🪱 ${getBaitName(
+                                `🪱 ${baitName(
                                     baitID
                                 )} x${amount}\n\n` +
                                 `*Đang chuẩn bị...*`
@@ -1412,20 +886,16 @@ module.exports = {
                     ],
                     components: []
                 });
-            }
-
-            catch {
+            } catch {
                 return baitMessage.edit({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.warning,
-                            title:
-                                "⏰ `HẾT THỜI GIAN CHỌN MỒI`",
+                            color: COLORS.warning,
+                            title: "⏰ `HẾT THỜI GIAN`",
                             description:
-                                `Bạn đã không chọn mồi trong **30 giây**.\n\n` +
-                                `💡 Dùng lại \`${prefix}fish ${amount}\` để câu cá.`
+                                `Bạn không chọn mồi trong **30 giây**.\n\n` +
+                                `💡 Dùng lại \`${prefix}fish ${amount}\`.`
                         })
                     ],
                     components: []
@@ -1433,30 +903,23 @@ module.exports = {
             }
 
             // ==================================================
-            // ⏱️ FISHING TIME
+            // FISHING TIME
             // ==================================================
 
-            const star =
-                Math.max(
-                    1,
-                    Number(
-                        baseRod.star || 1
-                    )
-                );
+            const star = Math.max(
+                1,
+                num(baseRod.star, 1)
+            );
 
-            const perCatchMs =
-                Math.max(
-                    200,
-                    1200 -
-                    star * 150
-                );
+            const perCatchMs = Math.max(
+                200,
+                1200 - star * 150
+            );
 
-            const totalMs =
-                Math.min(
-                    amount *
-                    perCatchMs,
-                    30000
-                );
+            const totalMs = Math.min(
+                amount * perCatchMs,
+                30000
+            );
 
             await fishingCountdown({
                 baitMessage,
@@ -1468,33 +931,23 @@ module.exports = {
             });
 
             // ==================================================
-            // 🪱 FINAL BAIT CHECK
+            // FINAL BAIT CHECK
             // ==================================================
 
-            const finalBaitCount =
-                getBaitCount(
-                    user,
-                    baitID
-                );
-
             if (
-                finalBaitCount <
+                baitCount(user, baitID) <
                 amount
             ) {
                 return baitMessage.edit({
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "❌ `KHÔNG ĐỦ MỒI`",
+                            color: COLORS.error,
+                            title: "❌ `KHÔNG ĐỦ MỒI`",
                             description:
-                                `Không đủ ${getBaitName(
+                                `Không đủ ${baitName(
                                     baitID
-                                )} để hoàn thành lượt câu.\n\n` +
-                                `🎣 Cần: **${amount}**\n` +
-                                `🪱 Hiện có: **${finalBaitCount}**`
+                                )} để hoàn thành lượt câu.`
                         })
                     ],
                     components: []
@@ -1502,262 +955,150 @@ module.exports = {
             }
 
             // ==================================================
-            // 🍀 LUCK
+            // CATCH
             // ==================================================
 
-            const luck =
-                formatLuck(
-                    rod.luck
-                );
-
-            // ==================================================
-            // 📊 SUMMARY DATA
-            // ==================================================
-
-            const caughtSummary = {};
+            const caught = {};
             const baitUsed = {};
-
-            for (
-                const id
-                of baitIds
-            ) {
-                baitUsed[id] = 0;
-            }
 
             let actualCaught = 0;
 
-            // ==================================================
-            // 🎣 CATCH FISH
-            // ==================================================
-
-            for (
-                let i = 0;
-                i < amount;
-                i++
-            ) {
+            for (let i = 0; i < amount; i++) {
                 if (
-                    Number(
-                        user.moi[
-                            baitID
-                        ] || 0
-                    ) <= 0
+                    baitCount(user, baitID) <= 0 ||
+                    rod.uses <= 0
                 ) {
                     break;
                 }
 
-                // Trừ mồi
-                user.moi[
-                    baitID
-                ]--;
+                user.moi[baitID]--;
+                baitUsed[baitID] =
+                    (baitUsed[baitID] || 0) + 1;
 
-                user.moi[
-                    baitID
-                ] = Math.max(
+                rod.uses = Math.max(
                     0,
-                    user.moi[
-                        baitID
-                    ]
+                    rod.uses - 1
                 );
 
-                baitUsed[
-                    baitID
-                ]++;
+                const fish = randomFish(
+                    zoneFish,
+                    rod.luck
+                );
 
-                // Trừ độ bền
-                rod.uses--;
-
-                rod.uses =
-                    Math.max(
-                        0,
-                        rod.uses
-                    );
-
-                // Chọn cá
-                const catchFish =
-                    randomFish(
-                        zoneFish,
-                        luck
-                    );
-
-                if (!catchFish) {
-                    continue;
-                }
+                if (!fish) continue;
 
                 actualCaught++;
 
-                // Cân nặng
                 const weight =
-                    getFishWeight(
-                        catchFish
-                    );
+                    fishWeight(fish);
 
-                // Inventory
-                user.fish =
-                    user.fish || {};
+                user.fish[fish.id] ??= [];
+                user.fish[fish.id].push(weight);
 
-                if (
-                    !Array.isArray(
-                        user.fish[
-                            catchFish.id
-                        ]
-                    )
-                ) {
-                    user.fish[
-                        catchFish.id
-                    ] = [];
-                }
-
-                user.fish[
-                    catchFish.id
-                ].push(weight);
-
-                // Collection
-                saveToCollection(
+                saveCollection(
                     user,
-                    catchFish.id
+                    fish.id
                 );
 
-                // Summary
-                if (
-                    !caughtSummary[
-                        catchFish.id
-                    ]
-                ) {
-                    caughtSummary[
-                        catchFish.id
-                    ] = {
-                        fish:
-                            catchFish,
-
-                        count:
-                            0,
-
-                        weight:
-                            0
+                if (!caught[fish.id]) {
+                    caught[fish.id] = {
+                        fish,
+                        count: 0,
+                        weight: 0
                     };
                 }
 
-                caughtSummary[
-                    catchFish.id
-                ].count++;
-
-                caughtSummary[
-                    catchFish.id
-                ].weight +=
-                    weight;
+                caught[fish.id].count++;
+                caught[fish.id].weight += weight;
             }
 
             // ==================================================
-            // 💥 ROD BROKEN
+            // ROD
             // ==================================================
 
-            if (
-                rod.uses <= 0
-            ) {
+            if (rod.uses <= 0) {
                 rod.uses = 0;
-
-                rod.destroyed =
-                    true;
+                rod.destroyed = true;
             }
-
-            // ==================================================
-            // 💾 SAVE
-            // ==================================================
 
             save();
 
             // ==================================================
-            // 📊 SORT SUMMARY
+            // SUMMARY
             // ==================================================
 
-            const summaryList =
-                sortCatchSummary(
-                    Object.values(
-                        caughtSummary
-                    )
-                );
+            const summary = Object.values(caught)
+                .sort((a, b) => {
+                    const rarityA =
+                        RARITY_ORDER[
+                            String(
+                                a.fish?.rarity ||
+                                "common"
+                            ).toLowerCase()
+                        ] || 1;
 
-            // ==================================================
-            // 🐟 CATCH TEXT
-            // ==================================================
+                    const rarityB =
+                        RARITY_ORDER[
+                            String(
+                                b.fish?.rarity ||
+                                "common"
+                            ).toLowerCase()
+                        ] || 1;
+
+                    if (rarityA !== rarityB) {
+                        return rarityB - rarityA;
+                    }
+
+                    if (a.count !== b.count) {
+                        return b.count - a.count;
+                    }
+
+                    return b.weight - a.weight;
+                });
 
             const catchText =
-                summaryList
-                    .map(
-                        item => {
-
-                            const rarity =
-                                getRarityDisplay(
-                                    item.fish
-                                );
-
-                            const rarityText =
-                                rarity.name ===
-                                "COMMON"
-                                    ? ""
-                                    : ` ${rarity.emoji} ${rarity.name}`;
-
-                            return (
-                                `${item.fish.emoji || "🐟"} ` +
-                                `${item.fish.name} x${item.count} · ` +
-                                `⚖️ ${item.weight.toFixed(2)} KG` +
-                                rarityText
+                summary
+                    .map(item => {
+                        const rarity =
+                            rarityDisplay(
+                                item.fish
                             );
-                        }
-                    )
+
+                        const rarityText =
+                            rarity.name === "COMMON"
+                                ? ""
+                                : ` · ${rarity.emoji} ${rarity.name}`;
+
+                        return (
+                            `${item.fish.emoji || "🐟"} ` +
+                            `**${item.fish.name}** x${item.count} · ` +
+                            `⚖️ ${item.weight.toFixed(2)} KG` +
+                            rarityText
+                        );
+                    })
                     .join("\n") ||
                 "*Không câu được gì.*";
 
-            // ==================================================
-            // ⚖️ TOTAL WEIGHT
-            // ==================================================
-
             const totalWeight =
-                summaryList.reduce(
-                    (
-                        sum,
-                        item
-                    ) =>
-                        sum +
-                        item.weight,
+                summary.reduce(
+                    (sum, item) =>
+                        sum + item.weight,
                     0
                 );
 
-            // ==================================================
-            // 🪱 BAIT USED
-            // ==================================================
-
-            const baitText =
-                Object.keys(
-                    baitUsed
-                )
-                    .filter(
-                        id =>
-                            baitUsed[id] >
-                            0
-                    )
+            const usedText =
+                Object.keys(baitUsed)
                     .map(
                         id =>
-                            `${getBaitEmoji(
-                                id
-                            )} x${baitUsed[id]}`
+                            `${baitEmoji(id)} x${baitUsed[id]}`
                     )
-                    .join(" · ") ||
-                "-";
+                    .join(" · ") || "-";
 
-            // ==================================================
-            // 🪱 BAIT REMAINING
-            // ==================================================
-
-            const baitRemaining =
-                getBaitCount(
+            const remaining =
+                baitCount(
                     user,
                     baitID
                 );
-
-            // ==================================================
-            // 📈 CATCH RATE
-            // ==================================================
 
             const catchRate =
                 amount > 0
@@ -1768,105 +1109,66 @@ module.exports = {
                     ).toFixed(0)
                     : "0";
 
-            // ==================================================
-            // 🎣 ROD STATUS
-            // ==================================================
-
-            const rodStatus =
-                rod.destroyed ||
-                rod.uses <= 0
-                    ? "💥 Đã gãy"
-                    : "✅ Sẵn sàng";
-
-            // ==================================================
-            // ⭐ BEST RARITY
-            // ==================================================
-
-            const bestRarity =
-                getBestRarity(
-                    summaryList
-                );
+            const best =
+                bestRarity(summary);
 
             let resultColor =
                 rod.destroyed
                     ? COLORS.danger
                     : COLORS.success;
 
-            if (
-                bestRarity ===
-                "legendary"
-            ) {
-                resultColor =
-                    COLORS.legendary;
+            if (best === "legendary") {
+                resultColor = COLORS.legendary;
             }
 
-            if (
-                bestRarity ===
-                "mythical"
-            ) {
-                resultColor =
-                    COLORS.mythical;
+            if (best === "mythical") {
+                resultColor = COLORS.mythical;
             }
 
             // ==================================================
-            // 🎉 RESULT EMBED
+            // RESULT
             // ==================================================
 
-            await baitMessage.edit({
+            return baitMessage.edit({
                 embeds: [
                     createEmbed({
                         message,
-
-                        color:
-                            resultColor,
-
-                        title:
-                            "🎣 `FISHING COMPLETE`",
-
+                        color: resultColor,
+                        title: "🎣 `FISHING COMPLETE`",
                         description:
-
                             `🌊 **${zone.name}**\n\n` +
 
                             `🐟 **CHIẾN LỢI PHẨM**\n` +
-
                             `${catchText}\n\n` +
 
                             `📊 **THỐNG KÊ**\n` +
-
                             `🎯 Thành công: **${actualCaught}/${amount}** · ` +
-                            `📈 Tỷ lệ: **${catchRate}%**\n` +
-
-                            `⚖️ Tổng: **${totalWeight.toFixed(
+                            `📈 **${catchRate}%**\n` +
+                            `⚖️ Tổng cân nặng: **${totalWeight.toFixed(
                                 2
                             )} KG**\n` +
-
-                            `🪱 Đã dùng: **${baitText}** · ` +
-                            `Còn lại: **${baitRemaining}**\n\n` +
+                            `🪱 Đã dùng: **${usedText}** · ` +
+                            `Còn: **${remaining}**\n\n` +
 
                             `🎣 **CẦN CÂU**\n` +
-
-                            `${formatRod(
-                                baseRod,
-                                rod
-                            )}\n` +
-
-                            `${getRodDurabilityBar(
+                            `${formatRod(baseRod, rod)}\n` +
+                            `${durabilityBar(
                                 rod.uses,
-                                configMaxUses
+                                maxUses
                             )}\n` +
-
-                            `🔧 Trạng thái: ${rodStatus}\n\n` +
-
-                            `*Chúc bạn câu được cá hiếm.*`,
-
-                        image:
-                            zone.image
+                            `${rod.destroyed
+                                ? "💥 Cần đã gãy"
+                                : "🟢 Cần vẫn hoạt động"
+                            }`
                     })
                 ],
-
                 components: []
             });
         }
+
+        // ==================================================
+        // ERROR
+        // ==================================================
 
         catch (error) {
             console.error(
@@ -1879,13 +1181,11 @@ module.exports = {
                     embeds: [
                         createEmbed({
                             message,
-                            color:
-                                COLORS.error,
-                            title:
-                                "❌ `FISHING ERROR`",
+                            color: COLORS.error,
+                            title: "❌ `FISHING ERROR`",
                             description:
-                                `Đã xảy ra lỗi trong lúc câu cá.\n\n` +
-                                `💡 Vui lòng thử lại sau.`
+                                "Đã xảy ra lỗi trong lúc câu cá.\n\n" +
+                                "💡 Vui lòng thử lại sau."
                         })
                     ]
                 });
@@ -1893,9 +1193,7 @@ module.exports = {
         }
 
         finally {
-            fishingLocks.delete(
-                userID
-            );
+            fishingLocks.delete(userID);
         }
     }
 };
