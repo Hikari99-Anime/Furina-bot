@@ -1,5 +1,9 @@
 .env
 node_modules/
 bot.log
+startup.log
 status_message.json
 danbooru_autopost_state.json
+data.json
+noitu_state.json
+giftcodes.json
