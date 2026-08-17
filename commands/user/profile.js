@@ -12,7 +12,8 @@ const {
 } = require("../../config");
 
 const {
-    getUser
+    getUser,
+    save
 } = require("../../data");
 
 
@@ -82,81 +83,239 @@ module.exports = {
         // FIX DATA
         // ==================================================
 
+        let needSave = false;
+
+
         user.money =
             Number(
                 user.money || 0
             );
 
-        user.fish ??= {};
 
-        user.collection ??= {};
+        // --------------------------------------------------
+        // INVENTORY
+        // --------------------------------------------------
 
-        user.moi ??= {};
+        if (
+            !user.fish ||
+            typeof user.fish !== "object"
+        ) {
 
-        user.rodData ??= {};
+            user.fish = {};
 
-        user.can ??= {};
+            needSave = true;
 
-        user.daily ??= {
+        }
 
-            last: 0,
 
-            streak: 0
+        // --------------------------------------------------
+        // COLLECTION
+        // --------------------------------------------------
 
-        };
+        if (
+            !user.collection ||
+            typeof user.collection !== "object"
+        ) {
+
+            user.collection = {};
+
+            needSave = true;
+
+        }
+
+
+        // --------------------------------------------------
+        // OTHER DATA
+        // --------------------------------------------------
+
+        if (
+            !user.moi ||
+            typeof user.moi !== "object"
+        ) {
+
+            user.moi = {};
+
+            needSave = true;
+
+        }
+
+
+        if (
+            !user.rodData ||
+            typeof user.rodData !== "object"
+        ) {
+
+            user.rodData = {};
+
+            needSave = true;
+
+        }
+
+
+        if (
+            !user.can ||
+            typeof user.can !== "object"
+        ) {
+
+            user.can = {};
+
+            needSave = true;
+
+        }
+
+
+        if (
+            !user.daily ||
+            typeof user.daily !== "object"
+        ) {
+
+            user.daily = {
+
+                last: 0,
+                streak: 0
+
+            };
+
+            needSave = true;
+
+        }
 
 
         // ==================================================
-        // STATS LỊCH SỬ
+        // STATS
+        // ==================================================
+        //
+        // CỰC KỲ QUAN TRỌNG
+        //
+        // stats là lịch sử câu cá.
+        //
+        // user.fish
+        // = cá hiện đang có trong túi
+        //
+        // user.stats
+        // = tổng số cá đã từng câu
+        //
+        // Khi SELL:
+        //
+        // user.fish bị xóa
+        //
+        // nhưng:
+        //
+        // user.stats KHÔNG ĐƯỢC XÓA
+        //
         // ==================================================
 
-        user.stats ??= {};
+        if (
+            !user.stats ||
+            typeof user.stats !== "object"
+        ) {
+
+            user.stats = {};
+
+            needSave = true;
+
+        }
+
+
+        const oldStatsExist =
+            Object.prototype.hasOwnProperty.call(
+                user.stats,
+                "totalFishCaught"
+            );
+
+
+        if (!oldStatsExist) {
+
+            user.stats.totalFishCaught = 0;
+
+            needSave = true;
+
+        }
+
+
+        if (
+            !Object.prototype.hasOwnProperty.call(
+                user.stats,
+                "totalWeightCaught"
+            )
+        ) {
+
+            user.stats.totalWeightCaught = 0;
+
+            needSave = true;
+
+        }
+
+
+        if (
+            !Object.prototype.hasOwnProperty.call(
+                user.stats,
+                "biggestFish"
+            )
+        ) {
+
+            user.stats.biggestFish = 0;
+
+            needSave = true;
+
+        }
 
 
         user.stats.totalFishCaught =
-            Number(
-                user.stats.totalFishCaught || 0
+            Math.max(
+                0,
+                Math.floor(
+                    Number(
+                        user.stats.totalFishCaught
+                    ) || 0
+                )
             );
 
 
         user.stats.totalWeightCaught =
-            Number(
-                user.stats.totalWeightCaught || 0
+            Math.max(
+                0,
+                Number(
+                    user.stats.totalWeightCaught
+                ) || 0
             );
 
 
         user.stats.biggestFish =
-            Number(
-                user.stats.biggestFish || 0
+            Math.max(
+                0,
+                Number(
+                    user.stats.biggestFish
+                ) || 0
             );
 
 
         // ==================================================
-        // MIGRATE COLLECTION CŨ
+        // MIGRATE COLLECTION
         // ==================================================
         //
-        // Nếu user chưa có collection,
-        // lấy những loài hiện còn trong túi làm collection.
+        // Nếu user cũ chưa có collection,
+        // lấy những loài đang có trong túi làm collection.
         //
-        // Sau này bán cá:
+        // Sau khi đã có collection:
         //
-        // user.fish       -> bị xóa
-        // user.collection -> KHÔNG bị xóa
+        // SELL KHÔNG ĐƯỢC XÓA collection.
         //
         // ==================================================
+
+        let collectionChanged = false;
+
 
         for (
-            const id in user.fish
+            const fishId in user.fish
         ) {
 
-            const fishInventory =
-                user.fish[id];
+            const fishes =
+                user.fish[fishId];
 
 
             if (
-                !Array.isArray(
-                    fishInventory
-                )
+                !Array.isArray(fishes)
             ) {
 
                 continue;
@@ -165,30 +324,55 @@ module.exports = {
 
 
             if (
-                fishInventory.length > 0
+                fishes.length <= 0
             ) {
 
-                user.collection[id] = true;
+                continue;
+
+            }
+
+
+            if (
+                user.collection[fishId] !== true
+            ) {
+
+                user.collection[fishId] = true;
+
+                collectionChanged = true;
 
             }
 
         }
 
 
+        if (
+            collectionChanged
+        ) {
+
+            needSave = true;
+
+        }
+
+
         // ==================================================
-        // STATS MIGRATION
+        // MIGRATE STATS CŨ
         // ==================================================
         //
-        // User cũ chưa có thống kê:
-        // lấy số cá hiện còn trong túi làm dữ liệu ban đầu.
+        // CHỈ migrate khi user chưa từng có stats.
         //
-        // Không thể khôi phục những con cá đã bán
-        // trước khi hệ thống stats tồn tại.
+        // Nếu stats đã tồn tại thì TUYỆT ĐỐI
+        // không lấy user.fish để ghi đè.
+        //
+        // Điều này giúp:
+        //
+        // Câu 10 con
+        // Sell 10 con
+        // Profile vẫn hiện 10 con đã câu.
         //
         // ==================================================
 
         if (
-            user.stats.totalFishCaught <= 0
+            !oldStatsExist
         ) {
 
             let oldTotalFish = 0;
@@ -199,17 +383,15 @@ module.exports = {
 
 
             for (
-                const id in user.fish
+                const fishId in user.fish
             ) {
 
-                const fishInventory =
-                    user.fish[id];
+                const fishes =
+                    user.fish[fishId];
 
 
                 if (
-                    !Array.isArray(
-                        fishInventory
-                    )
+                    !Array.isArray(fishes)
                 ) {
 
                     continue;
@@ -218,36 +400,40 @@ module.exports = {
 
 
                 oldTotalFish +=
-                    fishInventory.length;
+                    fishes.length;
 
 
                 for (
-                    const value
-                    of fishInventory
+                    const weightValue of fishes
                 ) {
 
                     const weight =
-                        Number(value);
+                        Number(
+                            weightValue
+                        );
 
 
                     if (
-                        Number.isFinite(weight) &&
-                        weight > 0
+                        !Number.isFinite(weight) ||
+                        weight <= 0
                     ) {
 
-                        oldTotalWeight +=
+                        continue;
+
+                    }
+
+
+                    oldTotalWeight +=
+                        weight;
+
+
+                    if (
+                        weight >
+                        oldBiggestFish
+                    ) {
+
+                        oldBiggestFish =
                             weight;
-
-
-                        if (
-                            weight >
-                            oldBiggestFish
-                        ) {
-
-                            oldBiggestFish =
-                                weight;
-
-                        }
 
                     }
 
@@ -266,6 +452,22 @@ module.exports = {
 
             user.stats.biggestFish =
                 oldBiggestFish;
+
+
+            needSave = true;
+
+        }
+
+
+        // ==================================================
+        // SAVE DATA MIGRATION
+        // ==================================================
+
+        if (
+            needSave
+        ) {
+
+            save();
 
         }
 
@@ -290,7 +492,9 @@ module.exports = {
             user.can.dangDung;
 
 
-        if (rodId) {
+        if (
+            rodId
+        ) {
 
             const base =
                 rods?.[rodId];
@@ -347,12 +551,21 @@ module.exports = {
         // BỘ SƯU TẬP
         // ==================================================
         //
-        // QUAN TRỌNG:
+        // KHÔNG đếm user.fish.
         //
-        // Đếm từ user.collection
-        // KHÔNG đếm từ user.fish.
+        // Chỉ đếm user.collection.
         //
-        // Vì vậy bán hết cá vẫn không mất loài.
+        // Vì vậy:
+        //
+        // Câu Cá Mập
+        // collection["12"] = true
+        //
+        // Sell Cá Mập
+        // fish["12"] = []
+        //
+        // collection["12"] vẫn = true
+        //
+        // Profile vẫn tính Cá Mập đã khám phá.
         //
         // ==================================================
 
@@ -360,11 +573,11 @@ module.exports = {
 
 
         for (
-            const id in user.collection
+            const fishId in user.collection
         ) {
 
             if (
-                user.collection[id] === true
+                user.collection[fishId] === true
             ) {
 
                 fishSpecies++;
@@ -375,17 +588,27 @@ module.exports = {
 
 
         // ==================================================
-        // GIỚI HẠN TỐI ĐA BỘ SƯU TẬP
+        // TỔNG SỐ LOÀI CÁ
         // ==================================================
 
         const totalFishTypes =
             Array.isArray(fishList)
-                ? fishList.length
+                ? fishList.filter(
+                    fish =>
+                        fish &&
+                        fish.isFish !== false
+                ).length
                 : 150;
 
 
         // ==================================================
         // LỊCH SỬ CÂU CÁ
+        // ==================================================
+        //
+        // CHỈ ĐỌC stats.
+        //
+        // KHÔNG đọc user.fish.
+        //
         // ==================================================
 
         const totalFish =
@@ -453,12 +676,11 @@ module.exports = {
 
                 })
                 .join(" · ") ||
-
             "Chưa có mồi";
 
 
         // ==================================================
-        // ĐỘ BỀN
+        // ĐỘ BỀN CẦN
         // ==================================================
 
         let durability =
@@ -544,7 +766,7 @@ module.exports = {
 
 
         // ==================================================
-        // COLLECTION TITLE
+        // DANH HIỆU SƯU TẦM
         // ==================================================
 
         let collectionTitle =
@@ -552,6 +774,7 @@ module.exports = {
 
 
         if (
+            totalFishTypes > 0 &&
             fishSpecies >= totalFishTypes
         ) {
 
@@ -596,13 +819,18 @@ module.exports = {
             totalFishTypes > 0
 
                 ? Math.min(
+
                     100,
+
                     Math.floor(
+
                         (
                             fishSpecies /
                             totalFishTypes
                         ) * 100
+
                     )
+
                 )
 
                 : 0;
@@ -642,7 +870,7 @@ module.exports = {
 
                     `🍀 Luck: ${rodLuck}  ·  🛠️ Độ bền: ${durability}\n\n` +
 
-                    `🐟 **${totalFish.toLocaleString()}** cá đã câu\n` +
+                    `🐟 Tổng đã câu: **${user.stats.totalFishCaught.toLocaleString()}**`+
 
                     `📚 **${fishSpecies}/${totalFishTypes}** loài đã khám phá (${collectionPercent}%)\n\n` +
 

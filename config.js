@@ -1,20 +1,22 @@
 // ==========================================================
 // DISCORD FISHING BOT
-// BALANCED ECONOMY V4
+// BALANCED ECONOMY V5
 // ==========================================================
-// 150 FISH / 5 ZONES
+// 155 FISH / 5 ZONES
 //
 // CƠ CHẾ:
-// - 150 loài cá
+// - 150 cá cũ + 5 cá DIVINE
 // - 5 vùng
-// - Giá cá cân bằng
+// - Giá cá siêu thấp
+// - Rate cá hiếm giảm mạnh
 // - Có tỷ lệ câu hụt
 // - Có rác
 // - Cần câu có khấu hao
 // - Mồi có chi phí
 // - Luck hỗ trợ cá hiếm
 // - Legendary / Mythical rất hiếm
-// - Không khai báo sellConfig trùng
+// - Divine cực kỳ hiếm
+// - Mỗi vùng đúng 1 Divine
 // ==========================================================
 
 
@@ -23,7 +25,6 @@
 // ==========================================================
 
 const prefix = "f";
-
 const prefixes = ["f"];
 
 
@@ -32,41 +33,29 @@ const prefixes = ["f"];
 // ==========================================================
 
 const emoji = {
-
     money: "<:Fcoin_Vang:1534730937298980924>",
     coin: "🪙",
-
     fish: "🐟",
     rod: "🎣",
     bait: "🪱",
-
     shop: "🛒",
     sell: "💵",
-
     chest: "🎁",
     key: "🔑",
-
     insurance: "🛡️",
-
     success: "✅",
     error: "❌",
     warning: "⚠️",
     info: "ℹ️",
-
     quest: "📜",
     reward: "🎁",
-
     level: "⭐",
-
     common: "⚪",
     rare: "🔵",
     epic: "🟣",
     legendary: "🟡",
     mythical: "🔴",
-
-    trash: "🗑️",
-    boot: "🥾"
-
+    divine: "🌌"
 };
 
 
@@ -75,11 +64,8 @@ const emoji = {
 // ==========================================================
 
 function formatMoney(number) {
-
     number = Number(number) || 0;
-
     return number.toLocaleString("vi-VN");
-
 }
 
 
@@ -88,18 +74,13 @@ function formatMoney(number) {
 // ==========================================================
 
 function randomInt(min, max) {
-
     return Math.floor(
         Math.random() * (max - min + 1)
     ) + min;
-
 }
 
-
 function randomFloat(min, max) {
-
     return Math.random() * (max - min) + min;
-
 }
 
 
@@ -108,23 +89,14 @@ function randomFloat(min, max) {
 // ==========================================================
 
 const rateStone = {
-
     da_tang_rate: {
-
         id: "da_tang_rate",
-
         name: "Đá tăng tỉ lệ",
-
         emoji: "🪨",
-
         price: 50000,
-
         uses: 5,
-
         rate: 0.10
-
     }
-
 };
 
 
@@ -139,555 +111,56 @@ const fishList = [
     // ca1 -> ca50
     // ======================================================
 
-    {
-        id: "ca1",
-        name: "Cá cơm",
-        emoji: "🐟",
-        price: 12,
-        rate: 100,
-        rarity: "common",
-        min: 0.5,
-        max: 2
-    },
-
-    {
-        id: "ca2",
-        name: "Cá trích",
-        emoji: "🐠",
-        price: 15,
-        rate: 95,
-        rarity: "common",
-        min: 0.6,
-        max: 2.5
-    },
-
-    {
-        id: "ca3",
-        name: "Cá mòi",
-        emoji: "🐟",
-        price: 18,
-        rate: 92,
-        rarity: "common",
-        min: 0.5,
-        max: 2.2
-    },
-
-    {
-        id: "ca4",
-        name: "Cá nục",
-        emoji: "🐡",
-        price: 20,
-        rate: 90,
-        rarity: "common",
-        min: 0.8,
-        max: 3
-    },
-
-    {
-        id: "ca5",
-        name: "Cá đối",
-        emoji: "🐟",
-        price: 22,
-        rate: 88,
-        rarity: "common",
-        min: 1,
-        max: 3.5
-    },
-
-    {
-        id: "ca6",
-        name: "Cá dìa",
-        emoji: "🐠",
-        price: 25,
-        rate: 85,
-        rarity: "common",
-        min: 1,
-        max: 4
-    },
-
-    {
-        id: "ca7",
-        name: "Cá bống",
-        emoji: "🐟",
-        price: 28,
-        rate: 82,
-        rarity: "common",
-        min: 0.7,
-        max: 3
-    },
-
-    {
-        id: "ca8",
-        name: "Cá kèo",
-        emoji: "🐡",
-        price: 30,
-        rate: 80,
-        rarity: "common",
-        min: 0.8,
-        max: 3.2
-    },
-
-    {
-        id: "ca9",
-        name: "Cá rô biển",
-        emoji: "🐠",
-        price: 32,
-        rate: 78,
-        rarity: "common",
-        min: 1,
-        max: 4
-    },
-
-    {
-        id: "ca10",
-        name: "Cá hồng nhỏ",
-        emoji: "🐟",
-        price: 35,
-        rate: 75,
-        rarity: "common",
-        min: 1,
-        max: 4
-    },
-
-    {
-        id: "ca11",
-        name: "Cá thu nhỏ",
-        emoji: "🐟",
-        price: 38,
-        rate: 72,
-        rarity: "common",
-        min: 1.5,
-        max: 5
-    },
-
-    {
-        id: "ca12",
-        name: "Cá bạc má",
-        emoji: "🐠",
-        price: 40,
-        rate: 70,
-        rarity: "common",
-        min: 1,
-        max: 4
-    },
-
-    {
-        id: "ca13",
-        name: "Cá dìa vàng",
-        emoji: "🐡",
-        price: 45,
-        rate: 68,
-        rarity: "common",
-        min: 1,
-        max: 4.5
-    },
-
-    {
-        id: "ca14",
-        name: "Cá mó",
-        emoji: "🐠",
-        price: 48,
-        rate: 65,
-        rarity: "common",
-        min: 1,
-        max: 5
-    },
-
-    {
-        id: "ca15",
-        name: "Cá đục",
-        emoji: "🐟",
-        price: 50,
-        rate: 63,
-        rarity: "common",
-        min: 1,
-        max: 5
-    },
-
-    {
-        id: "ca16",
-        name: "Cá hồng",
-        emoji: "🐟",
-        price: 55,
-        rate: 60,
-        rarity: "common",
-        min: 1.5,
-        max: 6
-    },
-
-    {
-        id: "ca17",
-        name: "Cá mú nhỏ",
-        emoji: "🐠",
-        price: 60,
-        rate: 58,
-        rarity: "rare",
-        min: 1.5,
-        max: 6
-    },
-
-    {
-        id: "ca18",
-        name: "Cá nhồng",
-        emoji: "🐟",
-        price: 65,
-        rate: 55,
-        rarity: "rare",
-        min: 2,
-        max: 7
-    },
-
-    {
-        id: "ca19",
-        name: "Cá cam",
-        emoji: "🐠",
-        price: 70,
-        rate: 52,
-        rarity: "rare",
-        min: 2,
-        max: 7
-    },
-
-    {
-        id: "ca20",
-        name: "Cá dìa sọc",
-        emoji: "🐡",
-        price: 75,
-        rate: 50,
-        rarity: "rare",
-        min: 2,
-        max: 8
-    },
-
-    {
-        id: "ca21",
-        name: "Cá bướm biển",
-        emoji: "🦋",
-        price: 80,
-        rate: 47,
-        rarity: "rare",
-        min: 1,
-        max: 5
-    },
-
-    {
-        id: "ca22",
-        name: "Cá thiên thần",
-        emoji: "😇",
-        price: 85,
-        rate: 45,
-        rarity: "rare",
-        min: 1,
-        max: 5
-    },
-
-    {
-        id: "ca23",
-        name: "Cá hề",
-        emoji: "🤡",
-        price: 90,
-        rate: 43,
-        rarity: "rare",
-        min: 1,
-        max: 4
-    },
-
-    {
-        id: "ca24",
-        name: "Cá đuôi gai",
-        emoji: "🐠",
-        price: 95,
-        rate: 40,
-        rarity: "rare",
-        min: 1.5,
-        max: 6
-    },
-
-    {
-        id: "ca25",
-        name: "Cá mao tiên",
-        emoji: "🦂",
-        price: 100,
-        rate: 38,
-        rarity: "rare",
-        min: 1,
-        max: 5
-    },
-
-    {
-        id: "ca26",
-        name: "Cá nóc",
-        emoji: "🐡",
-        price: 110,
-        rate: 35,
-        rarity: "rare",
-        min: 1,
-        max: 5
-    },
-
-    {
-        id: "ca27",
-        name: "Cá kiếm con",
-        emoji: "⚔️",
-        price: 120,
-        rate: 32,
-        rarity: "rare",
-        min: 2,
-        max: 8
-    },
-
-    {
-        id: "ca28",
-        name: "Cá thu vua",
-        emoji: "👑",
-        price: 130,
-        rate: 30,
-        rarity: "epic",
-        min: 2,
-        max: 9
-    },
-
-    {
-        id: "ca29",
-        name: "Cá mú đỏ",
-        emoji: "🔴",
-        price: 140,
-        rate: 28,
-        rarity: "epic",
-        min: 2,
-        max: 8
-    },
-
-    {
-        id: "ca30",
-        name: "Cá hồng ngọc",
-        emoji: "💎",
-        price: 150,
-        rate: 26,
-        rarity: "epic",
-        min: 2,
-        max: 8
-    },
-
-    {
-        id: "ca31",
-        name: "Cá mặt trăng",
-        emoji: "🌙",
-        price: 160,
-        rate: 24,
-        rarity: "epic",
-        min: 3,
-        max: 10
-    },
-
-    {
-        id: "ca32",
-        name: "Cá đuối xanh",
-        emoji: "🌊",
-        price: 170,
-        rate: 22,
-        rarity: "epic",
-        min: 3,
-        max: 10
-    },
-
-    {
-        id: "ca33",
-        name: "Cá vẹt cầu vồng",
-        emoji: "🌈",
-        price: 180,
-        rate: 20,
-        rarity: "epic",
-        min: 2,
-        max: 8
-    },
-
-    {
-        id: "ca34",
-        name: "Cá mập san hô",
-        emoji: "🦈",
-        price: 200,
-        rate: 18,
-        rarity: "epic",
-        min: 5,
-        max: 15
-    },
-
-    {
-        id: "ca35",
-        name: "Cá kiếm",
-        emoji: "⚔️",
-        price: 220,
-        rate: 16,
-        rarity: "epic",
-        min: 5,
-        max: 18
-    },
-
-    {
-        id: "ca36",
-        name: "Cá cờ",
-        emoji: "🎏",
-        price: 240,
-        rate: 14,
-        rarity: "epic",
-        min: 5,
-        max: 18
-    },
-
-    {
-        id: "ca37",
-        name: "Cá ngừ vây vàng",
-        emoji: "🟡",
-        price: 260,
-        rate: 12,
-        rarity: "legendary",
-        min: 6,
-        max: 20
-    },
-
-    {
-        id: "ca38",
-        name: "Cá mú khổng lồ",
-        emoji: "👹",
-        price: 280,
-        rate: 10,
-        rarity: "legendary",
-        min: 8,
-        max: 25
-    },
-
-    {
-        id: "ca39",
-        name: "Cá mập trắng",
-        emoji: "🦈",
-        price: 300,
-        rate: 8,
-        rarity: "legendary",
-        min: 10,
-        max: 30
-    },
-
-    {
-        id: "ca40",
-        name: "Cá kiếm hoàng kim",
-        emoji: "✨",
-        price: 330,
-        rate: 7,
-        rarity: "legendary",
-        min: 8,
-        max: 25
-    },
-
-    {
-        id: "ca41",
-        name: "Cá rồng biển",
-        emoji: "🐉",
-        price: 380,
-        rate: 5,
-        rarity: "legendary",
-        min: 8,
-        max: 30
-    },
-
-    {
-        id: "ca42",
-        name: "Cá voi sát thủ",
-        emoji: "🐋",
-        price: 420,
-        rate: 3,
-        rarity: "legendary",
-        min: 15,
-        max: 40
-    },
-
-    {
-        id: "ca43",
-        name: "Cá phượng hoàng",
-        emoji: "🔥",
-        price: 500,
-        rate: 2,
-        rarity: "mythical",
-        min: 10,
-        max: 30
-    },
-
-    {
-        id: "ca44",
-        name: "Cá rồng vàng",
-        emoji: "🐲",
-        price: 550,
-        rate: 1.5,
-        rarity: "mythical",
-        min: 12,
-        max: 35
-    },
-
-    {
-        id: "ca45",
-        name: "Cá thần biển",
-        emoji: "🔱",
-        price: 650,
-        rate: 1,
-        rarity: "mythical",
-        min: 15,
-        max: 40
-    },
-
-    {
-        id: "ca46",
-        name: "Cá ngọc trai",
-        emoji: "🦪",
-        price: 700,
-        rate: 0.8,
-        rarity: "mythical",
-        min: 10,
-        max: 30
-    },
-
-    {
-        id: "ca47",
-        name: "Cá hoàng đế",
-        emoji: "👑",
-        price: 750,
-        rate: 0.6,
-        rarity: "mythical",
-        min: 12,
-        max: 35
-    },
-
-    {
-        id: "ca48",
-        name: "Cá tinh linh",
-        emoji: "🧚",
-        price: 800,
-        rate: 0.4,
-        rarity: "mythical",
-        min: 8,
-        max: 25
-    },
-
-    {
-        id: "ca49",
-        name: "Cá sao biển",
-        emoji: "🌟",
-        price: 850,
-        rate: 0.25,
-        rarity: "mythical",
-        min: 10,
-        max: 30
-    },
-
-    {
-        id: "ca50",
-        name: "Cá đại dương cổ đại",
-        emoji: "🌊",
-        price: 1000,
-        rate: 0.1,
-        rarity: "mythical",
-        min: 15,
-        max: 40
-    },
+    { id: "ca1", name: "Cá cơm", emoji: "🐟", price: 12, rate: 100, rarity: "common", min: 0.5, max: 2 },
+    { id: "ca2", name: "Cá trích", emoji: "🐠", price: 15, rate: 95, rarity: "common", min: 0.6, max: 2.5 },
+    { id: "ca3", name: "Cá mòi", emoji: "🐟", price: 18, rate: 92, rarity: "common", min: 0.5, max: 2.2 },
+    { id: "ca4", name: "Cá nục", emoji: "🐡", price: 20, rate: 90, rarity: "common", min: 0.8, max: 3 },
+    { id: "ca5", name: "Cá đối", emoji: "🐟", price: 22, rate: 88, rarity: "common", min: 1, max: 3.5 },
+    { id: "ca6", name: "Cá dìa", emoji: "🐠", price: 25, rate: 85, rarity: "common", min: 1, max: 4 },
+    { id: "ca7", name: "Cá bống", emoji: "🐟", price: 28, rate: 82, rarity: "common", min: 0.7, max: 3 },
+    { id: "ca8", name: "Cá kèo", emoji: "🐡", price: 30, rate: 80, rarity: "common", min: 0.8, max: 3.2 },
+    { id: "ca9", name: "Cá rô biển", emoji: "🐠", price: 32, rate: 78, rarity: "common", min: 1, max: 4 },
+    { id: "ca10", name: "Cá hồng nhỏ", emoji: "🐟", price: 35, rate: 75, rarity: "common", min: 1, max: 4 },
+    { id: "ca11", name: "Cá thu nhỏ", emoji: "🐟", price: 38, rate: 72, rarity: "common", min: 1.5, max: 5 },
+    { id: "ca12", name: "Cá bạc má", emoji: "🐠", price: 40, rate: 70, rarity: "common", min: 1, max: 4 },
+    { id: "ca13", name: "Cá dìa vàng", emoji: "🐡", price: 45, rate: 68, rarity: "common", min: 1, max: 4.5 },
+    { id: "ca14", name: "Cá mó", emoji: "🐠", price: 48, rate: 65, rarity: "common", min: 1, max: 5 },
+    { id: "ca15", name: "Cá đục", emoji: "🐟", price: 50, rate: 63, rarity: "common", min: 1, max: 5 },
+    { id: "ca16", name: "Cá hồng", emoji: "🐟", price: 55, rate: 60, rarity: "common", min: 1.5, max: 6 },
+    { id: "ca17", name: "Cá mú nhỏ", emoji: "🐠", price: 60, rate: 58, rarity: "rare", min: 1.5, max: 6 },
+    { id: "ca18", name: "Cá nhồng", emoji: "🐟", price: 65, rate: 55, rarity: "rare", min: 2, max: 7 },
+    { id: "ca19", name: "Cá cam", emoji: "🐠", price: 70, rate: 52, rarity: "rare", min: 2, max: 7 },
+    { id: "ca20", name: "Cá dìa sọc", emoji: "🐡", price: 75, rate: 50, rarity: "rare", min: 2, max: 8 },
+    { id: "ca21", name: "Cá bướm biển", emoji: "🦋", price: 80, rate: 47, rarity: "rare", min: 1, max: 5 },
+    { id: "ca22", name: "Cá thiên thần", emoji: "😇", price: 85, rate: 45, rarity: "rare", min: 1, max: 5 },
+    { id: "ca23", name: "Cá hề", emoji: "🤡", price: 90, rate: 43, rarity: "rare", min: 1, max: 4 },
+    { id: "ca24", name: "Cá đuôi gai", emoji: "🐠", price: 95, rate: 40, rarity: "rare", min: 1.5, max: 6 },
+    { id: "ca25", name: "Cá mao tiên", emoji: "🦂", price: 100, rate: 38, rarity: "rare", min: 1, max: 5 },
+    { id: "ca26", name: "Cá nóc", emoji: "🐡", price: 110, rate: 35, rarity: "rare", min: 1, max: 5 },
+    { id: "ca27", name: "Cá kiếm con", emoji: "⚔️", price: 120, rate: 32, rarity: "rare", min: 2, max: 8 },
+    { id: "ca28", name: "Cá thu vua", emoji: "👑", price: 130, rate: 30, rarity: "epic", min: 2, max: 9 },
+    { id: "ca29", name: "Cá mú đỏ", emoji: "🔴", price: 140, rate: 28, rarity: "epic", min: 2, max: 8 },
+    { id: "ca30", name: "Cá hồng ngọc", emoji: "💎", price: 150, rate: 26, rarity: "epic", min: 2, max: 8 },
+    { id: "ca31", name: "Cá mặt trăng", emoji: "🌙", price: 160, rate: 24, rarity: "epic", min: 3, max: 10 },
+    { id: "ca32", name: "Cá đuối xanh", emoji: "🌊", price: 170, rate: 22, rarity: "epic", min: 3, max: 10 },
+    { id: "ca33", name: "Cá vẹt cầu vồng", emoji: "🌈", price: 180, rate: 20, rarity: "epic", min: 2, max: 8 },
+    { id: "ca34", name: "Cá mập san hô", emoji: "🦈", price: 200, rate: 18, rarity: "epic", min: 5, max: 15 },
+    { id: "ca35", name: "Cá kiếm", emoji: "⚔️", price: 220, rate: 16, rarity: "epic", min: 5, max: 18 },
+    { id: "ca36", name: "Cá cờ", emoji: "🎏", price: 240, rate: 14, rarity: "epic", min: 5, max: 18 },
+    { id: "ca37", name: "Cá ngừ vây vàng", emoji: "🟡", price: 260, rate: 12, rarity: "legendary", min: 6, max: 20 },
+    { id: "ca38", name: "Cá mú khổng lồ", emoji: "👹", price: 280, rate: 10, rarity: "legendary", min: 8, max: 25 },
+    { id: "ca39", name: "Cá mập trắng", emoji: "🦈", price: 300, rate: 8, rarity: "legendary", min: 10, max: 30 },
+    { id: "ca40", name: "Cá kiếm hoàng kim", emoji: "✨", price: 330, rate: 7, rarity: "legendary", min: 8, max: 25 },
+    { id: "ca41", name: "Cá rồng biển", emoji: "🐉", price: 380, rate: 5, rarity: "legendary", min: 8, max: 30 },
+    { id: "ca42", name: "Cá voi sát thủ", emoji: "🐋", price: 420, rate: 3, rarity: "legendary", min: 15, max: 40 },
+    { id: "ca43", name: "Cá phượng hoàng", emoji: "🔥", price: 500, rate: 2, rarity: "mythical", min: 10, max: 30 },
+    { id: "ca44", name: "Cá rồng vàng", emoji: "🐲", price: 550, rate: 1.5, rarity: "mythical", min: 12, max: 35 },
+    { id: "ca45", name: "Cá thần biển", emoji: "🔱", price: 650, rate: 1, rarity: "mythical", min: 15, max: 40 },
+    { id: "ca46", name: "Cá ngọc trai", emoji: "🦪", price: 700, rate: 0.8, rarity: "mythical", min: 10, max: 30 },
+    { id: "ca47", name: "Cá hoàng đế", emoji: "👑", price: 750, rate: 0.6, rarity: "mythical", min: 12, max: 35 },
+    { id: "ca48", name: "Cá tinh linh", emoji: "🧚", price: 800, rate: 0.4, rarity: "mythical", min: 8, max: 25 },
+    { id: "ca49", name: "Cá sao biển", emoji: "🌟", price: 850, rate: 0.25, rarity: "mythical", min: 10, max: 30 },
+    { id: "ca50", name: "Cá đại dương cổ đại", emoji: "🌊", price: 1000, rate: 0.1, rarity: "mythical", min: 15, max: 40 },
 
 
     // ======================================================
@@ -859,8 +332,69 @@ const fishList = [
         rarity: x[4],
         min: x[4] === "mythical" ? 10 : 2,
         max: x[4] === "mythical" ? 40 : 25
-    }))
+    })),
 
+
+    // ======================================================
+    // 🌌 5 DIVINE FISH
+    // MỖI VÙNG 1 CON
+    // HIẾM HƠN MYTHICAL RẤT NHIỀU
+    // ======================================================
+
+    {
+        id: "ca151",
+        name: "Cá Thủy Tổ Thiên Giới",
+        emoji: "🌌",
+        price: 5000,
+        rate: 0.003,
+        rarity: "divine",
+        min: 20,
+        max: 60
+    },
+
+    {
+        id: "ca152",
+        name: "Cá Băng Thần Vĩnh Hằng",
+        emoji: "❄️",
+        price: 6000,
+        rate: 0.0025,
+        rarity: "divine",
+        min: 20,
+        max: 65
+    },
+
+    {
+        id: "ca153",
+        name: "Cá Hắc Thần Đầm Lầy",
+        emoji: "🖤",
+        price: 7000,
+        rate: 0.002,
+        rarity: "divine",
+        min: 20,
+        max: 70
+    },
+
+    {
+        id: "ca154",
+        name: "Cá Hư Vô Tận Cùng",
+        emoji: "🌀",
+        price: 8500,
+        rate: 0.0015,
+        rarity: "divine",
+        min: 25,
+        max: 75
+    },
+
+    {
+        id: "ca155",
+        name: "Cá Hỏa Thần Khai Thiên",
+        emoji: "☀️",
+        price: 10000,
+        rate: 0.001,
+        rarity: "divine",
+        min: 25,
+        max: 80
+    }
 ];
 
 
@@ -869,73 +403,41 @@ const fishList = [
 // ==========================================================
 
 const trashItems = {
-
     torn_boot: {
-
         id: "torn_boot",
-
         name: "Ủng rách",
-
         emoji: "🥾",
-
         price: 0,
-
         sellPrice: 0,
-
         rarity: "common",
-
         rate: 100,
-
         min: 1,
-
         max: 1
-
     },
 
     old_can: {
-
         id: "old_can",
-
         name: "Lon cũ",
-
         emoji: "🥫",
-
         price: 0,
-
-        sellPrice: 5,
-
+        sellPrice: 2,
         rarity: "common",
-
         rate: 70,
-
         min: 1,
-
         max: 1
-
     },
 
     seaweed: {
-
         id: "seaweed",
-
         name: "Rong biển",
-
         emoji: "🌿",
-
         price: 0,
-
-        sellPrice: 8,
-
+        sellPrice: 3,
         rarity: "common",
-
         rate: 50,
-
         min: 1,
-
         max: 1
-
     }
-
 };
 
 
@@ -944,13 +446,10 @@ const trashItems = {
 // ==========================================================
 
 const fishConfig = {
-
     list: fishList,
-
     trashEnabled: true,
-
-    trash: trashItems
-
+    trash: trashItems,
+    totalFish: 155
 };
 
 
@@ -959,60 +458,36 @@ const fishConfig = {
 // ==========================================================
 
 const profitClass = {
-
     LOSS: "loss",
-
     BREAK_EVEN: "break_even",
-
     LOW_PROFIT: "low_profit",
-
     HIGH_PROFIT: "high_profit"
-
 };
 
-
 const profitClassConfig = {
-
     loss: {
-
         name: "Lỗ nhẹ",
-
         emoji: "🔴",
-
         color: 0xE74C3C
-
     },
 
     break_even: {
-
         name: "Hòa vốn",
-
         emoji: "⚪",
-
         color: 0xBDC3C7
-
     },
 
     low_profit: {
-
         name: "Lời ít",
-
         emoji: "🟢",
-
         color: 0x2ECC71
-
     },
 
     high_profit: {
-
         name: "Lời nhiều",
-
         emoji: "💰",
-
         color: 0xF1C40F
-
     }
-
 };
 
 
@@ -1021,107 +496,60 @@ const profitClassConfig = {
 // ==========================================================
 
 const rods = {
-
     wood: {
-
         id: "wood",
-
         name: "Cần câu gỗ",
-
         emoji: "<:cancau_1:1534625089088393358>",
-
         price: 10000,
-
         uses: 25,
-
         luck: 1.00,
-
         star: 1,
-
         maxLevel: 15
-
     },
 
     iron: {
-
         id: "iron",
-
         name: "Cần câu sắt",
-
         emoji: "<:cancau_2:1534635569219633212>",
-
         price: 30000,
-
         uses: 50,
-
         luck: 1.20,
-
         star: 2,
-
         maxLevel: 15
-
     },
 
     gold: {
-
         id: "gold",
-
         name: "Cần câu vàng",
-
         emoji: "<:cancau_3:1534625401119445170>",
-
         price: 75000,
-
         uses: 100,
-
         luck: 1.45,
-
         star: 3,
-
         maxLevel: 15
-
     },
 
     diamond: {
-
         id: "diamond",
-
         name: "Cần câu kim cương",
-
         emoji: "<:cancau_4:1534635400793165965>",
-
         price: 175000,
-
         uses: 250,
-
         luck: 1.80,
-
         star: 4,
-
         maxLevel: 15
-
     },
 
     mythic: {
-
         id: "mythic",
-
         name: "Cần câu huyền thoại",
-
         emoji: "<:cancau_5:1534635179778511100>",
-
         price: 400000,
-
         uses: 500,
-
         luck: 2.20,
-
         star: 5,
-
         maxLevel: 15
-
     }
-
 };
 
 
@@ -1130,7 +558,6 @@ const rods = {
 // ==========================================================
 
 const rodTitles = {
-
     1: "Tân thủ",
     2: "Tập sự",
     3: "Người câu cá",
@@ -1146,7 +573,6 @@ const rodTitles = {
     13: "Thủy thần",
     14: "Vô song",
     15: "Fishing God"
-
 };
 
 
@@ -1155,13 +581,10 @@ const rodTitles = {
 // ==========================================================
 
 const upgrade = {
-
     maxLevel: 15,
-
     luckPerLevel: 0.05,
 
     success: {
-
         0: 70,
         1: 65,
         2: 60,
@@ -1177,13 +600,10 @@ const upgrade = {
         12: 14,
         13: 10,
         14: 6
-
     },
 
     minLevel: 0,
-
     maxLevel: 15
-
 };
 
 
@@ -1192,63 +612,37 @@ const upgrade = {
 // ==========================================================
 
 const baits = {
-
     worm: {
-
         id: "worm",
-
         name: "Mồi giun",
-
         emoji: "🪱",
-
         price: 50,
-
         luck: 1.05
-
     },
 
     shrimp: {
-
         id: "shrimp",
-
         name: "Mồi tôm",
-
         emoji: "🦐",
-
         price: 200,
-
         luck: 1.15
-
     },
 
     fish_food: {
-
         id: "fish_food",
-
         name: "Thức ăn cá",
-
         emoji: "🥣",
-
         price: 500,
-
         luck: 1.30
-
     },
 
     golden_bait: {
-
         id: "golden_bait",
-
         name: "Mồi vàng",
-
         emoji: "✨",
-
         price: 2000,
-
         luck: 1.60
-
     }
-
 };
 
 
@@ -1257,55 +651,33 @@ const baits = {
 // ==========================================================
 
 const keys = {
-
     bronze_key: {
-
         id: "bronze_key",
-
         name: "Chìa khóa đồng",
-
         emoji: "🗝️",
-
         price: 1000
-
     },
 
     silver_key: {
-
         id: "silver_key",
-
         name: "Chìa khóa bạc",
-
         emoji: "🔑",
-
         price: 4000
-
     },
 
     gold_key: {
-
         id: "gold_key",
-
         name: "Chìa khóa vàng",
-
         emoji: "🔐",
-
         price: 12000
-
     },
 
     diamond_key: {
-
         id: "diamond_key",
-
         name: "Chìa khóa kim cương",
-
         emoji: "💎",
-
         price: 30000
-
     }
-
 };
 
 
@@ -1314,79 +686,45 @@ const keys = {
 // ==========================================================
 
 const chests = {
-
     wooden_chest: {
-
         id: "wooden_chest",
-
         name: "Rương gỗ",
-
         emoji: "📦",
-
         rarity: "common",
-
         key: "bronze_key",
-
         minReward: 300,
-
         maxReward: 1200
-
     },
 
     silver_chest: {
-
         id: "silver_chest",
-
         name: "Rương bạc",
-
         emoji: "🗃️",
-
         rarity: "rare",
-
         key: "silver_key",
-
         minReward: 1500,
-
         maxReward: 5500
-
     },
 
     gold_chest: {
-
         id: "gold_chest",
-
         name: "Rương vàng",
-
         emoji: "🎁",
-
         rarity: "legendary",
-
         key: "gold_key",
-
         minReward: 7000,
-
         maxReward: 22000
-
     },
 
     diamond_chest: {
-
         id: "diamond_chest",
-
         name: "Rương kim cương",
-
         emoji: "💎",
-
         rarity: "mythical",
-
         key: "diamond_key",
-
         minReward: 25000,
-
         maxReward: 80000
-
     }
-
 };
 
 
@@ -1395,74 +733,50 @@ const chests = {
 // ==========================================================
 
 const insurance = {
-
     basic_insurance: {
-
         id: "basic_insurance",
-
         name: "Bảo hiểm cơ bản",
-
         emoji: "🛡️",
-
         price: 2000,
-
         protection: 25
-
     },
 
     advanced_insurance: {
-
         id: "advanced_insurance",
-
         name: "Bảo hiểm cao cấp",
-
         emoji: "🛡️",
-
         price: 10000,
-
         protection: 50
-
     },
 
     premium_insurance: {
-
         id: "premium_insurance",
-
         name: "Bảo hiểm VIP",
-
         emoji: "💠",
-
         price: 40000,
-
         protection: 100
-
     }
-
 };
 
 
 // ==========================================================
 // SELL CONFIG
 // ==========================================================
-//
-// QUAN TRỌNG:
-// Chỉ khai báo sellConfig DUY NHẤT Ở ĐÂY.
-//
-// Common      = 45%
-// Rare        = 52%
-// Epic        = 60%
-// Legendary   = 70%
-// Mythical    = 80%
-// ==========================================================
 
 const sellConfig = {
-
     multiplier: 0.45,
+    priceMultiplier: 0.20,
+    minPrice: 1,
+    trashSellPrice: 0,
 
-    minPrice: 5,
-
-    trashSellPrice: 0
-
+    rarityMultiplier: {
+        common: 0.35,
+        rare: 0.40,
+        epic: 0.45,
+        legendary: 0.55,
+        mythical: 0.65,
+        divine: 0.80
+    }
 };
 
 
@@ -1471,19 +785,12 @@ const sellConfig = {
 // ==========================================================
 
 const shop = {
-
     rods,
-
     baits,
-
     keys,
-
     insurance,
-
     rateStone,
-
     sell: sellConfig
-
 };
 
 
@@ -1492,33 +799,39 @@ const shop = {
 // ==========================================================
 
 const questConfig = {
-
     maxPerDay: 5,
 
     reward: {
-
         easy: {
-            min: 400,
-            max: 1000
+            min: 100,
+            max: 300
         },
 
         normal: {
-            min: 1000,
-            max: 2500
+            min: 300,
+            max: 800
         },
 
         rare: {
-            min: 2500,
-            max: 5500
+            min: 800,
+            max: 1800
         },
 
         legendary: {
-            min: 5000,
-            max: 10000
+            min: 1500,
+            max: 3500
+        },
+
+        mythical: {
+            min: 3000,
+            max: 7000
+        },
+
+        divine: {
+            min: 10000,
+            max: 25000
         }
-
     }
-
 };
 
 
@@ -1527,57 +840,41 @@ const questConfig = {
 // ==========================================================
 
 const rarityConfig = {
-
     common: {
-
         name: "Common",
-
         emoji: emoji.common,
-
         color: 0xFFFFFF
-
     },
 
     rare: {
-
         name: "Rare",
-
         emoji: emoji.rare,
-
         color: 0x3498DB
-
     },
 
     epic: {
-
         name: "Epic",
-
         emoji: emoji.epic,
-
         color: 0x9B59B6
-
     },
 
     legendary: {
-
         name: "Legendary",
-
         emoji: emoji.legendary,
-
         color: 0xF1C40F
-
     },
 
     mythical: {
-
         name: "Mythical",
-
         emoji: emoji.mythical,
-
         color: 0xE74C3C
+    },
 
+    divine: {
+        name: "DIVINE",
+        emoji: emoji.divine,
+        color: 0x9B59FF
     }
-
 };
 
 
@@ -1586,15 +883,10 @@ const rarityConfig = {
 // ==========================================================
 
 const levelConfig = {
-
     maxLevel: 100,
-
     baseExp: 100,
-
     expMultiplier: 1.5,
-
     rewardPerLevel: 500
-
 };
 
 
@@ -1603,52 +895,55 @@ const levelConfig = {
 // ==========================================================
 
 const economyConfig = {
-
     startingMoney: 1000,
-
     maxMoney: 999999999,
 
     dailyReward: {
-
-        min: 1000,
-
-        max: 3000
-
+        min: 500,
+        max: 1500
     },
 
     includeRodDepreciation: true,
-
     rodCostWeight: 1,
-
     includeBaitCost: true
-
 };
 
 
 // ==========================================================
 // FISHING CONFIG
 // ==========================================================
-//
-// missChance = tỷ lệ câu hụt.
-//
-// 18%:
-// 100 lượt câu -> trung bình khoảng 18 lượt hụt.
-//
-// Đây là xác suất, không đảm bảo chính xác từng 100 lượt.
-// ==========================================================
 
 const fishingConfig = {
 
-    missChance: 18,
+    // ======================================================
+    // TỶ LỆ CÂU HỤT
+    // 22% = trung bình khoảng 22 lần hụt / 100 lần câu
+    // ======================================================
+
+    missChance: 22,
 
     minWeight: 0.5,
-
     maxWeight: 50,
 
     trashEnabled: true,
 
-    cooldown: 3000
+    cooldown: 3000,
 
+    // ======================================================
+    // HỆ SỐ RATE THEO RARITY
+    // ======================================================
+
+    rateMultiplier: {
+        common: 0.75,
+        rare: 0.55,
+        epic: 0.40,
+        legendary: 0.25,
+        mythical: 0.12,
+
+        // Divine rất hiếm nhưng KHÔNG nhân 0.015 nữa
+        // vì Divine đã có rate cực thấp riêng.
+        divine: 0.15
+    }
 };
 
 
@@ -1658,165 +953,170 @@ const fishingConfig = {
 
 const fishingZones = {
 
+    // ======================================================
+    // 🌴 TROPICAL
+    // 50 cá thường + ca151 Divine
+    // ======================================================
+
     tropical: {
-
         id: "tropical",
-
         name: "🌴 Biển Nhiệt Đới",
+        description: "Vùng biển khởi đầu, nhiều cá phổ biến.",
 
-        description:
-            "Vùng biển khởi đầu, nhiều cá phổ biến.",
-
-        fish: Array.from(
-            { length: 50 },
-            (_, i) => `ca${i + 1}`
-        ),
+        fish: Array
+            .from(
+                { length: 50 },
+                (_, i) => `ca${i + 1}`
+            )
+            .concat("ca151"),
 
         trashRate: 8,
 
         image:
             "https://media.discordapp.net/attachments/1534756360103788596/1535257413786140733/1000013743-Photoroom.png"
-
     },
 
+
+    // ======================================================
+    // ❄️ COLD
+    // 35 cá thường + ca152 Divine
+    // ======================================================
+
     cold: {
-
         id: "cold",
-
         name: "❄️ Biển Băng Giá",
+        description: "Vùng biển lạnh với nhiều loài cá quý.",
 
-        description:
-            "Vùng biển lạnh với nhiều loài cá quý.",
-
-        fish: Array.from(
-            { length: 35 },
-            (_, i) => `ca${i + 51}`
-        ),
+        fish: Array
+            .from(
+                { length: 35 },
+                (_, i) => `ca${i + 51}`
+            )
+            .concat("ca152"),
 
         trashRate: 7,
 
         image:
             "https://media.discordapp.net/attachments/1534756360103788596/1535257294261067868/1000013742-Photoroom.png"
-
     },
 
+
+    // ======================================================
+    // 🐊 SWAMP
+    // 30 cá thường + ca153 Divine
+    // ======================================================
+
     swamp: {
-
         id: "swamp",
-
         name: "🐊 Đầm Lầy",
+        description: "Đầm lầy nguy hiểm với sinh vật kỳ lạ.",
 
-        description:
-            "Đầm lầy nguy hiểm với sinh vật kỳ lạ.",
-
-        fish: Array.from(
-            { length: 30 },
-            (_, i) => `ca${i + 86}`
-        ),
+        fish: Array
+            .from(
+                { length: 30 },
+                (_, i) => `ca${i + 86}`
+            )
+            .concat("ca153"),
 
         trashRate: 10,
 
         image:
             "https://media.discordapp.net/attachments/1534756360103788596/1535257149284941865/1000013741-Photoroom.png"
-
     },
 
+
+    // ======================================================
+    // 🌊 DEEP
+    // 20 cá thường + ca154 Divine
+    // ======================================================
+
     deep: {
-
         id: "deep",
-
         name: "🌊 Vực Sâu",
+        description: "Vùng nước sâu với những sinh vật cực kỳ hiếm.",
 
-        description:
-            "Vùng nước sâu với những sinh vật cực kỳ hiếm.",
-
-        fish: Array.from(
-            { length: 20 },
-            (_, i) => `ca${i + 116}`
-        ),
+        fish: Array
+            .from(
+                { length: 20 },
+                (_, i) => `ca${i + 116}`
+            )
+            .concat("ca154"),
 
         trashRate: 6,
 
         image:
             "https://media.discordapp.net/attachments/1534756360103788596/1535256926739374100/1000013740-Photoroom.png"
-
     },
 
+
+    // ======================================================
+    // 🌋 VOLCANO
+    // 15 cá thường + ca155 Divine
+    // ======================================================
+
     volcano: {
-
         id: "volcano",
-
         name: "🌋 Núi Lửa",
+        description: "Vùng biển núi lửa chỉ xuất hiện vào Chủ Nhật.",
 
-        description:
-            "Vùng biển núi lửa chỉ xuất hiện vào Chủ Nhật.",
-
-        fish: Array.from(
-            { length: 15 },
-            (_, i) => `ca${i + 136}`
-        ),
+        fish: Array
+            .from(
+                { length: 15 },
+                (_, i) => `ca${i + 136}`
+            )
+            .concat("ca155"),
 
         trashRate: 4,
 
         image:
             "https://media.discordapp.net/attachments/1534756360103788596/1535256789833093150/1000013739-Photoroom.png"
-
     }
-
 };
 
 
 // ==========================================================
 // RARITY LUCK
 // ==========================================================
-//
-// Luck không làm Mythical xuất hiện quá mạnh.
-// Nó chỉ tăng khả năng chọn rarity cao hơn.
-//
-// ==========================================================
 
 const rarityLuckConfig = {
 
     common: {
-
         base: 1,
-
         luckScale: 0
-
     },
 
     rare: {
-
-        base: 0.35,
-
-        luckScale: 0.18
-
+        base: 0.20,
+        luckScale: 0.10
     },
 
     epic: {
-
-        base: 0.16,
-
-        luckScale: 0.40
-
+        base: 0.08,
+        luckScale: 0.20
     },
 
     legendary: {
-
-        base: 0.055,
-
-        luckScale: 0.75
-
+        base: 0.020,
+        luckScale: 0.30
     },
 
     mythical: {
+        base: 0.004,
+        luckScale: 0.45
+    },
 
-        base: 0.012,
+    // ======================================================
+    // DIVINE
+    // Luck chỉ hỗ trợ rất nhẹ.
+    //
+    // Không dùng base 0.0002 vì như vậy Divine sẽ bị
+    // giảm thêm một lần cực lớn trước khi weighted random.
+    // ======================================================
 
-        luckScale: 1.10
-
+    divine: {
+        base: 1,
+        luckScale: 0.01
     }
-
 };
 
 
@@ -1828,14 +1128,11 @@ function getLuckRarityMultiplier(
     rarity,
     luck = 1
 ) {
-
     const config =
         rarityLuckConfig[rarity];
 
     if (!config) {
-
         return 1;
-
     }
 
     const safeLuck =
@@ -1845,9 +1142,7 @@ function getLuckRarityMultiplier(
         );
 
     if (rarity === "common") {
-
         return 1;
-
     }
 
     const extraLuck =
@@ -1863,7 +1158,18 @@ function getLuckRarityMultiplier(
             config.luckScale
         )
     );
+}
 
+
+// ==========================================================
+// RATE MULTIPLIER
+// ==========================================================
+
+function getRateMultiplier(rarity) {
+    return Number(
+        fishingConfig
+            .rateMultiplier[rarity]
+    ) || 0.1;
 }
 
 
@@ -1875,20 +1181,15 @@ function getFishWeight(
     fish,
     luck = 1
 ) {
-
     if (!fish) {
-
         return 0;
-
     }
 
     const rate =
         Number(fish.rate) || 0;
 
     if (rate <= 0) {
-
         return 0;
-
     }
 
     const rarity =
@@ -1900,11 +1201,16 @@ function getFishWeight(
             luck
         );
 
+    const rateMultiplier =
+        getRateMultiplier(
+            rarity
+        );
+
     return (
         rate *
-        multiplier
+        multiplier *
+        rateMultiplier
     );
-
 }
 
 
@@ -1916,14 +1222,11 @@ function weightedRandom(
     items,
     luck = 1
 ) {
-
     if (
         !Array.isArray(items) ||
         items.length === 0
     ) {
-
         return null;
-
     }
 
     const validItems =
@@ -1934,9 +1237,7 @@ function weightedRandom(
         );
 
     if (!validItems.length) {
-
         return null;
-
     }
 
     let totalWeight = 0;
@@ -1956,8 +1257,11 @@ function weightedRandom(
                 item,
                 weight
             };
-
         });
+
+    if (totalWeight <= 0) {
+        return null;
+    }
 
     let random =
         Math.random() *
@@ -1967,24 +1271,17 @@ function weightedRandom(
         const entry
         of weighted
     ) {
-
         random -=
             entry.weight;
 
-        if (
-            random <= 0
-        ) {
-
+        if (random <= 0) {
             return entry.item;
-
         }
-
     }
 
     return weighted[
         weighted.length - 1
     ].item;
-
 }
 
 
@@ -1996,13 +1293,12 @@ function pickFish(
     fishIds,
     luck = 1
 ) {
-
     if (
-        !Array.isArray(fishIds)
+        !Array.isArray(
+            fishIds
+        )
     ) {
-
         return null;
-
     }
 
     const availableFish =
@@ -2016,16 +1312,16 @@ function pickFish(
     if (
         !availableFish.length
     ) {
-
         return null;
-
     }
 
     return weightedRandom(
         availableFish,
-        luck
+        Math.max(
+            1,
+            Number(luck) || 1
+        )
     );
-
 }
 
 
@@ -2034,12 +1330,12 @@ function pickFish(
 // ==========================================================
 
 function pickTrash() {
-
     return weightedRandom(
-        Object.values(trashItems),
+        Object.values(
+            trashItems
+        ),
         1
     );
-
 }
 
 
@@ -2050,14 +1346,11 @@ function pickTrash() {
 function calculateRodCostPerCast(
     rodId
 ) {
-
     if (
         !rodId ||
         !rods[rodId]
     ) {
-
         return 0;
-
     }
 
     const rod =
@@ -2069,11 +1362,7 @@ function calculateRodCostPerCast(
     const uses =
         Number(rod.uses) || 1;
 
-    return (
-        price /
-        uses
-    );
-
+    return price / uses;
 }
 
 
@@ -2084,20 +1373,16 @@ function calculateRodCostPerCast(
 function calculateBaitCostPerCast(
     baitId
 ) {
-
     if (
         !baitId ||
         !baits[baitId]
     ) {
-
         return 0;
-
     }
 
     return Number(
         baits[baitId].price
     ) || 0;
-
 }
 
 
@@ -2109,37 +1394,34 @@ function calculateFishingCost(
     rodId = "wood",
     baitId = null
 ) {
-
     let cost = 0;
 
     if (
-        economyConfig.includeRodDepreciation
+        economyConfig
+            .includeRodDepreciation
     ) {
-
         cost +=
             calculateRodCostPerCast(
                 rodId
             ) *
-            economyConfig.rodCostWeight;
-
+            economyConfig
+                .rodCostWeight;
     }
 
     if (
         baitId &&
-        economyConfig.includeBaitCost
+        economyConfig
+            .includeBaitCost
     ) {
-
         cost +=
             calculateBaitCostPerCast(
                 baitId
             );
-
     }
 
     return Math.floor(
         cost
     );
-
 }
 
 
@@ -2151,11 +1433,8 @@ function calculateFishSellPrice(
     fish,
     weight
 ) {
-
     if (!fish) {
-
         return 0;
-
     }
 
     const safeWeight =
@@ -2167,39 +1446,24 @@ function calculateFishSellPrice(
     const basePrice =
         Number(fish.price) || 0;
 
-    const rarityMultiplier = {
-
-        common: 0.45,
-
-        rare: 0.52,
-
-        epic: 0.60,
-
-        legendary: 0.70,
-
-        mythical: 0.80
-
-    };
-
     const multiplier =
-        rarityMultiplier[
-            fish.rarity
-        ] ??
+        sellConfig
+            .rarityMultiplier[
+                fish.rarity
+            ] ??
         sellConfig.multiplier;
 
     const price =
         basePrice *
         safeWeight *
-        multiplier;
+        multiplier *
+        sellConfig
+            .priceMultiplier;
 
     return Math.max(
-
         sellConfig.minPrice,
-
         Math.floor(price)
-
     );
-
 }
 
 
@@ -2210,11 +1474,8 @@ function calculateFishSellPrice(
 function calculateTrashSellPrice(
     item
 ) {
-
     if (!item) {
-
         return 0;
-
     }
 
     return Math.max(
@@ -2223,7 +1484,6 @@ function calculateTrashSellPrice(
             item.sellPrice
         ) || 0
     );
-
 }
 
 
@@ -2234,35 +1494,28 @@ function calculateTrashSellPrice(
 function generateFishWeight(
     fish
 ) {
-
     if (!fish) {
-
         return 0;
-
     }
 
     const min =
         Math.max(
             fishingConfig.minWeight,
             Number(fish.min) ||
-            fishingConfig.minWeight
+                fishingConfig.minWeight
         );
 
     const max =
         Math.min(
             fishingConfig.maxWeight,
             Number(fish.max) ||
-            fishingConfig.maxWeight
+                fishingConfig.maxWeight
         );
 
-    if (
-        max <= min
-    ) {
-
+    if (max <= min) {
         return Number(
             min.toFixed(1)
         );
-
     }
 
     const random =
@@ -2281,7 +1534,6 @@ function generateFishWeight(
     return Number(
         weight.toFixed(1)
     );
-
 }
 
 
@@ -2292,11 +1544,8 @@ function generateFishWeight(
 function getAverageWeight(
     fish
 ) {
-
     if (!fish) {
-
         return 0;
-
     }
 
     const min =
@@ -2312,7 +1561,6 @@ function getAverageWeight(
             0.58
         )
     );
-
 }
 
 
@@ -2323,18 +1571,22 @@ function getAverageWeight(
 function getExpectedFishValue(
     fish
 ) {
-
     if (!fish) {
-
         return 0;
-
     }
 
     return (
         Number(fish.price) *
-        getAverageWeight(fish)
+        getAverageWeight(fish) *
+        (
+            sellConfig
+                .rarityMultiplier[
+                    fish.rarity
+                ] ??
+            sellConfig.multiplier
+        ) *
+        sellConfig.priceMultiplier
     );
-
 }
 
 
@@ -2345,32 +1597,24 @@ function getExpectedFishValue(
 function getProfitClass(
     fish
 ) {
-
     const value =
         getExpectedFishValue(
             fish
         );
 
-    if (value < 100) {
-
+    if (value < 10) {
         return profitClass.LOSS;
-
     }
 
-    if (value < 300) {
-
+    if (value < 50) {
         return profitClass.BREAK_EVEN;
-
     }
 
-    if (value < 1000) {
-
+    if (value < 200) {
         return profitClass.LOW_PROFIT;
-
     }
 
     return profitClass.HIGH_PROFIT;
-
 }
 
 
@@ -2379,12 +1623,10 @@ function getProfitClass(
 // ==========================================================
 
 function applyProfitClasses() {
-
     for (
         const fish
         of fishList
     ) {
-
         fish.expectedValue =
             Math.floor(
                 getExpectedFishValue(
@@ -2396,9 +1638,7 @@ function applyProfitClasses() {
             getProfitClass(
                 fish
             );
-
     }
-
 }
 
 
@@ -2410,29 +1650,18 @@ function generateFishingResult(
     zoneId,
     luck = 1
 ) {
-
     const zone =
-        fishingZones[
-            zoneId
-        ];
+        fishingZones[zoneId];
 
     if (!zone) {
-
         return {
-
             type: "error",
-
             item: null,
-
             weight: 0,
-
             price: 0,
-
             profitClass:
                 profitClass.LOSS
-
         };
-
     }
 
 
@@ -2446,7 +1675,8 @@ function generateFishingResult(
             Math.min(
                 100,
                 Number(
-                    fishingConfig.missChance
+                    fishingConfig
+                        .missChance
                 ) || 0
             )
         );
@@ -2455,22 +1685,14 @@ function generateFishingResult(
         Math.random() * 100 <
         missChance
     ) {
-
         return {
-
             type: "miss",
-
             item: null,
-
             weight: 0,
-
             price: 0,
-
             profitClass:
                 profitClass.LOSS
-
         };
-
     }
 
 
@@ -2490,36 +1712,27 @@ function generateFishingResult(
         );
 
     if (
-        fishingConfig.trashEnabled &&
+        fishingConfig
+            .trashEnabled &&
         Math.random() * 100 <
-        trashChance
+            trashChance
     ) {
-
         const trash =
             pickTrash();
 
         if (trash) {
-
             return {
-
                 type: "trash",
-
                 item: trash,
-
                 weight: 1,
-
                 price:
                     calculateTrashSellPrice(
                         trash
                     ),
-
                 profitClass:
                     profitClass.LOSS
-
             };
-
         }
-
     }
 
 
@@ -2537,22 +1750,14 @@ function generateFishingResult(
         );
 
     if (!fish) {
-
         return {
-
             type: "error",
-
             item: null,
-
             weight: 0,
-
             price: 0,
-
             profitClass:
                 profitClass.LOSS
-
         };
-
     }
 
     const weight =
@@ -2567,22 +1772,15 @@ function generateFishingResult(
         );
 
     return {
-
         type: "fish",
-
         item: fish,
-
         weight,
-
         price,
-
         profitClass:
             getProfitClass(
                 fish
             )
-
     };
-
 }
 
 
@@ -2596,7 +1794,6 @@ function calculateFishProfit(
     rodId = "wood",
     baitId = null
 ) {
-
     const revenue =
         calculateFishSellPrice(
             fish,
@@ -2610,22 +1807,15 @@ function calculateFishProfit(
         );
 
     const profit =
-        revenue -
-        cost;
+        revenue - cost;
 
     return {
-
         revenue,
-
         cost,
-
         profit,
-
         profitable:
             profit > 0
-
     };
-
 }
 
 
@@ -2637,16 +1827,11 @@ function analyzeZoneRates(
     zoneId,
     luck = 1
 ) {
-
     const zone =
-        fishingZones[
-            zoneId
-        ];
+        fishingZones[zoneId];
 
     if (!zone) {
-
         return null;
-
     }
 
     const fish =
@@ -2660,38 +1845,27 @@ function analyzeZoneRates(
     let total = 0;
 
     const data =
-        fish.map(
-            f => {
+        fish.map(f => {
 
-                const weight =
-                    getFishWeight(
-                        f,
-                        luck
-                    );
+            const weight =
+                getFishWeight(
+                    f,
+                    luck
+                );
 
-                total += weight;
+            total += weight;
 
-                return {
-
-                    id: f.id,
-
-                    name: f.name,
-
-                    emoji: f.emoji,
-
-                    rarity:
-                        f.rarity,
-
-                    weight
-
-                };
-
-            }
-        );
+            return {
+                id: f.id,
+                name: f.name,
+                emoji: f.emoji,
+                rarity: f.rarity,
+                weight
+            };
+        });
 
     return data.map(
         entry => ({
-
             ...entry,
 
             chance:
@@ -2701,10 +1875,8 @@ function analyzeZoneRates(
                         total
                     ) * 100
                     : 0
-
         })
     );
-
 }
 
 
@@ -2716,7 +1888,6 @@ function analyzeRarityRates(
     zoneId,
     luck = 1
 ) {
-
     const data =
         analyzeZoneRates(
             zoneId,
@@ -2724,47 +1895,34 @@ function analyzeRarityRates(
         );
 
     if (!data) {
-
         return null;
-
     }
 
     const summary = {
-
         common: 0,
-
         rare: 0,
-
         epic: 0,
-
         legendary: 0,
-
-        mythical: 0
-
+        mythical: 0,
+        divine: 0
     };
 
     for (
         const item
         of data
     ) {
-
         if (
             summary[
                 item.rarity
             ] !== undefined
         ) {
-
             summary[
                 item.rarity
-            ] +=
-                item.chance;
-
+            ] += item.chance;
         }
-
     }
 
     return summary;
-
 }
 
 
@@ -2778,7 +1936,6 @@ function calculateTotalLuck(
     baitId = null,
     rateStoneBonus = 0
 ) {
-
     const rod =
         rods[rodId];
 
@@ -2823,9 +1980,7 @@ function calculateTotalLuck(
     const totalLuck =
         rodLuck +
         upgradeLuck +
-        (
-            baitLuck - 1
-        ) +
+        (baitLuck - 1) +
         stoneLuck;
 
     return Number(
@@ -2834,7 +1989,6 @@ function calculateTotalLuck(
             totalLuck
         ).toFixed(2)
     );
-
 }
 
 
@@ -2843,11 +1997,8 @@ function calculateTotalLuck(
 // ==========================================================
 
 const rodList = rods;
-
 const baitList = baits;
-
 const keyList = keys;
-
 const chestList = chests;
 
 
@@ -2856,7 +2007,6 @@ const chestList = chests;
 // ==========================================================
 
 function validateConfig() {
-
     const errors = [];
 
 
@@ -2865,15 +2015,17 @@ function validateConfig() {
     // ======================================================
 
     if (
-        fishList.length !== 150
+        fishList.length !== 155
     ) {
-
         errors.push(
-            `Fish hiện tại: ${fishList.length}/150`
+            `Fish hiện tại: ${fishList.length}/155`
         );
-
     }
 
+
+    // ======================================================
+    // IDS
+    // ======================================================
 
     const ids =
         new Set();
@@ -2882,13 +2034,10 @@ function validateConfig() {
         const fish
         of fishList
     ) {
-
         if (!fish.id) {
-
             errors.push(
                 "Fish thiếu id"
             );
-
         }
 
         if (
@@ -2896,11 +2045,9 @@ function validateConfig() {
                 fish.id
             )
         ) {
-
             errors.push(
                 `${fish.id} bị trùng id`
             );
-
         }
 
         ids.add(
@@ -2908,56 +2055,43 @@ function validateConfig() {
         );
 
         if (!fish.name) {
-
             errors.push(
                 `${fish.id} thiếu name`
             );
-
         }
 
         if (
             Number(fish.price) < 0
         ) {
-
             errors.push(
                 `${fish.id} price < 0`
             );
-
         }
 
         if (
             Number(fish.rate) <= 0
         ) {
-
             errors.push(
                 `${fish.id} rate <= 0`
             );
-
         }
 
         if (
             Number(fish.min) >
             Number(fish.max)
         ) {
-
             errors.push(
                 `${fish.id} min > max`
             );
-
         }
 
         const validRarity = [
-
             "common",
-
             "rare",
-
             "epic",
-
             "legendary",
-
-            "mythical"
-
+            "mythical",
+            "divine"
         ];
 
         if (
@@ -2965,13 +2099,66 @@ function validateConfig() {
                 fish.rarity
             )
         ) {
-
             errors.push(
                 `${fish.id} rarity không hợp lệ`
             );
-
         }
+    }
 
+
+    // ======================================================
+    // DIVINE
+    // ======================================================
+
+    const divineFish =
+        fishList.filter(
+            f =>
+                f.rarity ===
+                "divine"
+        );
+
+    if (
+        divineFish.length !== 5
+    ) {
+        errors.push(
+            `Divine hiện tại: ${divineFish.length}/5`
+        );
+    }
+
+
+    // ======================================================
+    // KIỂM TRA ĐÚNG 5 DIVINE
+    // ======================================================
+
+    const requiredDivineIds = [
+        "ca151",
+        "ca152",
+        "ca153",
+        "ca154",
+        "ca155"
+    ];
+
+    for (
+        const id
+        of requiredDivineIds
+    ) {
+        const fish =
+            fishList.find(
+                f =>
+                    f.id === id
+            );
+
+        if (!fish) {
+            errors.push(
+                `Thiếu Divine ${id}`
+            );
+        } else if (
+            fish.rarity !== "divine"
+        ) {
+            errors.push(
+                `${id} phải có rarity divine`
+            );
+        }
     }
 
 
@@ -2985,26 +2172,22 @@ function validateConfig() {
             fishingZones
         )
     ) {
-
         if (
             !Array.isArray(
                 zone.fish
             )
         ) {
-
             errors.push(
                 `${zone.id} thiếu fish`
             );
 
             continue;
-
         }
 
         for (
             const fishId
             of zone.fish
         ) {
-
             const exists =
                 fishList.some(
                     fish =>
@@ -3013,15 +2196,90 @@ function validateConfig() {
                 );
 
             if (!exists) {
-
                 errors.push(
                     `${zone.id}: không tìm thấy ${fishId}`
                 );
-
             }
+        }
+    }
 
+
+    // ======================================================
+    // KIỂM TRA MỖI ZONE 1 DIVINE
+    // ======================================================
+
+    for (
+        const zone
+        of Object.values(
+            fishingZones
+        )
+    ) {
+        const zoneDivine =
+            zone.fish.filter(
+                id => {
+
+                    const fish =
+                        fishList.find(
+                            f =>
+                                f.id ===
+                                id
+                        );
+
+                    return (
+                        fish &&
+                        fish.rarity ===
+                        "divine"
+                    );
+                }
+            );
+
+        if (
+            zoneDivine.length !== 1
+        ) {
+            errors.push(
+                `${zone.id} phải có đúng 1 Divine`
+            );
+        }
+    }
+
+
+    // ======================================================
+    // KIỂM TRA MAP DIVINE THEO ZONE
+    // ======================================================
+
+    const divineZoneMap = {
+        tropical: "ca151",
+        cold: "ca152",
+        swamp: "ca153",
+        deep: "ca154",
+        volcano: "ca155"
+    };
+
+    for (
+        const [
+            zoneId,
+            divineId
+        ]
+        of Object.entries(
+            divineZoneMap
+        )
+    ) {
+        const zone =
+            fishingZones[zoneId];
+
+        if (!zone) {
+            continue;
         }
 
+        if (
+            !zone.fish.includes(
+                divineId
+            )
+        ) {
+            errors.push(
+                `${zoneId} thiếu ${divineId}`
+            );
+        }
     }
 
 
@@ -3035,37 +2293,29 @@ function validateConfig() {
             rods
         )
     ) {
-
         if (
             rod.price < 0
         ) {
-
             errors.push(
                 `${rod.id} price < 0`
             );
-
         }
 
         if (
             rod.uses <= 0
         ) {
-
             errors.push(
                 `${rod.id} uses <= 0`
             );
-
         }
 
         if (
             rod.luck < 1
         ) {
-
             errors.push(
                 `${rod.id} luck < 1`
             );
-
         }
-
     }
 
 
@@ -3079,27 +2329,21 @@ function validateConfig() {
             baits
         )
     ) {
-
         if (
             bait.price < 0
         ) {
-
             errors.push(
                 `${bait.id} price < 0`
             );
-
         }
 
         if (
             bait.luck < 1
         ) {
-
             errors.push(
                 `${bait.id} luck < 1`
             );
-
         }
-
     }
 
 
@@ -3111,23 +2355,70 @@ function validateConfig() {
         fishingConfig.missChance < 0 ||
         fishingConfig.missChance > 100
     ) {
-
         errors.push(
             "fishingConfig.missChance phải từ 0 -> 100"
         );
+    }
 
+
+    // ======================================================
+    // RATE MULTIPLIER
+    // ======================================================
+
+    const validRarities = [
+        "common",
+        "rare",
+        "epic",
+        "legendary",
+        "mythical",
+        "divine"
+    ];
+
+    for (
+        const rarity
+        of validRarities
+    ) {
+        if (
+            Number(
+                fishingConfig
+                    .rateMultiplier[
+                        rarity
+                    ]
+            ) <= 0
+        ) {
+            errors.push(
+                `rateMultiplier ${rarity} <= 0`
+            );
+        }
+    }
+
+
+    // ======================================================
+    // RARITY LUCK CONFIG
+    // ======================================================
+
+    for (
+        const rarity
+        of validRarities
+    ) {
+        if (
+            !rarityLuckConfig[
+                rarity
+            ]
+        ) {
+            errors.push(
+                `Thiếu rarityLuckConfig ${rarity}`
+            );
+        }
     }
 
 
     return {
-
         valid:
             errors.length === 0,
 
         errors
-
     };
-
 }
 
 
@@ -3249,5 +2540,4 @@ module.exports = {
 
     // Validation
     validateConfig
-
 };

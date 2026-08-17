@@ -22,7 +22,7 @@ const {
 } = require("../../data");
 
 // ======================================================
-// CẤU HÌNH
+// CONFIG
 // ======================================================
 
 const COLOR = "#A0E7E5";
@@ -45,7 +45,7 @@ const CUSTOM = {
 };
 
 // ======================================================
-// GIÁ MẶC ĐỊNH THEO RARITY
+// RARITY PRICE
 // ======================================================
 
 function getRarityPrice(rarity) {
@@ -78,16 +78,16 @@ function getRarityPrice(rarity) {
 }
 
 // ======================================================
-// GIÁ BÁN 1 KG
+// FISH PRICE / KG
 // ======================================================
 
 function getFishPrice(fish) {
 
     const sellPrice =
         Number(
-            fish.sellPrice ??
-            fish.sell ??
-            fish.price
+            fish?.sellPrice ??
+            fish?.sell ??
+            fish?.price
         );
 
     if (
@@ -99,50 +99,79 @@ function getFishPrice(fish) {
     }
 
     return getRarityPrice(
-        fish.rarity
+        fish?.rarity
     );
 }
 
 // ======================================================
-// KIỂM TRA CÁ
+// REAL FISH
 // ======================================================
 
 function isRealFish(fish) {
 
-    return (
+    return Boolean(
         fish &&
         fish.isFish !== false
     );
 }
 
 // ======================================================
-// LẤY INVENTORY
+// FIND FISH CONFIG
 // ======================================================
 
+function findFish(fishId) {
+
+    if (
+        !Array.isArray(fishList)
+    ) {
+        return null;
+    }
+
+    return fishList.find(
+        fish =>
+            String(fish.id) ===
+            String(fishId)
+    ) || null;
+}
+
 // ======================================================
-// BẢO LƯU BỘ SƯU TẬP
-// ======================================================
+// INVENTORY
 //
-// user.fish       = cá đang có trong túi
-// user.collection = cá đã từng câu được
+// QUAN TRỌNG:
+// Hàm này chỉ đọc user.fish.
 //
-// Bán cá KHÔNG được xóa collection.
-//
+// Không đọc collection.
+// Không xóa collection.
+// Không thay đổi stats.
 // ======================================================
 
-function ensureCollection(user) {
+function getInventoryFish(user) {
 
-    user.collection ??= {};
+    const result = [];
 
-    const inventory =
-        user.fish || {};
+    if (
+        !user ||
+        !user.fish ||
+        typeof user.fish !== "object"
+    ) {
+        return result;
+    }
 
     for (
-        const fishId in inventory
+        const fishId of Object.keys(user.fish)
     ) {
 
+        const fishInfo =
+            findFish(fishId);
+
+        if (
+            !isRealFish(fishInfo)
+        ) {
+            continue;
+        }
+
         const fishes =
-            inventory[fishId];
+            user.fish[fishId];
 
         if (
             !Array.isArray(fishes) ||
@@ -151,28 +180,22 @@ function ensureCollection(user) {
             continue;
         }
 
-        const fish =
-            fishList.find(
-                item =>
-                    String(item.id) ===
-                    String(fishId)
-            );
+        result.push({
 
-        if (
-            !fish ||
-            !isRealFish(fish)
-        ) {
-            continue;
-        }
+            fish: fishInfo,
 
-        user.collection[
-            String(fishId)
-        ] = true;
+            fishId: String(fishId),
+
+            fishes
+
+        });
     }
+
+    return result;
 }
 
 // ======================================================
-// TỔNG CÁ
+// TOTAL FISH IN BAG
 // ======================================================
 
 function getTotalFish(user) {
@@ -190,7 +213,7 @@ function getTotalFish(user) {
 }
 
 // ======================================================
-// TỔNG KG
+// TOTAL KG IN BAG
 // ======================================================
 
 function getTotalKg(user) {
@@ -212,7 +235,8 @@ function getTotalKg(user) {
                 Number(weight);
 
             if (
-                Number.isFinite(kg)
+                Number.isFinite(kg) &&
+                kg > 0
             ) {
 
                 total += kg;
@@ -226,7 +250,7 @@ function getTotalKg(user) {
 }
 
 // ======================================================
-// TỔNG GIÁ TRỊ
+// ESTIMATED VALUE
 // ======================================================
 
 function getEstimatedValue(user) {
@@ -253,7 +277,8 @@ function getEstimatedValue(user) {
                 Number(weight);
 
             if (
-                Number.isFinite(kg)
+                Number.isFinite(kg) &&
+                kg > 0
             ) {
 
                 total +=
@@ -266,7 +291,151 @@ function getEstimatedValue(user) {
 }
 
 // ======================================================
-// FORMAT MAIN EMBED
+// STATS
+//
+// SELL KHÔNG BAO GIỜ GỌI HÀM GIẢM STATS.
+//
+// stats là lịch sử câu cá.
+// user.fish là cá hiện đang nằm trong túi.
+// ======================================================
+
+function ensureStats(user) {
+
+    user.stats ??= {};
+
+    user.stats.totalFishCaught =
+        Number(
+            user.stats.totalFishCaught || 0
+        );
+
+    user.stats.totalWeightCaught =
+        Number(
+            user.stats.totalWeightCaught || 0
+        );
+
+    user.stats.biggestFish =
+        Number(
+            user.stats.biggestFish || 0
+        );
+
+    // ----------------------------------------------
+    // MIGRATE DATA CŨ
+    // ----------------------------------------------
+
+    if (
+        user.stats.totalFishCaught <= 0
+    ) {
+
+        let oldTotalFish = 0;
+
+        let oldTotalWeight = 0;
+
+        let oldBiggestFish = 0;
+
+        if (
+            user.fish &&
+            typeof user.fish === "object"
+        ) {
+
+            for (
+                const fishId of Object.keys(
+                    user.fish
+                )
+            ) {
+
+                const fishes =
+                    user.fish[fishId];
+
+                if (
+                    !Array.isArray(fishes)
+                ) {
+                    continue;
+                }
+
+                oldTotalFish +=
+                    fishes.length;
+
+                for (
+                    const value of fishes
+                ) {
+
+                    const weight =
+                        Number(value);
+
+                    if (
+                        Number.isFinite(weight) &&
+                        weight > 0
+                    ) {
+
+                        oldTotalWeight +=
+                            weight;
+
+                        if (
+                            weight >
+                            oldBiggestFish
+                        ) {
+
+                            oldBiggestFish =
+                                weight;
+                        }
+                    }
+                }
+            }
+        }
+
+        user.stats.totalFishCaught =
+            oldTotalFish;
+
+        user.stats.totalWeightCaught =
+            oldTotalWeight;
+
+        user.stats.biggestFish =
+            oldBiggestFish;
+    }
+}
+
+// ======================================================
+// ENSURE USER DATA
+// ======================================================
+
+function ensureUserData(user) {
+
+    user.money =
+        Number(
+            user.money || 0
+        );
+
+    user.fish ??= {};
+
+    user.moi ??= {};
+
+    user.rodData ??= {};
+
+    user.can ??= {};
+
+    user.daily ??= {
+        last: 0,
+        streak: 0
+    };
+
+    ensureStats(user);
+
+    /*
+     * KHÔNG tạo lại / reset collection ở đây.
+     *
+     * Nếu data.js của bạn dùng:
+     * user.collection
+     * hoặc:
+     * user.collections
+     *
+     * thì giữ nguyên.
+     */
+
+    return user;
+}
+
+// ======================================================
+// MAIN EMBED
 // ======================================================
 
 function createMainEmbed(
@@ -482,7 +651,7 @@ function createSearchModal() {
 }
 
 // ======================================================
-// TÌM CÁ
+// SEARCH FISH
 // ======================================================
 
 function searchFish(
@@ -504,13 +673,12 @@ function searchFish(
         return [];
     }
 
-    // ID chính xác
     const exactId =
         inventory.filter(
             item =>
                 String(
                     item.fishId
-                ) === text
+                ).toLowerCase() === text
         );
 
     if (
@@ -520,14 +688,13 @@ function searchFish(
         return exactId;
     }
 
-    // Tên chứa từ khóa
     const results =
         inventory.filter(
             item => {
 
                 const name =
                     String(
-                        item.fish.name || ""
+                        item.fish?.name || ""
                     )
                         .toLowerCase();
 
@@ -544,19 +711,18 @@ function searchFish(
             }
         );
 
-    // Tên chính xác được ưu tiên
     results.sort(
         (a, b) => {
 
             const aName =
                 String(
-                    a.fish.name || ""
+                    a.fish?.name || ""
                 )
                     .toLowerCase();
 
             const bName =
                 String(
-                    b.fish.name || ""
+                    b.fish?.name || ""
                 )
                     .toLowerCase();
 
@@ -594,7 +760,7 @@ function searchFish(
 }
 
 // ======================================================
-// EMBED KẾT QUẢ TÌM KIẾM
+// SEARCH RESULT EMBED
 // ======================================================
 
 function createSearchResultEmbed(
@@ -686,7 +852,7 @@ function createSearchResultEmbed(
 }
 
 // ======================================================
-// SELECT KẾT QUẢ
+// FISH SELECT
 // ======================================================
 
 function createFishSelect(
@@ -755,7 +921,7 @@ function createFishSelect(
 }
 
 // ======================================================
-// NÚT QUAY LẠI
+// BACK BUTTON
 // ======================================================
 
 function createBackButton() {
@@ -785,7 +951,7 @@ function createBackButton() {
 }
 
 // ======================================================
-// EMBED CHỌN SỐ LƯỢNG
+// FISH AMOUNT EMBED
 // ======================================================
 
 function createFishAmountEmbed(
@@ -864,7 +1030,7 @@ function createFishAmountEmbed(
 }
 
 // ======================================================
-// BUTTON CHỌN SỐ LƯỢNG
+// AMOUNT BUTTONS
 // ======================================================
 
 function createAmountButtons(
@@ -881,8 +1047,10 @@ function createAmountButtons(
         {
             id:
                 CUSTOM.AMOUNT_1,
+
             label:
                 "1",
+
             value:
                 1
         },
@@ -890,8 +1058,10 @@ function createAmountButtons(
         {
             id:
                 CUSTOM.AMOUNT_5,
+
             label:
                 "5",
+
             value:
                 5
         },
@@ -899,8 +1069,10 @@ function createAmountButtons(
         {
             id:
                 CUSTOM.AMOUNT_10,
+
             label:
                 "10",
+
             value:
                 10
         },
@@ -908,8 +1080,10 @@ function createAmountButtons(
         {
             id:
                 CUSTOM.AMOUNT_ALL,
+
             label:
                 "Tất cả",
+
             value:
                 max
         }
@@ -992,7 +1166,7 @@ function createAmountButtons(
 }
 
 // ======================================================
-// MODAL NHẬP SỐ LƯỢNG
+// AMOUNT MODAL
 // ======================================================
 
 function createAmountModal(
@@ -1055,7 +1229,19 @@ function createAmountModal(
 }
 
 // ======================================================
-// BÁN 1 LOẠI CÁ
+// SELL SPECIFIC FISH
+//
+// QUAN TRỌNG NHẤT:
+//
+// Chỉ thay đổi:
+//   user.fish[fishId]
+//   user.money
+//
+// KHÔNG thay đổi:
+//   user.stats
+//   user.collection
+//   user.collections
+//   achievement
 // ======================================================
 
 function sellSpecificFish(
@@ -1064,8 +1250,11 @@ function sellSpecificFish(
     amount
 ) {
 
+    const id =
+        String(fishId);
+
     const fishes =
-        user.fish?.[fishId];
+        user.fish?.[id];
 
     if (
         !Array.isArray(fishes) ||
@@ -1097,17 +1286,14 @@ function sellSpecificFish(
         return {
             ok: false,
             reason: "not_enough",
+
             available:
                 fishes.length
         };
     }
 
     const fish =
-        fishList.find(
-            item =>
-                String(item.id) ===
-                String(fishId)
-        );
+        findFish(id);
 
     if (
         !fish
@@ -1128,6 +1314,13 @@ function sellSpecificFish(
 
     const soldFish = [];
 
+    /*
+     * Lấy cá cuối mảng để bán.
+     *
+     * Không quan trọng thứ tự cá,
+     * nhưng tuyệt đối không thay đổi collection.
+     */
+
     for (
         let i = 0;
         i < amount;
@@ -1145,17 +1338,16 @@ function sellSpecificFish(
             );
 
         if (
-            !Number.isFinite(weight)
+            Number.isFinite(weight)
         ) {
-            continue;
+
+            totalKg +=
+                weight;
+
+            soldFish.push(
+                weight
+            );
         }
-
-        totalKg +=
-            weight;
-
-        soldFish.push(
-            weight
-        );
     }
 
     const totalMoney =
@@ -1164,26 +1356,49 @@ function sellSpecificFish(
             pricePerKg
         );
 
+    /*
+     * CHỈ XÓA CÁ TRONG TÚI.
+     */
+
     fishes.splice(
         fishes.length -
         amount,
         amount
     );
 
+    /*
+     * Nếu hết cá loài này:
+     *
+     * CHỈ xóa user.fish[id].
+     *
+     * KHÔNG xóa:
+     * user.collection
+     * user.collections
+     * user.stats
+     */
+
     if (
         fishes.length === 0
     ) {
 
-        delete user.fish[
-            fishId
-        ];
+        delete user.fish[id];
     }
+
+    /*
+     * CỘNG TIỀN.
+     */
 
     user.money =
         Number(
             user.money || 0
         ) +
         totalMoney;
+
+    /*
+     * Lưu dữ liệu.
+     *
+     * stats vẫn giữ nguyên.
+     */
 
     save();
 
@@ -1193,7 +1408,7 @@ function sellSpecificFish(
 
         fish,
 
-        fishId,
+        fishId: id,
 
         amount:
             soldFish.length,
@@ -1211,7 +1426,9 @@ function sellSpecificFish(
 }
 
 // ======================================================
-// BÁN NHIỀU CÁ
+// SELL MANY
+//
+// Không bao giờ sửa stats/collection.
 // ======================================================
 
 function sellManyFish(
@@ -1254,6 +1471,7 @@ function sellManyFish(
         return {
             ok: false,
             reason: "not_enough",
+
             available:
                 totalAvailable
         };
@@ -1272,6 +1490,10 @@ function sellManyFish(
         0;
 
     const soldSummary = [];
+
+    /*
+     * Bán cá rẻ trước.
+     */
 
     const sortedInventory =
         [...inventory].sort(
@@ -1342,11 +1564,20 @@ function sellManyFish(
                 price
             );
 
+        /*
+         * CHỈ XÓA KHỎI INVENTORY.
+         */
+
         fishes.splice(
             fishes.length -
             sellCount,
             sellCount
         );
+
+        /*
+         * Hết cá loài này thì chỉ xóa
+         * khỏi user.fish.
+         */
 
         if (
             fishes.length === 0
@@ -1397,6 +1628,17 @@ function sellManyFish(
         ) +
         totalMoney;
 
+    /*
+     * QUAN TRỌNG:
+     *
+     * Không giảm:
+     * user.stats.totalFishCaught
+     * user.stats.totalWeightCaught
+     * user.stats.biggestFish
+     *
+     * Không xóa collection.
+     */
+
     save();
 
     return {
@@ -1418,7 +1660,7 @@ function sellManyFish(
 }
 
 // ======================================================
-// EMBED KẾT QUẢ BÁN 1 LOẠI
+// SPECIFIC RESULT
 // ======================================================
 
 function createSpecificResultEmbed(
@@ -1458,6 +1700,8 @@ function createSpecificResultEmbed(
                 result.balance
             )} ${emoji.money}**\n\n` +
 
+            `📚 **Bộ sưu tập và thành tích vẫn được giữ nguyên.**\n\n` +
+
             `୨୧ ───────── ୨୧`
 
         )
@@ -1473,7 +1717,7 @@ function createSpecificResultEmbed(
 }
 
 // ======================================================
-// EMBED KẾT QUẢ BÁN NHIỀU
+// MANY RESULT
 // ======================================================
 
 function createManyResultEmbed(
@@ -1517,6 +1761,8 @@ function createManyResultEmbed(
             `💳 Số dư: **${formatMoney(
                 result.balance
             )} ${emoji.money}**\n\n` +
+
+            `📚 **Bộ sưu tập và thành tích vẫn được giữ nguyên.**\n\n` +
 
             `୨୧ ───────── ୨୧`
 
@@ -1564,13 +1810,11 @@ module.exports = {
             );
         }
 
-        user.fish =
-            user.fish || {};
+        ensureUserData(user);
 
-        user.money =
-            Number(
-                user.money || 0
-            );
+        // ==================================================
+        // INVENTORY
+        // ==================================================
 
         const inventory =
             getInventoryFish(user);
@@ -1703,8 +1947,6 @@ module.exports = {
                     args[0]
                 );
 
-            // !sell 12
-            // Nếu ID tồn tại → bán toàn bộ ID đó
             const fishExists =
                 inventory.some(
                     item =>
@@ -1748,8 +1990,8 @@ module.exports = {
                 }
             }
 
-            // !sell 10
-            // Nếu không phải ID đang có → bán 10 con
+            // !sell 10 = bán 10 con
+
             if (
                 /^\d+$/.test(first)
             ) {
@@ -1814,7 +2056,7 @@ module.exports = {
             });
 
         // ==================================================
-        // COLLECTOR
+        // COMPONENT COLLECTOR
         // ==================================================
 
         const collector =
@@ -1825,225 +2067,166 @@ module.exports = {
 
             });
 
+        // ==================================================
+        // COMPONENT COLLECT
+        // ==================================================
+
         collector.on(
             "collect",
             async interaction => {
 
-                if (
-                    interaction.user.id !==
-                    message.author.id
-                ) {
-
-                    return interaction.reply({
-
-                        content:
-                            "❌ Đây không phải bảng bán cá của bạn.",
-
-                        ephemeral:
-                            true
-
-                    });
-                }
-
-                // ==========================================
-                // TÌM CÁ
-                // ==========================================
-
-                if (
-                    interaction.customId ===
-                    CUSTOM.SEARCH
-                ) {
-
-                    return interaction.showModal(
-                        createSearchModal()
-                    );
-                }
-
-                // ==========================================
-                // BÁN THEO SỐ LƯỢNG
-                // ==========================================
-
-                if (
-                    interaction.customId ===
-                    CUSTOM.AMOUNT
-                ) {
-
-                    const modal =
-                        new ModalBuilder()
-
-                            .setCustomId(
-                                `sell_many_amount_${message.author.id}`
-                            )
-
-                            .setTitle(
-                                "📦 Bán số lượng"
-                            );
-
-                    const input =
-                        new TextInputBuilder()
-
-                            .setCustomId(
-                                "amount"
-                            )
-
-                            .setLabel(
-                                "Số lượng cá muốn bán"
-                            )
-
-                            .setPlaceholder(
-                                "Ví dụ: 25"
-                            )
-
-                            .setStyle(
-                                TextInputStyle.Short
-                            )
-
-                            .setRequired(
-                                true
-                            )
-
-                            .setMaxLength(
-                                10
-                            );
-
-                    modal.addComponents(
-
-                        new ActionRowBuilder()
-                            .addComponents(
-                                input
-                            )
-
-                    );
-
-                    return interaction.showModal(
-                        modal
-                    );
-                }
-
-                // ==========================================
-                // BÁN TẤT CẢ
-                // ==========================================
-
-                if (
-                    interaction.customId ===
-                    CUSTOM.ALL
-                ) {
-
-                    const totalFish =
-                        getTotalFish(user);
-
-                    const totalKg =
-                        getTotalKg(user);
-
-                    const estimated =
-                        getEstimatedValue(user);
-
-                    const row =
-                        new ActionRowBuilder()
-                            .addComponents(
-
-                                new ButtonBuilder()
-
-                                    .setCustomId(
-                                        CUSTOM.CONFIRM_ALL
-                                    )
-
-                                    .setLabel(
-                                        "Xác nhận bán"
-                                    )
-
-                                    .setEmoji(
-                                        "✅"
-                                    )
-
-                                    .setStyle(
-                                        ButtonStyle.Danger
-                                    ),
-
-                                new ButtonBuilder()
-
-                                    .setCustomId(
-                                        CUSTOM.CANCEL
-                                    )
-
-                                    .setLabel(
-                                        "Hủy"
-                                    )
-
-                                    .setEmoji(
-                                        "❌"
-                                    )
-
-                                    .setStyle(
-                                        ButtonStyle.Secondary
-                                    )
-
-                            );
-
-                    return interaction.update({
-
-                        embeds: [
-
-                            new EmbedBuilder()
-
-                                .setColor(
-                                    "#ffd166"
-                                )
-
-                                .setDescription(
-
-                                    `୨୧ ───────── ୨୧\n\n` +
-
-                                    `⚠️ **XÁC NHẬN BÁN TOÀN BỘ**\n\n` +
-
-                                    `🐟 Số cá: **${totalFish} con**\n` +
-
-                                    `⚖️ Tổng: **${totalKg.toFixed(2)} KG**\n` +
-
-                                    `💰 Giá trị hiện tại: **${formatMoney(
-                                        estimated
-                                    )} ${emoji.money}**\n\n` +
-
-                                    `Hành động này sẽ bán toàn bộ cá trong túi.\n\n` +
-
-                                    `୨୧ ───────── ୨୧`
-
-                                )
-
-                                .setFooter({
-
-                                    text:
-                                        "✦ Kiểm tra kỹ trước khi xác nhận"
-
-                                })
-
-                        ],
-
-                        components: [
-                            row
-                        ]
-
-                    });
-                }
-
-                // ==========================================
-                // XÁC NHẬN BÁN ALL
-                // ==========================================
-
-                if (
-                    interaction.customId ===
-                    CUSTOM.CONFIRM_ALL
-                ) {
-
-                    const result =
-                        sellManyFish(
-                            user,
-                            getTotalFish(user)
-                        );
+                try {
 
                     if (
-                        !result.ok
+                        interaction.user.id !==
+                        message.author.id
                     ) {
+
+                        return interaction.reply({
+
+                            content:
+                                "❌ Đây không phải bảng bán cá của bạn.",
+
+                            ephemeral:
+                                true
+
+                        });
+                    }
+
+                    // ======================================
+                    // SEARCH
+                    // ======================================
+
+                    if (
+                        interaction.customId ===
+                        CUSTOM.SEARCH
+                    ) {
+
+                        return interaction.showModal(
+                            createSearchModal()
+                        );
+                    }
+
+                    // ======================================
+                    // SELL AMOUNT
+                    // ======================================
+
+                    if (
+                        interaction.customId ===
+                        CUSTOM.AMOUNT
+                    ) {
+
+                        const modal =
+                            new ModalBuilder()
+
+                                .setCustomId(
+                                    `sell_many_amount_${message.author.id}`
+                                )
+
+                                .setTitle(
+                                    "📦 Bán số lượng"
+                                );
+
+                        const input =
+                            new TextInputBuilder()
+
+                                .setCustomId(
+                                    "amount"
+                                )
+
+                                .setLabel(
+                                    "Số lượng cá muốn bán"
+                                )
+
+                                .setPlaceholder(
+                                    "Ví dụ: 25"
+                                )
+
+                                .setStyle(
+                                    TextInputStyle.Short
+                                )
+
+                                .setRequired(
+                                    true
+                                )
+
+                                .setMaxLength(
+                                    10
+                                );
+
+                        modal.addComponents(
+
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    input
+                                )
+
+                        );
+
+                        return interaction.showModal(
+                            modal
+                        );
+                    }
+
+                    // ======================================
+                    // SELL ALL
+                    // ======================================
+
+                    if (
+                        interaction.customId ===
+                        CUSTOM.ALL
+                    ) {
+
+                        const totalFish =
+                            getTotalFish(user);
+
+                        const totalKg =
+                            getTotalKg(user);
+
+                        const estimated =
+                            getEstimatedValue(user);
+
+                        const row =
+                            new ActionRowBuilder()
+                                .addComponents(
+
+                                    new ButtonBuilder()
+
+                                        .setCustomId(
+                                            CUSTOM.CONFIRM_ALL
+                                        )
+
+                                        .setLabel(
+                                            "Xác nhận bán"
+                                        )
+
+                                        .setEmoji(
+                                            "✅"
+                                        )
+
+                                        .setStyle(
+                                            ButtonStyle.Danger
+                                        ),
+
+                                    new ButtonBuilder()
+
+                                        .setCustomId(
+                                            CUSTOM.CANCEL
+                                        )
+
+                                        .setLabel(
+                                            "Hủy"
+                                        )
+
+                                        .setEmoji(
+                                            "❌"
+                                        )
+
+                                        .setStyle(
+                                            ButtonStyle.Secondary
+                                        )
+
+                                );
 
                         return interaction.update({
 
@@ -2052,11 +2235,157 @@ module.exports = {
                                 new EmbedBuilder()
 
                                     .setColor(
-                                        "#ff6b81"
+                                        "#ffd166"
                                     )
 
                                     .setDescription(
-                                        "❌ Không thể bán cá."
+
+                                        `୨୧ ───────── ୨୧\n\n` +
+
+                                        `⚠️ **XÁC NHẬN BÁN TOÀN BỘ**\n\n` +
+
+                                        `🐟 Số cá: **${totalFish} con**\n` +
+
+                                        `⚖️ Tổng: **${totalKg.toFixed(2)} KG**\n` +
+
+                                        `💰 Giá trị hiện tại: **${formatMoney(
+                                            estimated
+                                        )} ${emoji.money}**\n\n` +
+
+                                        `Hành động này sẽ bán toàn bộ cá trong túi.\n` +
+
+                                        `📚 Bộ sưu tập và thành tích **không bị xóa**.\n\n` +
+
+                                        `୨୧ ───────── ୨୧`
+
+                                    )
+
+                                    .setFooter({
+
+                                        text:
+                                            "✦ Kiểm tra kỹ trước khi xác nhận"
+
+                                    })
+
+                            ],
+
+                            components: [
+                                row
+                            ]
+
+                        });
+                    }
+
+                    // ======================================
+                    // CONFIRM ALL
+                    // ======================================
+
+                    if (
+                        interaction.customId ===
+                        CUSTOM.CONFIRM_ALL
+                    ) {
+
+                        const result =
+                            sellManyFish(
+                                user,
+                                getTotalFish(user)
+                            );
+
+                        if (
+                            !result.ok
+                        ) {
+
+                            return interaction.update({
+
+                                embeds: [
+
+                                    new EmbedBuilder()
+
+                                        .setColor(
+                                            "#ff6b81"
+                                        )
+
+                                        .setDescription(
+                                            "❌ Không thể bán cá."
+                                        )
+
+                                ],
+
+                                components: []
+
+                            });
+                        }
+
+                        collector.stop(
+                            "completed"
+                        );
+
+                        return interaction.update({
+
+                            embeds: [
+
+                                createManyResultEmbed(
+                                    result
+                                )
+
+                            ],
+
+                            components: []
+
+                        });
+                    }
+
+                    // ======================================
+                    // CANCEL
+                    // ======================================
+
+                    if (
+                        interaction.customId ===
+                        CUSTOM.CANCEL
+                    ) {
+
+                        return interaction.update({
+
+                            embeds: [
+
+                                createMainEmbed(
+                                    user,
+                                    message
+                                )
+
+                            ],
+
+                            components:
+                                createMainButtons()
+
+                        });
+                    }
+
+                    // ======================================
+                    // CLOSE
+                    // ======================================
+
+                    if (
+                        interaction.customId ===
+                        CUSTOM.CLOSE
+                    ) {
+
+                        collector.stop(
+                            "closed"
+                        );
+
+                        return interaction.update({
+
+                            embeds: [
+
+                                new EmbedBuilder()
+
+                                    .setColor(
+                                        "#5865F2"
+                                    )
+
+                                    .setDescription(
+                                        "👋 Đã đóng **Fish Market**."
                                     )
 
                             ],
@@ -2066,334 +2395,273 @@ module.exports = {
                         });
                     }
 
-                    collector.stop(
-                        "completed"
-                    );
-
-                    return interaction.update({
-
-                        embeds: [
-
-                            createManyResultEmbed(
-                                result
-                            )
-
-                        ],
-
-                        components: []
-
-                    });
-                }
-
-                // ==========================================
-                // HỦY
-                // ==========================================
-
-                if (
-                    interaction.customId ===
-                    CUSTOM.CANCEL
-                ) {
-
-                    return interaction.update({
-
-                        embeds: [
-
-                            createMainEmbed(
-                                user,
-                                message
-                            )
-
-                        ],
-
-                        components:
-                            createMainButtons()
-
-                    });
-                }
-
-                // ==========================================
-                // ĐÓNG
-                // ==========================================
-
-                if (
-                    interaction.customId ===
-                    CUSTOM.CLOSE
-                ) {
-
-                    collector.stop(
-                        "closed"
-                    );
-
-                    return interaction.update({
-
-                        embeds: [
-
-                            new EmbedBuilder()
-
-                                .setColor(
-                                    "#5865F2"
-                                )
-
-                                .setDescription(
-                                    "👋 Đã đóng **Fish Market**."
-                                )
-
-                        ],
-
-                        components: []
-
-                    });
-                }
-
-                // ==========================================
-                // QUAY LẠI
-                // ==========================================
-
-                if (
-                    interaction.customId ===
-                    CUSTOM.BACK ||
-                    interaction.customId.startsWith(
-                        `${CUSTOM.BACK}_`
-                    )
-                ) {
-
-                    return interaction.update({
-
-                        embeds: [
-
-                            createMainEmbed(
-                                user,
-                                message
-                            )
-
-                        ],
-
-                        components:
-                            createMainButtons()
-
-                    });
-                }
-
-                // ==========================================
-                // SELECT CÁ
-                // ==========================================
-
-                if (
-                    interaction.customId.startsWith(
-                        "sell_select_"
-                    )
-                ) {
-
-                    const fishId =
-                        interaction.values[0];
-
-                    const inventoryNow =
-                        getInventoryFish(user);
-
-                    const item =
-                        inventoryNow.find(
-                            item =>
-                                String(
-                                    item.fishId
-                                ) ===
-                                String(
-                                    fishId
-                                )
-                        );
+                    // ======================================
+                    // BACK
+                    // ======================================
 
                     if (
-                        !item
+                        interaction.customId ===
+                        CUSTOM.BACK ||
+                        interaction.customId.startsWith(
+                            `${CUSTOM.BACK}_`
+                        )
                     ) {
 
-                        return interaction.reply({
+                        return interaction.update({
 
-                            content:
-                                "❌ Cá này không còn trong túi.",
+                            embeds: [
 
-                            ephemeral:
-                                true
+                                createMainEmbed(
+                                    user,
+                                    message
+                                )
+
+                            ],
+
+                            components:
+                                createMainButtons()
 
                         });
                     }
 
-                    return interaction.update({
-
-                        embeds: [
-
-                            createFishAmountEmbed(
-                                item,
-                                message
-                            )
-
-                        ],
-
-                        components:
-                            createAmountButtons(
-                                fishId,
-                                message.author.id,
-                                item.fishes.length
-                            )
-
-                    });
-                }
-
-                // ==========================================
-                // CHỌN SỐ LƯỢNG
-                // ==========================================
-
-                if (
-                    interaction.customId.startsWith(
-                        CUSTOM.AMOUNT_1
-                    ) ||
-                    interaction.customId.startsWith(
-                        CUSTOM.AMOUNT_5
-                    ) ||
-                    interaction.customId.startsWith(
-                        CUSTOM.AMOUNT_10
-                    ) ||
-                    interaction.customId.startsWith(
-                        CUSTOM.AMOUNT_ALL
-                    )
-                ) {
-
-                    const parts =
-                        interaction.customId.split(
-                            "_"
-                        );
-
-                    const fishId =
-                        parts[
-                            parts.length - 1
-                        ];
-
-                    let amount = 1;
+                    // ======================================
+                    // SELECT FISH
+                    // ======================================
 
                     if (
+                        interaction.customId.startsWith(
+                            "sell_select_"
+                        )
+                    ) {
+
+                        const fishId =
+                            interaction.values[0];
+
+                        const inventoryNow =
+                            getInventoryFish(user);
+
+                        const item =
+                            inventoryNow.find(
+                                item =>
+                                    String(
+                                        item.fishId
+                                    ) ===
+                                    String(
+                                        fishId
+                                    )
+                            );
+
+                        if (
+                            !item
+                        ) {
+
+                            return interaction.reply({
+
+                                content:
+                                    "❌ Cá này không còn trong túi.",
+
+                                ephemeral:
+                                    true
+
+                            });
+                        }
+
+                        return interaction.update({
+
+                            embeds: [
+
+                                createFishAmountEmbed(
+                                    item,
+                                    message
+                                )
+
+                            ],
+
+                            components:
+                                createAmountButtons(
+                                    fishId,
+                                    message.author.id,
+                                    item.fishes.length
+                                )
+
+                        });
+                    }
+
+                    // ======================================
+                    // AMOUNT PRESETS
+                    // ======================================
+
+                    if (
+                        interaction.customId.startsWith(
+                            CUSTOM.AMOUNT_1
+                        ) ||
                         interaction.customId.startsWith(
                             CUSTOM.AMOUNT_5
-                        )
-                    ) {
-                        amount = 5;
-                    }
-
-                    if (
+                        ) ||
                         interaction.customId.startsWith(
                             CUSTOM.AMOUNT_10
-                        )
-                    ) {
-                        amount = 10;
-                    }
-
-                    if (
+                        ) ||
                         interaction.customId.startsWith(
                             CUSTOM.AMOUNT_ALL
                         )
                     ) {
 
-                        const fishes =
-                            user.fish?.[
-                                fishId
+                        const parts =
+                            interaction.customId.split(
+                                "_"
+                            );
+
+                        const fishId =
+                            parts[
+                                parts.length - 1
                             ];
 
-                        amount =
-                            Array.isArray(fishes)
-                                ? fishes.length
-                                : 0;
-                    }
+                        let amount = 1;
 
-                    const result =
-                        sellSpecificFish(
-                            user,
-                            fishId,
-                            amount
+                        if (
+                            interaction.customId.startsWith(
+                                CUSTOM.AMOUNT_5
+                            )
+                        ) {
+
+                            amount = 5;
+                        }
+
+                        if (
+                            interaction.customId.startsWith(
+                                CUSTOM.AMOUNT_10
+                            )
+                        ) {
+
+                            amount = 10;
+                        }
+
+                        if (
+                            interaction.customId.startsWith(
+                                CUSTOM.AMOUNT_ALL
+                            )
+                        ) {
+
+                            const fishes =
+                                user.fish?.[
+                                    fishId
+                                ];
+
+                            amount =
+                                Array.isArray(
+                                    fishes
+                                )
+                                    ? fishes.length
+                                    : 0;
+                        }
+
+                        const result =
+                            sellSpecificFish(
+                                user,
+                                fishId,
+                                amount
+                            );
+
+                        if (
+                            !result.ok
+                        ) {
+
+                            return interaction.reply({
+
+                                content:
+                                    result.reason === "not_enough"
+                                        ? `❌ Bạn chỉ còn ${result.available} con.`
+                                        : "❌ Không thể bán cá.",
+
+                                ephemeral:
+                                    true
+
+                            });
+                        }
+
+                        collector.stop(
+                            "completed"
                         );
 
-                    if (
-                        !result.ok
-                    ) {
+                        return interaction.update({
 
-                        return interaction.reply({
+                            embeds: [
 
-                            content:
-                                result.reason === "not_enough"
-                                    ? `❌ Bạn chỉ còn ${result.available} con.`
-                                    : "❌ Không thể bán cá.",
+                                createSpecificResultEmbed(
+                                    result
+                                )
 
-                            ephemeral:
-                                true
+                            ],
+
+                            components: []
 
                         });
                     }
 
-                    collector.stop(
-                        "completed"
-                    );
+                    // ======================================
+                    // CUSTOM AMOUNT
+                    // ======================================
 
-                    return interaction.update({
+                    if (
+                        interaction.customId.startsWith(
+                            `${CUSTOM.AMOUNT_CUSTOM}_`
+                        )
+                    ) {
 
-                        embeds: [
+                        const parts =
+                            interaction.customId.split(
+                                "_"
+                            );
 
-                            createSpecificResultEmbed(
-                                result
+                        const fishId =
+                            parts[
+                                parts.length - 1
+                            ];
+
+                        return interaction.showModal(
+
+                            createAmountModal(
+                                message.author.id,
+                                fishId
                             )
 
-                        ],
-
-                        components: []
-
-                    });
-                }
-
-                // ==========================================
-                // NHẬP SỐ LƯỢNG CHO 1 LOẠI
-                // ==========================================
-
-                if (
-                    interaction.customId.startsWith(
-                        `${CUSTOM.AMOUNT_CUSTOM}_`
-                    )
-                ) {
-
-                    const parts =
-                        interaction.customId.split(
-                            "_"
                         );
+                    }
 
-                    const fishId =
-                        parts[
-                            parts.length - 1
-                        ];
+                } catch (error) {
 
-                    return interaction.showModal(
-
-                        createAmountModal(
-                            message.author.id,
-                            fishId
-                        )
-
+                    console.error(
+                        "[SELL COMPONENT ERROR]",
+                        error
                     );
-                }
 
+                    if (
+                        !interaction.replied &&
+                        !interaction.deferred
+                    ) {
+
+                        try {
+
+                            await interaction.reply({
+
+                                content:
+                                    "❌ Đã xảy ra lỗi khi xử lý bán cá.",
+
+                                ephemeral:
+                                    true
+
+                            });
+
+                        } catch {}
+                    }
+                }
             }
         );
 
         // ==================================================
-        // MODAL SUBMIT
+        // MODAL HANDLER
         // ==================================================
 
-        const modalCollector =
-            message.channel.createMessageComponentCollector({
-
-                time:
-                    120000
-
-            });
-
-        // Không dùng collector này cho modal.
-        // Modal interaction sẽ được bắt bằng interactionCreate
-        // trong bot chính nếu không xử lý ở command collector.
-        //
-        // Vì vậy ta dùng message.client listener tạm thời.
         const modalHandler =
             async interaction => {
 
@@ -2455,7 +2723,8 @@ module.exports = {
                                     createBackButton()
                                 ],
 
-                                ephemeral: true
+                                ephemeral:
+                                    true
 
                             });
                         }
@@ -2483,13 +2752,14 @@ module.exports = {
 
                             ],
 
-                            ephemeral: true
+                            ephemeral:
+                                true
 
                         });
                     }
 
                     // ======================================
-                    // BÁN NHIỀU
+                    // SELL MANY
                     // ======================================
 
                     if (
@@ -2579,7 +2849,7 @@ module.exports = {
                     }
 
                     // ======================================
-                    // NHẬP SỐ LƯỢNG 1 LOẠI
+                    // CUSTOM ONE FISH
                     // ======================================
 
                     if (
@@ -2695,12 +2965,10 @@ module.exports = {
                         });
                     }
 
-                } catch (
-                    error
-                ) {
+                } catch (error) {
 
                     console.error(
-                        "[SELL MODAL]",
+                        "[SELL MODAL ERROR]",
                         error
                     );
                 }
@@ -2710,6 +2978,10 @@ module.exports = {
             "interactionCreate",
             modalHandler
         );
+
+        // ==================================================
+        // CLEANUP
+        // ==================================================
 
         collector.on(
             "end",
@@ -2729,10 +3001,7 @@ module.exports = {
                     });
 
                 } catch {}
-
             }
         );
-
-        modalCollector.stop();
     }
 };

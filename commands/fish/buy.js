@@ -9,8 +9,133 @@ const {
 } = require("../../config");
 
 const {
+    getUser,
     save
 } = require("../../data");
+
+// ======================================================
+// HELPERS
+// ======================================================
+
+function num(value, fallback = 0) {
+    const n = Number(value);
+
+    return Number.isFinite(n)
+        ? n
+        : fallback;
+}
+
+function getPrice(item) {
+    return Math.max(
+        0,
+        num(item?.price, 0)
+    );
+}
+
+function getUses(item) {
+    return Math.max(
+        1,
+        num(item?.uses, 1)
+    );
+}
+
+function getMoney(user) {
+    return Math.max(
+        0,
+        num(user?.money, 0)
+    );
+}
+
+// ======================================================
+// FIND ITEM
+// ======================================================
+
+function findItem(id) {
+
+    if (!id) {
+        return null;
+    }
+
+    // --------------------------------------------------
+    // ROD
+    // --------------------------------------------------
+
+    if (rods?.[id]) {
+        return {
+            item: rods[id],
+            type: "rod"
+        };
+    }
+
+    // --------------------------------------------------
+    // BAIT
+    // --------------------------------------------------
+
+    if (baits?.[id]) {
+        return {
+            item: baits[id],
+            type: "bait"
+        };
+    }
+
+    // --------------------------------------------------
+    // KEY
+    // --------------------------------------------------
+
+    if (keys?.[id]) {
+        return {
+            item: keys[id],
+            type: "key"
+        };
+    }
+
+    // --------------------------------------------------
+    // INSURANCE
+    // --------------------------------------------------
+
+    if (insurance?.[id]) {
+        return {
+            item: insurance[id],
+            type: "insurance"
+        };
+    }
+
+    // --------------------------------------------------
+    // RATE STONE
+    // --------------------------------------------------
+
+    if (rateStone?.[id]) {
+        return {
+            item: rateStone[id],
+            type: "rateStone"
+        };
+    }
+
+    return null;
+}
+
+// ======================================================
+// ITEM NAME
+// ======================================================
+
+function itemName(
+    item,
+    id
+) {
+    return (
+        item?.name ||
+        id
+    );
+}
+
+function itemEmoji(
+    item
+) {
+    return (
+        item?.emoji ||
+        "📦"
+    );
+}
 
 // ======================================================
 // PURCHASE
@@ -23,8 +148,23 @@ function purchase(
 ) {
 
     // ==================================================
-    // CHECK AMOUNT
+    // USER
     // ==================================================
+
+    if (!user) {
+        return {
+            ok: false,
+            reason:
+                "╰・❌ Không tìm thấy dữ liệu người chơi"
+        };
+    }
+
+    // ==================================================
+    // AMOUNT
+    // ==================================================
+
+    amount =
+        Number(amount);
 
     if (
         !Number.isInteger(amount) ||
@@ -39,92 +179,13 @@ function purchase(
     }
 
     // ==================================================
-    // TÌM ITEM
+    // FIND ITEM
     // ==================================================
 
-    let item;
-    let type;
+    const found =
+        findItem(id);
 
-    // --------------------------------------------------
-    // ROD
-    // --------------------------------------------------
-
-    if (
-        rods?.[id]
-    ) {
-
-        item =
-            rods[id];
-
-        type =
-            "rod";
-    }
-
-    // --------------------------------------------------
-    // BAIT
-    // --------------------------------------------------
-
-    else if (
-        baits?.[id]
-    ) {
-
-        item =
-            baits[id];
-
-        type =
-            "bait";
-    }
-
-    // --------------------------------------------------
-    // KEY
-    // --------------------------------------------------
-
-    else if (
-        keys?.[id]
-    ) {
-
-        item =
-            keys[id];
-
-        type =
-            "key";
-    }
-
-    // --------------------------------------------------
-    // INSURANCE
-    // --------------------------------------------------
-
-    else if (
-        insurance?.[id]
-    ) {
-
-        item =
-            insurance[id];
-
-        type =
-            "insurance";
-    }
-
-    // --------------------------------------------------
-    // RATE STONE
-    // --------------------------------------------------
-
-    else if (
-        rateStone?.[id]
-    ) {
-
-        item =
-            rateStone[id];
-
-        type =
-            "rateStone";
-    }
-
-    // ==================================================
-    // KHÔNG TÌM THẤY
-    // ==================================================
-
-    else {
+    if (!found) {
 
         return {
             ok: false,
@@ -133,14 +194,20 @@ function purchase(
         };
     }
 
+    const {
+        item,
+        type
+    } = found;
+
     // ==================================================
-    // CẦN CÂU
+    // ROD CHECK
     // ==================================================
 
     if (
         type === "rod"
     ) {
 
+        // Cần chỉ mua từng cái
         if (
             amount !== 1
         ) {
@@ -152,26 +219,39 @@ function purchase(
             };
         }
 
-        const daSoHuu =
-            user.can &&
-            user.can.danhSach &&
-            user.can.danhSach[id];
+        user.can ??= {};
+        user.can.danhSach ??= {};
+        user.rodData ??= {};
 
-        const rodDataCu =
-            user.rodData &&
-            user.rodData[id];
-
-        const daGay =
-            daSoHuu &&
-            rodDataCu &&
-            (
-                rodDataCu.destroyed ||
-                Number(rodDataCu.uses) <= 0
+        const owned =
+            Boolean(
+                user.can.danhSach[id]
             );
 
+        const oldRod =
+            user.rodData[id];
+
+        // ------------------------------------------------
+        // KIỂM TRA CẦN ĐÃ GÃY
+        // ------------------------------------------------
+
+        const broken =
+            owned &&
+            (
+                oldRod?.destroyed === true ||
+                num(
+                    oldRod?.uses,
+                    0
+                ) <= 0
+            );
+
+        // ------------------------------------------------
+        // ĐÃ CÓ VÀ CHƯA GÃY
+        // ------------------------------------------------
+
         if (
-            daSoHuu &&
-            !daGay
+            owned &&
+            !broken
         ) {
 
             return {
@@ -183,19 +263,25 @@ function purchase(
     }
 
     // ==================================================
-    // GIÁ
+    // PRICE
     // ==================================================
 
+    const unitPrice =
+        getPrice(item);
+
     const price =
-        Number(item.price || 0) *
+        unitPrice *
         amount;
 
     // ==================================================
-    // CHECK MONEY
+    // MONEY
     // ==================================================
 
+    const money =
+        getMoney(user);
+
     if (
-        Number(user.money || 0) <
+        money <
         price
     ) {
 
@@ -205,7 +291,11 @@ function purchase(
             reason:
                 `╰・❌ Bạn cần ${formatMoney(price)} ${emoji.money} để mua`,
 
-            price
+            price,
+
+            unitPrice,
+
+            amount
         };
     }
 
@@ -213,96 +303,112 @@ function purchase(
     // TRỪ TIỀN
     // ==================================================
 
-    user.money -=
+    user.money =
+        money -
         price;
 
     // ==================================================
-    // MUA CẦN
+    // ROD
     // ==================================================
 
     if (
         type === "rod"
     ) {
 
-        if (
-            !user.can
-        ) {
+        user.can ??= {};
 
-            user.can = {
+        user.can.dangDung ??= null;
 
-                dangDung: null,
+        user.can.danhSach ??= {};
 
-                danhSach: {}
+        user.rodData ??= {};
 
-            };
-        }
-
-        if (
-            !user.can.danhSach
-        ) {
-
-            user.can.danhSach = {};
-        }
-
-        if (
-            !user.rodData
-        ) {
-
-            user.rodData = {};
-        }
+        // ------------------------------------------------
+        // ĐÁNH DẤU SỞ HỮU
+        // ------------------------------------------------
 
         user.can.danhSach[id] =
             1;
 
-        const rodDataCu =
+        const maxUses =
+            getUses(item);
+
+        const oldRod =
             user.rodData[id];
 
+        // ------------------------------------------------
+        // MUA LẠI CẦN ĐÃ GÃY
+        // ------------------------------------------------
+
         if (
-            rodDataCu
+            oldRod
         ) {
 
-            // Mua lại cần đã hỏng: giữ nguyên cấp độ & luck, chỉ hồi độ bền
-            rodDataCu.uses =
-                Number(
-                    item.uses
-                ) || 1;
+            // Giữ nguyên cấp
+            oldRod.level =
+                Math.max(
+                    0,
+                    num(
+                        oldRod.level,
+                        0
+                    )
+                );
 
-            rodDataCu.maxUses =
-                Number(
-                    item.uses
-                ) || 1;
+            // Giữ nguyên luck
+            oldRod.luck =
+                Math.max(
+                    0,
+                    num(
+                        oldRod.luck,
+                        item.luck ?? 0
+                    )
+                );
 
-            rodDataCu.destroyed =
+            // Hồi full độ bền
+            oldRod.uses =
+                maxUses;
+
+            oldRod.maxUses =
+                maxUses;
+
+            oldRod.destroyed =
                 false;
+        }
 
-        } else {
+        // ------------------------------------------------
+        // CẦN MỚI
+        // ------------------------------------------------
 
-            // Chưa từng sở hữu: khởi tạo mặc định
+        else {
+
             user.rodData[id] = {
 
                 level:
                     0,
 
                 luck:
-                    Number(
-                        item.luck
-                    ) || 1,
+                    Math.max(
+                        0,
+                        num(
+                            item.luck,
+                            0
+                        )
+                    ),
 
                 uses:
-                    Number(
-                        item.uses
-                    ) || 1,
+                    maxUses,
 
                 maxUses:
-                    Number(
-                        item.uses
-                    ) || 1,
+                    maxUses,
 
                 destroyed:
                     false
-
             };
         }
+
+        // ------------------------------------------------
+        // TỰ ĐỘNG TRANG BỊ NẾU CHƯA CÓ
+        // ------------------------------------------------
 
         if (
             !user.can.dangDung
@@ -314,91 +420,75 @@ function purchase(
     }
 
     // ==================================================
-    // MUA MỒI
+    // BAIT
     // ==================================================
 
-    if (
+    else if (
         type === "bait"
     ) {
 
-        if (
-            !user.moi
-        ) {
-
-            user.moi = {};
-        }
+        user.moi ??= {};
 
         user.moi[id] =
-            (
-                Number(
-                    user.moi[id]
-                ) || 0
+            num(
+                user.moi[id],
+                0
             ) +
             amount;
     }
 
     // ==================================================
-    // MUA KEY
+    // KEY
     // ==================================================
 
-    if (
+    else if (
         type === "key"
     ) {
 
-        if (
-            !user.keys
-        ) {
-
-            user.keys = {};
-        }
+        user.keys ??= {};
 
         user.keys[id] =
-            (
-                Number(
-                    user.keys[id]
-                ) || 0
+            num(
+                user.keys[id],
+                0
             ) +
             amount;
     }
 
     // ==================================================
-    // MUA BẢO HIỂM
+    // INSURANCE
     // ==================================================
 
-    if (
+    else if (
         type === "insurance"
     ) {
 
         user.insurance =
-            (
-                Number(
-                    user.insurance
-                ) || 0
+            num(
+                user.insurance,
+                0
             ) +
             amount;
     }
 
     // ==================================================
-    // MUA ĐÁ TĂNG RATE
+    // RATE STONE
     // ==================================================
 
-    if (
+    else if (
         type === "rateStone"
     ) {
 
-        // Dùng chung ô lưu trữ với commands/fish/upgrade.js (RATE_STONE_ID = "da_rate")
-        if (
-            !user.items
-        ) {
+        user.items ??= {};
 
-            user.items = {};
-        }
+        // Dùng chung với:
+        // commands/fish/upgrade.js
+        // RATE_STONE_ID = "da_rate"
 
         user.items.da_rate =
-            (
-                Number(
-                    user.items.da_rate
-                ) || 0
+            num(
+                user.items.da_rate,
+                0
             ) +
             amount;
     }
@@ -422,21 +512,211 @@ function purchase(
 
         type,
 
-        price
+        id,
 
+        amount,
+
+        price,
+
+        unitPrice
     };
 }
 
 // ======================================================
-// MODULE
-//
-// Không còn là lệnh gõ tay (fbuy/fb) — mua vật phẩm giờ
-// chỉ thực hiện qua nút bấm trong fshop. purchase() vẫn
-// được export vì index.js (xử lý nút bấm shop) cần dùng.
+// COMMAND
 // ======================================================
 
 module.exports = {
 
-    purchase
+    name: "buy",
 
+    aliases: [
+        "b",
+        "fbuy"
+    ],
+
+    // ==================================================
+    // EXECUTE
+    // ==================================================
+
+    async execute(
+        message,
+        args
+    ) {
+
+        try {
+
+            // ==================================================
+            // USER
+            // ==================================================
+
+            const userID =
+                message.author.id;
+
+            const user =
+                getUser(
+                    userID
+                );
+
+            if (!user) {
+
+                return message.reply(
+                    "❌ Không tìm thấy dữ liệu người chơi."
+                );
+            }
+
+            // ==================================================
+            // ARGUMENT
+            // ==================================================
+
+            const id =
+                args?.[0];
+
+            if (!id) {
+
+                return message.reply(
+                    [
+                        "╭・🛒 **MUA VẬT PHẨM**",
+                        "│",
+                        "│ Cú pháp:",
+                        "│ `buy <id> <số lượng>`",
+                        "│",
+                        "│ Ví dụ:",
+                        "│ `buy moi_thuong 10`",
+                        "│ `buy can_1 1`",
+                        "╰・💡 Bạn cũng có thể mua trực tiếp bằng nút trong shop."
+                    ].join("\n")
+                );
+            }
+
+            // ==================================================
+            // AMOUNT
+            // ==================================================
+
+            let amount = 1;
+
+            if (
+                args?.[1] !== undefined
+            ) {
+
+                amount =
+                    Number(
+                        args[1]
+                    );
+            }
+
+            // ==================================================
+            // PURCHASE
+            // ==================================================
+
+            const result =
+                purchase(
+                    user,
+                    id,
+                    amount
+                );
+
+            // ==================================================
+            // FAILED
+            // ==================================================
+
+            if (!result.ok) {
+
+                return message.reply(
+                    result.reason
+                );
+            }
+
+            // ==================================================
+            // SUCCESS DATA
+            // ==================================================
+
+            const item =
+                result.item;
+
+            const name =
+                itemName(
+                    item,
+                    id
+                );
+
+            const icon =
+                itemEmoji(
+                    item
+                );
+
+            const remainingMoney =
+                getMoney(
+                    user
+                );
+
+            // ==================================================
+            // ROD SUCCESS
+            // ==================================================
+
+            if (
+                result.type === "rod"
+            ) {
+
+                const rod =
+                    user.rodData?.[id];
+
+                return message.reply({
+
+                    content:
+                        [
+                            "╭・🎣 **MUA CẦN THÀNH CÔNG**",
+                            "│",
+                            `│ ${icon} **${name}**`,
+                            `│ ⭐ Cấp: **${num(rod?.level, 0)}**`,
+                            `│ 🍀 Luck: **${num(rod?.luck, 0)}**`,
+                            `│ 🛠️ Độ bền: **${num(rod?.uses, 0)}/${num(rod?.maxUses, 0)}**`,
+                            "│",
+                            `│ 💰 Đã trả: **${formatMoney(result.price)}** ${emoji.money}`,
+                            `│ 💳 Còn lại: **${formatMoney(remainingMoney)}** ${emoji.money}`,
+                            "╰・🎣 Cần đã được thêm vào kho."
+                        ].join("\n")
+                });
+            }
+
+            // ==================================================
+            // NORMAL ITEM SUCCESS
+            // ==================================================
+
+            return message.reply({
+
+                content:
+                    [
+                        "╭・🛒 **MUA HÀNG THÀNH CÔNG**",
+                        "│",
+                        `│ ${icon} **${name}** x${result.amount}`,
+                        "│",
+                        `│ 💰 Đã trả: **${formatMoney(result.price)}** ${emoji.money}`,
+                        `│ 💳 Còn lại: **${formatMoney(remainingMoney)}** ${emoji.money}`,
+                        "╰・✅ Vật phẩm đã được thêm vào túi."
+                    ].join("\n")
+            });
+
+        } catch (error) {
+
+            console.error(
+                "❌ BUY COMMAND ERROR:",
+                error
+            );
+
+            try {
+
+                return message.reply(
+                    "❌ Đã xảy ra lỗi khi mua vật phẩm."
+                );
+
+            } catch {}
+        }
+    },
+
+    // ==================================================
+    // EXPORT PURCHASE
+    // ==================================================
+
+    purchase
 };
