@@ -22,6 +22,11 @@ const {
 } = require("./dictionary");
 
 
+const {
+    prefix
+} = require("../config");
+
+
 const REWARD_NORMAL = 300;
 
 const REWARD_DEADEND = 1000;
@@ -407,6 +412,13 @@ function notifyAndDelete(message,text){
 async function handleMessage(message){
 
     if(message.author.bot)
+        return false;
+
+    // Tin nhắn dạng lệnh (VD "fnoitu stop") không được coi là 1 lượt
+    // nối từ - nếu không, cụm "fnoitu stop" (đúng 2 từ) có thể lọt vào
+    // validateEntry, bị chấm sai âm đầu và chặn mất, khiến lệnh stop
+    // không bao giờ chạy tới được.
+    if(message.content.trim().toLowerCase().startsWith(prefix))
         return false;
 
 

@@ -13,13 +13,14 @@ const {
 
 
 const {
-    isAdmin
-} = require("../admin");
-
-
-const {
     prefix
 } = require("../config");
+
+
+// Chống spam lệnh stop: mỗi user phải đợi giữa 2 lần dùng.
+const STOP_COOLDOWN_MS = 30_000;
+
+const lastStopAttempt = new Map();
 
 
 
@@ -37,11 +38,23 @@ module.exports = {
 
         if(lang === "stop"){
 
-            if(!isAdmin(message.author.id))
+            const now = Date.now();
+
+            const last = lastStopAttempt.get(message.author.id) || 0;
+
+            if(now - last < STOP_COOLDOWN_MS){
+
+                const remain = Math.ceil(
+                    (STOP_COOLDOWN_MS - (now - last)) / 1000
+                );
 
                 return message.reply(
-                    "╰・❌ Chỉ admin mới được dừng ván nối từ"
+                    `╰・⚠️ Đừng spam lệnh dừng, đợi thêm ${remain}s rồi thử lại.`
                 );
+
+            }
+
+            lastStopAttempt.set(message.author.id, now);
 
 
             if(!stopGame(message.channel.id))
@@ -61,7 +74,7 @@ module.exports = {
         if(lang !== "vi" && lang !== "en")
 
             return message.reply(
-                `╰・❌ Cách dùng: \`${prefix}noitu vi\` (nối từ tiếng Việt), \`${prefix}noitu en\` (word chain tiếng Anh) hoặc \`${prefix}noitu stop\` (admin)`
+                `╰・❌ Cách dùng: \`${prefix}noitu vi\` (nối từ tiếng Việt), \`${prefix}noitu en\` (word chain tiếng Anh) hoặc \`${prefix}noitu stop\` (dừng ván)`
             );
 
 
@@ -102,13 +115,13 @@ lang === "vi"
 
 Nhập cụm 2 từ, từ đầu phải là từ cuối của cụm trên (VD: **${starter}** → **${starter.split(" ")[1]} ...**)
 Nối đúng: +300 xu · Nối được từ cuối (hết từ để nối tiếp): +1,000 xu
-📊 Round: ${getRoundCount("vi")}/10 · Không tự dừng, chơi đến khi hết từ hoặc admin gõ \`${prefix}noitu stop\``
+📊 Round: ${getRoundCount("vi")}/10 · Không tự dừng, chơi đến khi hết từ hoặc ai đó gõ \`${prefix}noitu stop\``
 :
 `Starting word: **${starter}**
 
 Type a word starting with **${starter[starter.length-1]}**, no repeats.
 Correct word: +300 xu · Word that ends the chain (no continuation left): +1,000 xu
-📊 Round: ${getRoundCount("en")}/10 · No auto-stop, keeps going until dead-end or an admin runs \`${prefix}noitu stop\``
+📊 Round: ${getRoundCount("en")}/10 · No auto-stop, keeps going until dead-end or anyone runs \`${prefix}noitu stop\``
 
                 )
 
