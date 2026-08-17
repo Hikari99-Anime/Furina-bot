@@ -8,7 +8,7 @@ on:
         required: false
         default: "150"
       mode:
-        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2 | nahida-diag"
+        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2 | nahida-diag | set-tokens"
         required: false
         default: "logs"
       env_line:
@@ -112,6 +112,34 @@ jobs:
               pm2 restart nahida-bot
               sleep 3
               pm2 logs nahida-bot --lines 40 --nostream
+            elif [ "${{ github.event.inputs.mode }}" = "set-tokens" ]; then
+              cd /root/Furina-bot
+              touch .env
+              if grep -q "^TOKEN=" .env; then
+                sed -i "s|^TOKEN=.*|TOKEN=${{ secrets.FURINA_TOKEN }}|" .env
+              else
+                echo "TOKEN=${{ secrets.FURINA_TOKEN }}" >> .env
+              fi
+              echo "Updated Furina-bot TOKEN in .env"
+
+              cd /root/Nahida-bot
+              touch .env
+              if grep -q "^DISCORD_TOKEN=" .env; then
+                sed -i "s|^DISCORD_TOKEN=.*|DISCORD_TOKEN=${{ secrets.NAHIDA_TOKEN }}|" .env
+              else
+                echo "DISCORD_TOKEN=${{ secrets.NAHIDA_TOKEN }}" >> .env
+              fi
+              echo "Updated Nahida-bot DISCORD_TOKEN in .env"
+
+              pm2 restart furina-bot
+              pm2 restart nahida-bot
+              sleep 4
+              echo "--- pm2 list sau restart ---"
+              pm2 list
+              echo "--- nahida-bot log gần nhất (kiểm tra còn TokenInvalid không) ---"
+              pm2 logs nahida-bot --lines 20 --nostream
+              echo "--- furina-bot log gần nhất ---"
+              pm2 logs furina-bot --lines 10 --nostream
             else
               pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
             fi
