@@ -71,17 +71,38 @@ module.exports = {
         }
 
 
+        if(lang === "state"){
+
+            const game = getGame(message.channel.id);
+
+            if(!game)
+
+                return message.reply(
+                    "╰・ℹ️ Hiện không có ván nối từ nào đang diễn ra ở channel này"
+                );
+
+            return message.reply(
+                `╰・ℹ️ Đang có ván nối từ **${game.lang === "vi" ? "tiếng Việt" : "tiếng Anh (word chain)"}** diễn ra ở channel này\n` +
+                `🔗 Từ/cụm hiện tại: **${game.current}**\n` +
+                `📊 Chuỗi: ${game.chainLength} từ · Round: ${getRoundCount(game.lang)}/10`
+            );
+
+        }
+
+
         if(lang !== "vi" && lang !== "en")
 
             return message.reply(
-                `╰・❌ Cách dùng: \`${prefix}noitu vi\` (nối từ tiếng Việt), \`${prefix}noitu en\` (word chain tiếng Anh) hoặc \`${prefix}noitu stop\` (dừng ván)`
+                `╰・❌ Cách dùng: \`${prefix}noitu vi\` (nối từ tiếng Việt), \`${prefix}noitu en\` (word chain tiếng Anh), \`${prefix}noitu state\` (xem ván đang diễn ra) hoặc \`${prefix}noitu stop\` (dừng ván)`
             );
 
 
-        if(getGame(message.channel.id))
+        const existing = getGame(message.channel.id);
+
+        if(existing)
 
             return message.reply(
-                "╰・❌ Đang có ván nối từ diễn ra ở channel này!"
+                `╰・❌ Đang có ván nối từ **${existing.lang === "vi" ? "tiếng Việt" : "tiếng Anh"}** diễn ra ở channel này! Dùng \`${prefix}noitu stop\` để dừng ván hiện tại trước khi bắt đầu ván mới.`
             );
 
 
