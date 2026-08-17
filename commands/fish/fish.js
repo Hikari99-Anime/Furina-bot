@@ -32,6 +32,7 @@ const COLORS = {
     danger: "#ff4d67",
 
     common: "#95a5a6",
+    uncommon: "#2ecc71",
     rare: "#3498db",
     epic: "#9b59b6",
     legendary: "#f1c40f",
@@ -86,6 +87,7 @@ const FOOTER = {
 // ======================================================
 
 function num(value, fallback = 0) {
+
     const n = Number(value);
 
     return Number.isFinite(n)
@@ -94,12 +96,14 @@ function num(value, fallback = 0) {
 }
 
 function round(value, decimal = 2) {
+
     return Number(
         num(value).toFixed(decimal)
     );
 }
 
 function luck(value) {
+
     return Math.max(
         0,
         round(value)
@@ -107,10 +111,11 @@ function luck(value) {
 }
 
 // ======================================================
-// RARITY NORMALIZE
+// RARITY
 // ======================================================
 
 function normalizeRarity(value) {
+
     return String(
         value || "common"
     )
@@ -119,18 +124,13 @@ function normalizeRarity(value) {
         .replace(/-/g, "_");
 }
 
-// ======================================================
-// RARITY ORDER
-// ======================================================
-
 function getRarityOrder(rarity) {
 
     const key =
         normalizeRarity(rarity);
 
     if (
-        RARITY_ORDER[key] !==
-        undefined
+        RARITY_ORDER[key] !== undefined
     ) {
         return RARITY_ORDER[key];
     }
@@ -139,8 +139,7 @@ function getRarityOrder(rarity) {
         fishingConfig?.rarities?.[key];
 
     if (
-        configRarity?.order !==
-        undefined
+        configRarity?.order !== undefined
     ) {
         return num(
             configRarity.order,
@@ -150,10 +149,6 @@ function getRarityOrder(rarity) {
 
     return 1;
 }
-
-// ======================================================
-// RARITY DISPLAY
-// ======================================================
 
 function rarityDisplay(fish) {
 
@@ -168,6 +163,7 @@ function rarityDisplay(fish) {
     if (configRarity) {
 
         return {
+
             key: rarity,
 
             name:
@@ -204,7 +200,7 @@ function rarityDisplay(fish) {
         uncommon: {
             name: "UNCOMMON",
             emoji: "🟢",
-            color: "#2ecc71"
+            color: COLORS.uncommon
         },
 
         rare: {
@@ -290,16 +286,14 @@ function rarityDisplay(fish) {
 
     return {
         ...result,
-
         key: rarity,
-
         order:
             getRarityOrder(rarity)
     };
 }
 
 // ======================================================
-// LIFETIME STATS
+// STATS
 // ======================================================
 
 function ensureStats(user) {
@@ -333,10 +327,6 @@ function ensureStats(user) {
         );
 }
 
-// ======================================================
-// ADD STATS
-// ======================================================
-
 function addFishStats(
     user,
     weight
@@ -359,6 +349,7 @@ function addFishStats(
         safeWeight >
         user.stats.biggestFish
     ) {
+
         user.stats.biggestFish =
             safeWeight;
     }
@@ -394,7 +385,6 @@ function createEmbed({
             .setAuthor({
                 name:
                     `${message.author.username} · Fishing`,
-
                 iconURL:
                     message.author.displayAvatarURL({
                         extension: "png",
@@ -426,7 +416,6 @@ function getCurrentZone() {
     const now =
         new Date();
 
-    // Chủ nhật = Volcano
     if (
         now.getDay() === 0 &&
         fishingZones.volcano
@@ -470,10 +459,6 @@ function formatRod(
         )}`
     );
 }
-
-// ======================================================
-// DURABILITY BAR
-// ======================================================
 
 function durabilityBar(
     current,
@@ -528,7 +513,7 @@ function durabilityBar(
 }
 
 // ======================================================
-// FISH RATE
+// FISH
 // ======================================================
 
 function fishRate(fish) {
@@ -541,10 +526,6 @@ function fishRate(fish) {
         )
     );
 }
-
-// ======================================================
-// FISH WEIGHT
-// ======================================================
 
 function fishWeight(fish) {
 
@@ -612,7 +593,10 @@ function rarityMultiplier(
         mythical: 0.18,
 
         super_rare: 0.22,
+        "super rare": 0.22,
+
         ultra_rare: 0.25,
+        "ultra rare": 0.25,
 
         divine: 0.28,
         celestial: 0.30,
@@ -806,7 +790,11 @@ function createBaitButtons(
             );
         }
 
-        rows.push(row);
+        if (
+            row.components.length
+        ) {
+            rows.push(row);
+        }
     }
 
     return rows;
@@ -856,7 +844,7 @@ function saveCollection(
 }
 
 // ======================================================
-// COUNTDOWN BAR
+// COUNTDOWN
 // ======================================================
 
 function countdownBar(
@@ -938,8 +926,10 @@ async function fishingCountdown({
             try {
 
                 await baitMessage.edit({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1082,10 +1072,219 @@ function bestRarity(
 }
 
 // ======================================================
-// MODULE
+// RETRY MESSAGE
 // ======================================================
 
-module.exports = {
+function makeRetryMessage(
+    interaction,
+    amount
+) {
+
+    return {
+
+        ...interaction.message,
+
+        author:
+            interaction.user,
+
+        channel:
+            interaction.channel,
+
+        guild:
+            interaction.guild,
+
+        client:
+            interaction.client,
+
+        reply:
+            async data => {
+
+                return interaction.message.edit(
+                    data
+                );
+            }
+    };
+}
+
+// ======================================================
+// RETRY HANDLER
+// ======================================================
+
+async function processRetry(
+    interaction,
+    command
+) {
+
+    const customID =
+        interaction.customId;
+
+    if (
+        !customID.startsWith(
+            "fishretry_"
+        )
+    ) {
+        return false;
+    }
+
+    const parts =
+        customID.split("_");
+
+    const ownerID =
+        parts[1];
+
+    const amount =
+        Number(parts[2]);
+
+    // ==================================================
+    // OWNER
+    // ==================================================
+
+    if (
+        interaction.user.id !==
+        ownerID
+    ) {
+
+        try {
+
+            await interaction.reply({
+                content:
+                    "❌ Đây không phải nút câu cá của bạn.",
+                ephemeral: true
+            });
+
+        } catch {}
+
+        return true;
+    }
+
+    // ==================================================
+    // AMOUNT
+    // ==================================================
+
+    if (
+        !Number.isInteger(amount) ||
+        amount <= 0 ||
+        amount > 50
+    ) {
+
+        try {
+
+            await interaction.reply({
+                content:
+                    "❌ Số lần câu không hợp lệ.",
+                ephemeral: true
+            });
+
+        } catch {}
+
+        return true;
+    }
+
+    // ==================================================
+    // LOCK
+    // ==================================================
+
+    if (
+        fishingLocks.has(ownerID)
+    ) {
+
+        try {
+
+            await interaction.reply({
+                content:
+                    "⏳ Bạn đang câu cá, hãy đợi lượt hiện tại hoàn tất.",
+                ephemeral: true
+            });
+
+        } catch {}
+
+        return true;
+    }
+
+    // ==================================================
+    // ACK BUTTON
+    // ==================================================
+
+    try {
+
+        await interaction.deferUpdate();
+
+    } catch (error) {
+
+        console.error(
+            "❌ RETRY DEFER ERROR:",
+            error
+        );
+
+        return true;
+    }
+
+    // ==================================================
+    // REMOVE OLD BUTTON
+    // ==================================================
+
+    try {
+
+        await interaction.message.edit({
+            components: []
+        });
+
+    } catch {}
+
+    // ==================================================
+    // FAKE MESSAGE
+    // ==================================================
+
+    const fakeMessage =
+        makeRetryMessage(
+            interaction,
+            amount
+        );
+
+    // ==================================================
+    // EXECUTE AGAIN
+    // ==================================================
+
+    try {
+
+        await command.execute(
+            fakeMessage,
+            [
+                String(amount)
+            ]
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ RETRY EXECUTE ERROR:",
+            error
+        );
+
+        try {
+
+            await interaction.message.edit({
+
+                content:
+                    "❌ Đã xảy ra lỗi khi câu lại.",
+
+                embeds: [],
+
+                components: []
+
+            });
+
+        } catch {}
+    }
+
+    return true;
+}
+
+// ======================================================
+// COMMAND
+// ======================================================
+
+const command = {
 
     name: "fish",
 
@@ -1108,198 +1307,18 @@ module.exports = {
             return false;
         }
 
-        const customID =
-            interaction.customId ||
-            "";
-
-        // ==================================================
-        // RETRY BUTTON
-        // ==================================================
-
         if (
-            customID.startsWith(
+            !interaction.customId.startsWith(
                 "fishretry_"
             )
         ) {
-
-            /*
-             * Format:
-             *
-             * fishretry_OWNERID_AMOUNT
-             *
-             * Không dùng split("_").pop()
-             * cho bait vì bait ID có thể chứa "_".
-             */
-
-            const data =
-                customID.slice(
-                    "fishretry_".length
-                );
-
-            const lastUnderscore =
-                data.lastIndexOf("_");
-
-            if (
-                lastUnderscore === -1
-            ) {
-
-                await interaction.reply({
-                    content:
-                        "❌ Nút câu cá không hợp lệ.",
-                    ephemeral: true
-                });
-
-                return true;
-            }
-
-            const ownerID =
-                data.slice(
-                    0,
-                    lastUnderscore
-                );
-
-            const amount =
-                Number(
-                    data.slice(
-                        lastUnderscore + 1
-                    )
-                );
-
-            // ==================================================
-            // OWNER
-            // ==================================================
-
-            if (
-                interaction.user.id !==
-                ownerID
-            ) {
-
-                await interaction.reply({
-                    content:
-                        "❌ Đây không phải nút câu cá của bạn.",
-                    ephemeral: true
-                });
-
-                return true;
-            }
-
-            // ==================================================
-            // AMOUNT
-            // ==================================================
-
-            if (
-                !Number.isInteger(amount) ||
-                amount <= 0 ||
-                amount > 50
-            ) {
-
-                await interaction.reply({
-                    content:
-                        "❌ Số lần câu không hợp lệ.",
-                    ephemeral: true
-                });
-
-                return true;
-            }
-
-            // ==================================================
-            // LOCK
-            // ==================================================
-
-            if (
-                fishingLocks.has(ownerID)
-            ) {
-
-                await interaction.reply({
-                    content:
-                        "⏳ Bạn đang câu cá, hãy đợi lượt hiện tại hoàn tất.",
-                    ephemeral: true
-                });
-
-                return true;
-            }
-
-            // ==================================================
-            // ACK INTERACTION
-            // ==================================================
-
-            await interaction.deferUpdate();
-
-            // ==================================================
-            // FAKE MESSAGE
-            // ==================================================
-
-            /*
-             * QUAN TRỌNG:
-             *
-             * Không được gọi interaction.reply()
-             * sau interaction.deferUpdate().
-             *
-             * Vì vậy fakeMessage.reply()
-             * sẽ edit message hiện tại.
-             */
-
-            const fakeMessage = {
-
-                ...interaction.message,
-
-                author:
-                    interaction.user,
-
-                channel:
-                    interaction.channel,
-
-                client:
-                    interaction.client,
-
-                guild:
-                    interaction.guild,
-
-                reply:
-                    async data => {
-
-                        return interaction.message.edit(
-                            data
-                        );
-                    }
-            };
-
-            // ==================================================
-            // XÓA NÚT CŨ
-            // ==================================================
-
-            try {
-
-                await interaction.message.edit({
-                    components: []
-                });
-
-            } catch {}
-
-            // ==================================================
-            // CHẠY LẠI
-            // ==================================================
-
-            await this.execute(
-                fakeMessage,
-                [
-                    String(amount)
-                ]
-            );
-
-            return true;
+            return false;
         }
 
-        // ==================================================
-        // FISH BAIT BUTTON
-        //
-        // Trường hợp này chủ yếu được xử lý bởi
-        // awaitMessageComponent() trong execute().
-        // Nếu hệ thống index.js bắt toàn bộ button,
-        // không return true ở đây để tránh nuốt interaction.
-        // ==================================================
-
-        return false;
+        return processRetry(
+            interaction,
+            this
+        );
     },
 
     // ==================================================
@@ -1334,7 +1353,7 @@ module.exports = {
                 setTimeout(
                     () =>
                         warning
-                            .delete()
+                            ?.delete()
                             .catch(
                                 () => {}
                             ),
@@ -1362,8 +1381,10 @@ module.exports = {
             if (!user) {
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1413,8 +1434,10 @@ module.exports = {
                 ) {
 
                     return message.reply({
+
                         embeds: [
                             createEmbed({
+
                                 message,
 
                                 color:
@@ -1437,8 +1460,10 @@ module.exports = {
                 ) {
 
                     return message.reply({
+
                         embeds: [
                             createEmbed({
+
                                 message,
 
                                 color:
@@ -1465,8 +1490,10 @@ module.exports = {
             if (!zone) {
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1492,8 +1519,10 @@ module.exports = {
             if (!rodID) {
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1524,8 +1553,10 @@ module.exports = {
             ) {
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1595,8 +1626,10 @@ module.exports = {
             ) {
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1632,8 +1665,10 @@ module.exports = {
             ) {
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1698,8 +1733,10 @@ module.exports = {
                         .join("\n");
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1750,8 +1787,10 @@ module.exports = {
             ) {
 
                 return message.reply({
+
                     embeds: [
                         createEmbed({
+
                             message,
 
                             color:
@@ -1769,7 +1808,7 @@ module.exports = {
             }
 
             // ==================================================
-            // CHOOSE BAIT
+            // BAIT MESSAGE
             // ==================================================
 
             const ownerID =
@@ -1854,21 +1893,10 @@ module.exports = {
                             time: 30000
                         });
 
-                // ==================================================
-                // LẤY BAIT ID
-                // ==================================================
-
-                const baitPrefix =
-                    `fishbait_${ownerID}_`;
-
                 baitID =
-                    interaction.customId.slice(
-                        baitPrefix.length
-                    );
-
-                // ==================================================
-                // CHECK BAIT
-                // ==================================================
+                    interaction.customId
+                        .split("_")
+                        .pop();
 
                 const count =
                     baitCount(
@@ -1909,10 +1937,6 @@ module.exports = {
 
                     return;
                 }
-
-                // ==================================================
-                // PREPARE
-                // ==================================================
 
                 await interaction.update({
 
@@ -1964,7 +1988,6 @@ module.exports = {
 
                             description:
                                 `Bạn không chọn mồi trong **30 giây**.\n\n` +
-
                                 `💡 Dùng lại \`${prefix}fish ${amount}\`.`
                         })
                     ],
@@ -2071,9 +2094,9 @@ module.exports = {
                     break;
                 }
 
-                // ==================================================
+                // ------------------------------------------
                 // BAIT
-                // ==================================================
+                // ------------------------------------------
 
                 user.moi[
                     baitID
@@ -2088,9 +2111,9 @@ module.exports = {
                         ] || 0
                     ) + 1;
 
-                // ==================================================
+                // ------------------------------------------
                 // ROD
-                // ==================================================
+                // ------------------------------------------
 
                 rod.uses =
                     Math.max(
@@ -2098,9 +2121,9 @@ module.exports = {
                         rod.uses - 1
                     );
 
-                // ==================================================
+                // ------------------------------------------
                 // FISH
-                // ==================================================
+                // ------------------------------------------
 
                 const fish =
                     randomFish(
@@ -2114,18 +2137,18 @@ module.exports = {
 
                 actualCaught++;
 
-                // ==================================================
+                // ------------------------------------------
                 // WEIGHT
-                // ==================================================
+                // ------------------------------------------
 
                 const weight =
                     fishWeight(
                         fish
                     );
 
-                // ==================================================
+                // ------------------------------------------
                 // INVENTORY
-                // ==================================================
+                // ------------------------------------------
 
                 user.fish[
                     fish.id
@@ -2137,27 +2160,27 @@ module.exports = {
                     weight
                 );
 
-                // ==================================================
+                // ------------------------------------------
                 // COLLECTION
-                // ==================================================
+                // ------------------------------------------
 
                 saveCollection(
                     user,
                     fish.id
                 );
 
-                // ==================================================
+                // ------------------------------------------
                 // STATS
-                // ==================================================
+                // ------------------------------------------
 
                 addFishStats(
                     user,
                     weight
                 );
 
-                // ==================================================
+                // ------------------------------------------
                 // SUMMARY
-                // ==================================================
+                // ------------------------------------------
 
                 if (
                     !caught[
@@ -2174,6 +2197,7 @@ module.exports = {
                         count: 0,
 
                         weight: 0
+
                     };
                 }
 
@@ -2188,7 +2212,7 @@ module.exports = {
             }
 
             // ==================================================
-            // ROD BREAK
+            // ROD
             // ==================================================
 
             if (
@@ -2197,7 +2221,8 @@ module.exports = {
 
                 rod.uses = 0;
 
-                rod.destroyed = true;
+                rod.destroyed =
+                    true;
             }
 
             // ==================================================
@@ -2313,10 +2338,6 @@ module.exports = {
                     .join(" · ") ||
                 "-";
 
-            // ==================================================
-            // REMAINING BAIT
-            // ==================================================
-
             const remaining =
                 baitCount(
                     user,
@@ -2346,7 +2367,7 @@ module.exports = {
                 );
 
             // ==================================================
-            // RESULT COLOR
+            // COLOR
             // ==================================================
 
             const resultColor =
@@ -2401,33 +2422,231 @@ module.exports = {
                 );
 
             // ==================================================
-            // FINAL MESSAGE
+            // EDIT RESULT
             // ==================================================
 
-            return baitMessage.edit({
+            const resultMessage =
+                await baitMessage.edit({
 
-                embeds: [
-                    createEmbed({
+                    embeds: [
+                        createEmbed({
 
-                        message,
+                            message,
 
-                        color:
-                            resultColor,
+                            color:
+                                resultColor,
 
-                        title:
-                            "🎣 FISHING COMPLETE",
+                            title:
+                                "🎣 FISHING COMPLETE",
 
-                        description:
-                            resultDescription
-                    })
-                ],
+                            description:
+                                resultDescription
+                        })
+                    ],
 
-                components:
-                    createRetryButton(
-                        ownerID,
-                        amount
-                    )
-            });
+                    components:
+                        createRetryButton(
+                            ownerID,
+                            amount
+                        )
+                });
+
+            // ==================================================
+            // QUAN TRỌNG:
+            // TỰ BẮT NÚT CÂU LẠI
+            // ==================================================
+
+            const retryCollector =
+                resultMessage.createMessageComponentCollector({
+
+                    filter:
+                        interaction =>
+                            interaction.isButton() &&
+                            interaction.customId ===
+                                `fishretry_${ownerID}_${amount}`,
+
+                    time: 60000,
+
+                    max: 1
+                });
+
+            retryCollector.on(
+                "collect",
+                async interaction => {
+
+                    // ------------------------------------------
+                    // ACK BUTTON
+                    // ------------------------------------------
+
+                    if (
+                        interaction.user.id !==
+                        ownerID
+                    ) {
+
+                        try {
+
+                            await interaction.reply({
+
+                                content:
+                                    "❌ Đây không phải nút câu cá của bạn.",
+
+                                ephemeral: true
+
+                            });
+
+                        } catch {}
+
+                        return;
+                    }
+
+                    // ------------------------------------------
+                    // CHECK LOCK
+                    // ------------------------------------------
+
+                    if (
+                        fishingLocks.has(
+                            ownerID
+                        )
+                    ) {
+
+                        try {
+
+                            await interaction.reply({
+
+                                content:
+                                    "⏳ Bạn đang câu cá, hãy đợi lượt hiện tại hoàn tất.",
+
+                                ephemeral: true
+
+                            });
+
+                        } catch {}
+
+                        return;
+                    }
+
+                    // ------------------------------------------
+                    // ACK
+                    // ------------------------------------------
+
+                    try {
+
+                        await interaction.deferUpdate();
+
+                    } catch (error) {
+
+                        console.error(
+                            "❌ RETRY DEFER ERROR:",
+                            error
+                        );
+
+                        return;
+                    }
+
+                    // ------------------------------------------
+                    // REMOVE BUTTON
+                    // ------------------------------------------
+
+                    try {
+
+                        await resultMessage.edit({
+                            components: []
+                        });
+
+                    } catch {}
+
+                    // ------------------------------------------
+                    // FAKE MESSAGE
+                    // ------------------------------------------
+
+                    const retryMessage = {
+
+                        ...resultMessage,
+
+                        author:
+                            interaction.user,
+
+                        channel:
+                            interaction.channel,
+
+                        guild:
+                            interaction.guild,
+
+                        client:
+                            interaction.client,
+
+                        reply:
+                            async data => {
+
+                                return resultMessage.edit(
+                                    data
+                                );
+                            }
+                    };
+
+                    // ------------------------------------------
+                    // RUN AGAIN
+                    // ------------------------------------------
+
+                    try {
+
+                        await command.execute(
+                            retryMessage,
+                            [
+                                String(amount)
+                            ]
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            "❌ RETRY EXECUTE ERROR:",
+                            error
+                        );
+
+                        try {
+
+                            await resultMessage.edit({
+
+                                content:
+                                    "❌ Đã xảy ra lỗi khi câu lại.",
+
+                                embeds: [],
+
+                                components: []
+
+                            });
+
+                        } catch {}
+                    }
+                }
+            );
+
+            // ==================================================
+            // COLLECTOR END
+            // ==================================================
+
+            retryCollector.on(
+                "end",
+                async () => {
+
+                    try {
+
+                        const current =
+                            await resultMessage.fetch();
+
+                        if (
+                            current.components.length
+                        ) {
+
+                            await resultMessage.edit({
+                                components: []
+                            });
+                        }
+
+                    } catch {}
+                }
+            );
 
         } catch (error) {
 
@@ -2459,13 +2678,12 @@ module.exports = {
                 });
 
             } catch {}
-        }
 
-        // ==================================================
-        // UNLOCK
-        // ==================================================
+        } finally {
 
-        finally {
+            // ==================================================
+            // UNLOCK
+            // ==================================================
 
             fishingLocks.delete(
                 userID
@@ -2473,3 +2691,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = command;
