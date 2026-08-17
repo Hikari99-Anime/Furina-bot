@@ -8,7 +8,7 @@ on:
         required: false
         default: "150"
       mode:
-        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2 | nahida-diag | set-tokens | git-conflict-diag | git-resolve-keep-live"
+        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2 | nahida-diag | set-tokens | git-conflict-diag | git-resolve-keep-live | git-finalize-untrack"
         required: false
         default: "logs"
       env_line:
@@ -189,6 +189,25 @@ jobs:
               echo "--- npm install + pm2 restart ---"
               npm install
               pm2 restart furina-bot
+            elif [ "${{ github.event.inputs.mode }}" = "git-finalize-untrack" ]; then
+              cd /root/Furina-bot
+              echo "--- truoc khi resolve ---"
+              git status
+              echo "--- xac nhan file van con noi dung tren disk ---"
+              wc -l data.json noitu_state.json giftcodes.json 2>&1
+              echo "--- git rm --cached (chi bo khoi index, GIU nguyen file tren disk) ---"
+              git rm --cached data.json giftcodes.json noitu_state.json 2>&1
+              echo "--- git status sau khi resolve ---"
+              git status
+              echo "--- xac nhan file VAN CON tren disk sau git rm --cached ---"
+              wc -l data.json noitu_state.json giftcodes.json 2>&1
+              echo "--- stash list ---"
+              git stash list
+              git stash drop 2>&1 || echo "khong co stash de drop"
+              echo "--- git log -1 ---"
+              git log -1 --oneline
+              echo "--- git status cuoi cung ---"
+              git status
             else
               pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
             fi
