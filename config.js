@@ -1598,42 +1598,35 @@ const levelConfig = {
 };
 
 
+
 // ==========================================================
-// FISHING CONFIG
+// SELL CONFIG
+// ==========================================================
+//
+// Giá bán thực tế:
+//
+// fish.price × weight × multiplier
+//
+// 0.60 = chỉ nhận 60% giá trị gốc.
+//
+// Mục tiêu:
+// - Cá thường: lời ít
+// - Cá rare: có lời
+// - Epic: lời khá
+// - Legendary: rất lời nhưng hiếm
+// - Mythical: jackpot
+//
 // ==========================================================
 
-const fishingConfig = {
+const sellConfig = {
 
-    cooldown: 6000,
+    multiplier: 0.60,
 
-    minWeight: 0.5,
+    minPrice: 5,
 
-    maxWeight: 100,
-
-    bonusChance: 5,
-
-    // ======================================================
-    // CÂU HỤT
-    // ======================================================
-    //
-    // 12% lượt câu không bắt được cá.
-    //
-    missChance = 12,
-    //
-    // Nghĩa là trung bình 100 lượt:
-    // ~12 lượt hụt.
-    // ======================================================
-
-    missChance: 12,
-
-    trashChance: 15,
-
-    limitWeightByConfig: true,
-
-    trashEnabled: true
+    trashSellPrice: 0
 
 };
-
 
 // ==========================================================
 // ECONOMY
@@ -2163,33 +2156,61 @@ function calculateFishSellPrice(
 
     }
 
-    if (
-        fish.sellPrice !== undefined
-    ) {
-
-        return Math.max(
-            0,
-            Number(
-                fish.sellPrice
-            ) || 0
-        );
-
-    }
-
     const safeWeight =
         Math.max(
             0,
             Number(weight) || 0
         );
 
-    const price =
-        Number(fish.price) *
-        safeWeight *
+    const basePrice =
+        Number(fish.price) || 0;
+
+    // ======================================================
+    // SELL MULTIPLIER THEO RARITY
+    // ======================================================
+    //
+    // Common      = 55%
+    // Rare        = 60%
+    // Epic        = 65%
+    // Legendary   = 72%
+    // Mythical    = 80%
+    //
+    // Cá hiếm vẫn đáng câu,
+    // nhưng cá thường không thể farm tiền quá nhanh.
+    //
+    // ======================================================
+
+    const rarityMultiplier = {
+
+        common: 0.55,
+
+        rare: 0.60,
+
+        epic: 0.65,
+
+        legendary: 0.72,
+
+        mythical: 0.80
+
+    };
+
+    const multiplier =
+        rarityMultiplier[
+            fish.rarity
+        ] ??
         sellConfig.multiplier;
 
+    const price =
+        basePrice *
+        safeWeight *
+        multiplier;
+
     return Math.max(
+
         sellConfig.minPrice,
+
         Math.floor(price)
+
     );
 
 }

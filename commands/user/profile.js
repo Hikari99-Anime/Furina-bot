@@ -14,6 +14,11 @@ const {
     getUser
 } = require("../../data");
 
+
+// ======================================================
+// PROFILE COMMAND
+// ======================================================
+
 module.exports = {
 
     name: "profile",
@@ -26,9 +31,9 @@ module.exports = {
 
     async execute(message) {
 
-        // ======================================================
+        // ==================================================
         // USER
-        // ======================================================
+        // ==================================================
 
         const target =
             message.mentions.users.first() ||
@@ -36,6 +41,7 @@ module.exports = {
 
         const user =
             getUser(target.id);
+
 
         if (!user) {
 
@@ -58,7 +64,8 @@ module.exports = {
                         )
 
                         .setFooter({
-                            text: "✦ Fishing Adventure"
+                            text:
+                                "✦ Fishing Adventure"
                         })
 
                         .setTimestamp()
@@ -69,12 +76,15 @@ module.exports = {
 
         }
 
-        // ======================================================
+
+        // ==================================================
         // FIX DATA
-        // ======================================================
+        // ==================================================
 
         user.money =
-            Number(user.money || 0);
+            Number(
+                user.money || 0
+            );
 
         user.fish ??= {};
         user.moi ??= {};
@@ -82,51 +92,208 @@ module.exports = {
         user.can ??= {};
 
         user.daily ??= {
+
             last: 0,
+
             streak: 0
+
         };
 
-        // ======================================================
+
+        // ==================================================
+        // STATS LỊCH SỬ CÂU CÁ
+        // ==================================================
+        //
+        // QUAN TRỌNG:
+        //
+        // user.fish
+        // = cá hiện đang còn trong túi
+        //
+        // user.stats
+        // = thống kê từ trước tới nay
+        //
+        // Vì vậy bán hết cá cũng không làm mất
+        // tổng số cá đã câu.
+        //
+        // ==================================================
+
+        user.stats ??= {};
+
+        user.stats.totalFishCaught =
+            Number(
+                user.stats.totalFishCaught || 0
+            );
+
+        user.stats.totalWeightCaught =
+            Number(
+                user.stats.totalWeightCaught || 0
+            );
+
+        user.stats.biggestFish =
+            Number(
+                user.stats.biggestFish || 0
+            );
+
+
+        // ==================================================
+        // MIGRATE DATA CŨ
+        // ==================================================
+        //
+        // Nếu trước đây bot chưa có stats,
+        // profile sẽ lấy dữ liệu cá đang còn trong túi
+        // làm số liệu ban đầu.
+        //
+        // Chỉ chạy khi totalFishCaught = 0.
+        //
+        // ==================================================
+
+        if (
+            user.stats.totalFishCaught <= 0
+        ) {
+
+            let oldTotalFish = 0;
+
+            let oldTotalWeight = 0;
+
+            let oldBiggestFish = 0;
+
+
+            for (
+                const id in user.fish
+            ) {
+
+                const fishInventory =
+                    user.fish[id];
+
+
+                if (
+                    !Array.isArray(
+                        fishInventory
+                    )
+                ) {
+
+                    continue;
+
+                }
+
+
+                oldTotalFish +=
+                    fishInventory.length;
+
+
+                for (
+                    const value
+                    of fishInventory
+                ) {
+
+                    const weight =
+                        Number(value);
+
+
+                    if (
+                        Number.isFinite(weight) &&
+                        weight > 0
+                    ) {
+
+                        oldTotalWeight +=
+                            weight;
+
+
+                        if (
+                            weight >
+                            oldBiggestFish
+                        ) {
+
+                            oldBiggestFish =
+                                weight;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+
+            user.stats.totalFishCaught =
+                oldTotalFish;
+
+
+            user.stats.totalWeightCaught =
+                oldTotalWeight;
+
+
+            user.stats.biggestFish =
+                oldBiggestFish;
+
+        }
+
+
+        // ==================================================
         // CẦN ĐANG DÙNG
-        // ======================================================
+        // ==================================================
 
         let rodText =
             "🎣 Chưa trang bị";
 
         let rodLevel = 0;
+
         let rodLuck = 0;
+
         let rodUses = 0;
+
         let rodMaxUses = 0;
+
 
         const rodId =
             user.can.dangDung;
+
 
         if (rodId) {
 
             const base =
                 rods?.[rodId];
 
+
             const rod =
                 user.rodData?.[rodId];
 
-            if (base && rod) {
+
+            if (
+                base &&
+                rod
+            ) {
 
                 rodLevel =
-                    Number(rod.level || 0);
+                    Number(
+                        rod.level || 0
+                    );
+
 
                 rodLuck =
-                    Number(rod.luck || 0);
+                    Number(
+                        rod.luck || 0
+                    );
+
 
                 rodUses =
-                    Number(rod.uses || 0);
+                    Number(
+                        rod.uses || 0
+                    );
+
 
                 rodMaxUses =
-                    Number(rod.maxUses || 0);
+                    Number(
+                        rod.maxUses || 0
+                    );
+
 
                 const title =
                     rodTitles?.[rodLevel]
                         ? ` · ${rodTitles[rodLevel]}`
                         : "";
+
 
                 rodText =
                     `${base.emoji || "🎣"} ${base.name} +${rodLevel}${title}`;
@@ -135,83 +302,112 @@ module.exports = {
 
         }
 
-        // ======================================================
-        // THỐNG KÊ CÁ
-        // ======================================================
 
-        let totalFish = 0;
-        let totalWeight = 0;
-        let biggestFish = 0;
+        // ==================================================
+        // THỐNG KÊ CÁ HIỆN CÓ
+        // ==================================================
+        //
+        // Chỉ dùng để đếm số loài hiện đang sở hữu.
+        //
+        // KHÔNG dùng để tính tổng cá đã câu.
+        //
+        // ==================================================
+
         let fishSpecies = 0;
 
-        for (const id in user.fish) {
 
-            const fishList =
+        for (
+            const id in user.fish
+        ) {
+
+            const fishInventory =
                 user.fish[id];
 
-            if (!Array.isArray(fishList)) {
+
+            if (
+                !Array.isArray(
+                    fishInventory
+                )
+            ) {
+
                 continue;
+
             }
 
-            if (fishList.length > 0) {
+
+            if (
+                fishInventory.length > 0
+            ) {
+
                 fishSpecies++;
-            }
-
-            totalFish +=
-                fishList.length;
-
-            for (const value of fishList) {
-
-                const weight =
-                    Number(value);
-
-                if (
-                    Number.isFinite(weight) &&
-                    weight > 0
-                ) {
-
-                    totalWeight += weight;
-
-                    if (
-                        weight >
-                        biggestFish
-                    ) {
-
-                        biggestFish =
-                            weight;
-
-                    }
-
-                }
 
             }
 
         }
 
-        // ======================================================
+
+        // ==================================================
+        // LỊCH SỬ CÂU CÁ
+        // ==================================================
+
+        const totalFish =
+            Math.max(
+                0,
+                Math.floor(
+                    Number(
+                        user.stats.totalFishCaught
+                    ) || 0
+                )
+            );
+
+
+        const totalWeight =
+            Math.max(
+                0,
+                Number(
+                    user.stats.totalWeightCaught
+                ) || 0
+            );
+
+
+        const biggestFish =
+            Math.max(
+                0,
+                Number(
+                    user.stats.biggestFish
+                ) || 0
+            );
+
+
+        // ==================================================
         // DAILY
-        // ======================================================
+        // ==================================================
 
         const dailyStreak =
             Number(
                 user.daily?.streak || 0
             );
 
-        // ======================================================
+
+        // ==================================================
         // MỒI
-        // ======================================================
+        // ==================================================
 
         const baitText =
-            Object.keys(baits || {})
+            Object.keys(
+                baits || {}
+            )
                 .map(id => {
 
                     const bait =
                         baits[id];
 
+
                     const amount =
                         Number(
                             user.moi?.[id] || 0
                         );
+
 
                     return (
                         `${bait?.emoji || "🪱"} ${amount}`
@@ -219,72 +415,106 @@ module.exports = {
 
                 })
                 .join(" · ") ||
+
             "Chưa có mồi";
 
-        // ======================================================
+
+        // ==================================================
         // ĐỘ BỀN
-        // ======================================================
+        // ==================================================
 
         let durability =
             "Chưa trang bị";
 
-        if (rodMaxUses > 0) {
+
+        if (
+            rodMaxUses > 0
+        ) {
 
             const percent =
                 Math.max(
+
                     0,
+
                     Math.min(
+
                         100,
+
                         Math.floor(
-                            (rodUses /
-                                rodMaxUses) *
-                            100
+
+                            (
+                                rodUses /
+                                rodMaxUses
+                            ) * 100
+
                         )
+
                     )
+
                 );
+
 
             durability =
                 `${percent}%`;
 
         }
 
-        // ======================================================
+
+        // ==================================================
         // DANH HIỆU NGƯ DÂN
-        // ======================================================
+        // ==================================================
 
         let fishermanTitle =
             "🎣 Tân Ngư Dân";
 
-        if (totalFish >= 1000) {
+
+        if (
+            totalFish >= 1000
+        ) {
 
             fishermanTitle =
                 "👑 Ngư Vương";
 
-        } else if (totalFish >= 500) {
+        }
+
+        else if (
+            totalFish >= 500
+        ) {
 
             fishermanTitle =
                 "🏆 Cao Thủ Câu Cá";
 
-        } else if (totalFish >= 100) {
+        }
+
+        else if (
+            totalFish >= 100
+        ) {
 
             fishermanTitle =
                 "🎣 Ngư Dân Chuyên Nghiệp";
 
-        } else if (totalFish >= 25) {
+        }
+
+        else if (
+            totalFish >= 25
+        ) {
 
             fishermanTitle =
                 "🐟 Ngư Dân Tập Sự";
 
         }
 
-        // ======================================================
+
+        // ==================================================
         // PROFILE EMBED
-        // ======================================================
+        // ==================================================
 
         const embed =
             new EmbedBuilder()
 
-                .setColor("#89DDFF")
+                .setColor(
+                    "#89DDFF"
+                )
 
                 .setThumbnail(
                     target.displayAvatarURL({
@@ -298,16 +528,21 @@ module.exports = {
                     `୨୧ ───────────── ୨୧\n` +
 
                     `👤 **HỒ SƠ ${target.username}**\n` +
+
                     `✦ ${fishermanTitle}\n\n` +
 
                     `💰 ${formatMoney(user.money)} ${emoji.money}\n` +
 
                     `🎣 ${rodText}  ·  🍀 ${rodLuck}  ·  🛠️ ${durability}\n\n` +
 
-                    `🐟 ${totalFish.toLocaleString()} cá  ·  📚 ${fishSpecies} loài\n` +
-                    `⚖️ ${totalWeight.toFixed(2)} KG  ·  🏆 ${biggestFish.toFixed(2)} KG\n\n` +
+                    `🐟 **${totalFish.toLocaleString()}** cá đã câu  ·  📚 ${fishSpecies} loài đang có\n` +
+
+                    `⚖️ **${totalWeight.toFixed(2)} KG** tổng đã câu\n` +
+
+                    `🏆 **${biggestFish.toFixed(2)} KG** kỷ lục lớn nhất\n\n` +
 
                     `🪱 ${baitText}\n` +
+
                     `🔥 Daily ${dailyStreak} ngày\n\n` +
 
                     `୨୧ ───────────── ୨୧`
@@ -315,9 +550,16 @@ module.exports = {
                 )
 
                 .setFooter({
+
                     text:
                         "✦ Fishing Adventure · Profile"
+
                 });
+
+
+        // ==================================================
+        // SEND
+        // ==================================================
 
         return message.reply({
 
