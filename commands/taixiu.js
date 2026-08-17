@@ -43,83 +43,51 @@ const SO_PAYOUT = {
 };
 
 // ======================================================
-// FURINA RANDOM QUOTES
+// FURINA QUOTES
 // ======================================================
 
 const FURINA_QUOTES = {
-
     start: [
-        "“Một màn trình diễn mới sắp bắt đầu...” — Furina",
-        "“Khán giả đã sẵn sàng chưa? Vở diễn chính thức bắt đầu!” — Furina",
-        "“Hãy để ta xem hôm nay, số phận sẽ mỉm cười với ai.” — Furina",
-        "“Mọi ánh mắt hướng lên sân khấu. Màn trình diễn bắt đầu!” — Furina",
-        "“Fontaine hôm nay thật náo nhiệt... thật thích hợp cho một ván cược.” — Furina"
+        "“Màn diễn bắt đầu!” — Furina",
+        "“Vận may, hãy lên tiếng!” — Furina",
+        "“Tất cả chú ý nào!” — Furina"
     ],
-
     betting: [
-        "“Hãy lựa chọn thật cẩn thận... số phận đang dõi theo ngươi.” — Furina",
-        "“Đừng chỉ đứng nhìn! Hãy đưa ra lựa chọn của ngươi!” — Furina",
-        "“Một quyết định nhỏ cũng có thể thay đổi toàn bộ màn diễn.” — Furina",
-        "“Hmm... ta đang rất tò mò xem vận may thuộc về ai.” — Furina",
-        "“Nhanh lên nào, sân khấu không chờ đợi bất kỳ ai.” — Furina"
+        "“Chọn thật cẩn thận.” — Furina",
+        "“Vận may đang đến.” — Furina",
+        "“Đừng chần chừ!” — Furina"
     ],
-
     warning: [
-        "“Nhanh lên nào... màn diễn sắp đến hồi kết rồi.” — Furina",
-        "“Chỉ còn một chút thời gian! Đừng để cơ hội vụt mất!” — Furina",
-        "“Màn kịch sắp đến hồi cao trào rồi!” — Furina",
-        "“Khoảnh khắc quyết định đang đến gần...” — Furina",
-        "“Số phận sắp được hé lộ... thật hồi hộp!” — Furina"
+        "“Sắp hết giờ!” — Furina",
+        "“Nhanh lên nào!” — Furina",
+        "“Thời khắc quyết định!” — Furina"
     ],
-
     result: [
-        "“Và đây... chính là khoảnh khắc mà tất cả chúng ta chờ đợi.” — Furina",
-        "“Vở diễn đã hạ màn. Hãy xem ai là người được số phận mỉm cười.” — Furina",
-        "“Một kết quả thật đáng nhớ... xin chúc mừng người chiến thắng!” — Furina",
-        "“Màn trình diễn kết thúc, nhưng câu chuyện của người chiến thắng mới bắt đầu.” — Furina",
-        "“Một màn trình diễn tuyệt đẹp... quả nhiên rất xứng đáng với Fontaine.” — Furina"
+        "“Và đây là kết quả...” — Furina",
+        "“Màn diễn hạ màn!” — Furina",
+        "“Ai sẽ chiến thắng?” — Furina"
     ]
 };
 
 function randomFurinaQuote(type) {
-
-    const quotes =
-        FURINA_QUOTES[type] ||
-        FURINA_QUOTES.betting;
-
-    return quotes[
-        Math.floor(
-            Math.random() * quotes.length
-        )
-    ];
+    const quotes = FURINA_QUOTES[type] || FURINA_QUOTES.betting;
+    return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
 // ======================================================
 // EMBED
 // ======================================================
 
-function createEmbed(
-    color,
-    title,
-    description
-) {
-
+function createEmbed(color, title, description) {
     return new EmbedBuilder()
-
         .setColor(color)
-
         .setTitle(title)
-
         .setDescription(
-            `୨୧ ───────── ୨୧\n\n` +
-            description +
-            `\n\n୨୧ ───────── ୨୧`
+            `୨୧ ───────── ୨୧\n\n${description}\n\n୨୧ ───────── ୨୧`
         )
-
         .setFooter({
             text: "✦ Furina · Fontaine · Tài Xỉu"
         })
-
         .setTimestamp();
 }
 
@@ -128,33 +96,20 @@ function createEmbed(
 // ======================================================
 
 function nhanCua(p) {
-
-    if (p.type === "tai")
-        return "✦ TÀI";
-
-    if (p.type === "xiu")
-        return "✧ XỈU";
-
-    if (p.type === "chan")
-        return "◇ CHẴN";
-
-    if (p.type === "le")
-        return "❖ LẺ";
-
-    if (p.type === "so")
-        return `♢ SỐ ${p.number}`;
-
+    if (p.type === "tai") return "✦ TÀI";
+    if (p.type === "xiu") return "✧ XỈU";
+    if (p.type === "chan") return "◇ CHẴN";
+    if (p.type === "le") return "❖ LẺ";
+    if (p.type === "so") return `♢ SỐ ${p.number}`;
     return "◇ KHÔNG RÕ";
 }
 
 // ======================================================
-// FORMAT TIỀN
+// MONEY
 // ======================================================
 
 function money(value) {
-
-    return Number(value || 0)
-        .toLocaleString("en-US");
+    return Number(value || 0).toLocaleString("en-US");
 }
 
 // ======================================================
@@ -162,17 +117,10 @@ function money(value) {
 // ======================================================
 
 function tongCuoc(game) {
-
-    if (
-        !game ||
-        !Array.isArray(game.players)
-    ) {
-        return 0;
-    }
+    if (!game || !Array.isArray(game.players)) return 0;
 
     return game.players.reduce(
-        (sum, p) =>
-            sum + Number(p.money || 0),
+        (sum, p) => sum + Number(p.money || 0),
         0
     );
 }
@@ -182,18 +130,10 @@ function tongCuoc(game) {
 // ======================================================
 
 function soNguoiCuoc(game) {
-
-    if (
-        !game ||
-        !Array.isArray(game.players)
-    ) {
-        return 0;
-    }
+    if (!game || !Array.isArray(game.players)) return 0;
 
     return new Set(
-        game.players.map(
-            p => p.id
-        )
+        game.players.map(p => p.id)
     ).size;
 }
 
@@ -202,109 +142,77 @@ function soNguoiCuoc(game) {
 // ======================================================
 
 function danhSachCuoc(game) {
-
     if (
         !game ||
         !Array.isArray(game.players) ||
         !game.players.length
     ) {
-
         return "*Chưa có ai đặt cược...*";
     }
 
     const byUser = new Map();
 
     for (const p of game.players) {
-
         if (!byUser.has(p.id)) {
-
-            byUser.set(
-                p.id,
-                []
-            );
-
+            byUser.set(p.id, []);
         }
 
-        byUser
-            .get(p.id)
-            .push(
-                `${nhanCua(p)} \`${money(p.money)}\``
-            );
+        byUser.get(p.id).push(
+            `${nhanCua(p)} \`${money(p.money)}\``
+        );
     }
 
     const lines = [];
 
-    for (
-        const [id, bets]
-        of byUser
-    ) {
-
+    for (const [id, bets] of byUser) {
         lines.push(
-            `<@${id}>\n` +
-            `└ ${bets.join(" · ")}`
+            `<@${id}>\n└ ${bets.join(" · ")}`
         );
-
     }
 
     return lines.join("\n\n");
 }
 
 // ======================================================
-// ROW NÚT
+// BUTTONS
 // ======================================================
 
 function createRows() {
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId("tx_tai")
+            .setLabel("✦ TÀI")
+            .setStyle(ButtonStyle.Danger),
 
-    const row =
-        new ActionRowBuilder()
-            .addComponents(
+        new ButtonBuilder()
+            .setCustomId("tx_xiu")
+            .setLabel("✧ XỈU")
+            .setStyle(ButtonStyle.Primary),
 
-                new ButtonBuilder()
-                    .setCustomId("tx_tai")
-                    .setLabel("✦ TÀI")
-                    .setStyle(
-                        ButtonStyle.Danger
-                    ),
+        new ButtonBuilder()
+            .setCustomId("tx_chan")
+            .setLabel("◇ CHẴN")
+            .setStyle(ButtonStyle.Secondary),
 
-                new ButtonBuilder()
-                    .setCustomId("tx_xiu")
-                    .setLabel("✧ XỈU")
-                    .setStyle(
-                        ButtonStyle.Primary
-                    ),
+        new ButtonBuilder()
+            .setCustomId("tx_le")
+            .setLabel("❖ LẺ")
+            .setStyle(ButtonStyle.Secondary),
 
-                new ButtonBuilder()
-                    .setCustomId("tx_chan")
-                    .setLabel("◇ CHẴN")
-                    .setStyle(
-                        ButtonStyle.Secondary
-                    ),
-
-                new ButtonBuilder()
-                    .setCustomId("tx_le")
-                    .setLabel("❖ LẺ")
-                    .setStyle(
-                        ButtonStyle.Secondary
-                    ),
-
-                new ButtonBuilder()
-                    .setCustomId("tx_so")
-                    .setLabel("♢ CHỌN SỐ")
-                    .setStyle(
-                        ButtonStyle.Success
-                    )
-
-            );
+        new ButtonBuilder()
+            .setCustomId("tx_so")
+            .setLabel("♢ CHỌN SỐ")
+            .setStyle(ButtonStyle.Success)
+    );
 
     return [row];
 }
 
 // ======================================================
-// MODAL CƯỢC
+// MODAL CƯỢC THƯỜNG
 // ======================================================
 
 function createBetModal(type) {
-
     const names = {
         tai: "✦ TÀI",
         xiu: "✧ XỈU",
@@ -312,32 +220,19 @@ function createBetModal(type) {
         le: "❖ LẺ"
     };
 
-    const modal =
-        new ModalBuilder()
-            .setCustomId(
-                `txbet_${type}`
-            )
-            .setTitle(
-                `Cược ${names[type]}`
-            );
+    const modal = new ModalBuilder()
+        .setCustomId(`txbet_${type}`)
+        .setTitle(`Cược ${names[type]}`);
 
-    const input =
-        new TextInputBuilder()
-            .setCustomId("money")
-            .setLabel("Số tiền cược")
-            .setPlaceholder(
-                "Ví dụ: 10000"
-            )
-            .setStyle(
-                TextInputStyle.Short
-            )
-            .setRequired(true);
+    const input = new TextInputBuilder()
+        .setCustomId("money")
+        .setLabel("Số tiền cược")
+        .setPlaceholder("Ví dụ: 10000")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
     modal.addComponents(
-
-        new ActionRowBuilder()
-            .addComponents(input)
-
+        new ActionRowBuilder().addComponents(input)
     );
 
     return modal;
@@ -348,92 +243,48 @@ function createBetModal(type) {
 // ======================================================
 
 function createNumberModal() {
+    const modal = new ModalBuilder()
+        .setCustomId("txbet_so")
+        .setTitle("♢ CƯỢC CHỌN SỐ");
 
-    const modal =
-        new ModalBuilder()
-            .setCustomId(
-                "txbet_so"
-            )
-            .setTitle(
-                "♢ CƯỢC CHỌN SỐ"
-            );
+    const numberInput = new TextInputBuilder()
+        .setCustomId("sonum")
+        .setLabel("Tổng 3 xúc xắc (3 - 18)")
+        .setPlaceholder("Ví dụ: 12")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-    const numberInput =
-        new TextInputBuilder()
-            .setCustomId("sonum")
-            .setLabel(
-                "Tổng 3 xúc xắc (3 - 18)"
-            )
-            .setPlaceholder(
-                "Ví dụ: 12"
-            )
-            .setStyle(
-                TextInputStyle.Short
-            )
-            .setRequired(true);
-
-    const moneyInput =
-        new TextInputBuilder()
-            .setCustomId("money")
-            .setLabel(
-                "Số tiền cược"
-            )
-            .setPlaceholder(
-                "Ví dụ: 10000"
-            )
-            .setStyle(
-                TextInputStyle.Short
-            )
-            .setRequired(true);
+    const moneyInput = new TextInputBuilder()
+        .setCustomId("money")
+        .setLabel("Số tiền cược")
+        .setPlaceholder("Ví dụ: 10000")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
     modal.addComponents(
-
-        new ActionRowBuilder()
-            .addComponents(
-                numberInput
-            ),
-
-        new ActionRowBuilder()
-            .addComponents(
-                moneyInput
-            )
-
+        new ActionRowBuilder().addComponents(numberInput),
+        new ActionRowBuilder().addComponents(moneyInput)
     );
 
     return modal;
 }
 
 // ======================================================
-// ERROR REPLY
+// ERROR
 // ======================================================
 
-async function errorReply(
-    interaction,
-    title,
-    description
-) {
-
-    if (
-        interaction.replied ||
-        interaction.deferred
-    ) {
-        return;
-    }
+async function errorReply(interaction, title, description) {
+    if (interaction.replied || interaction.deferred) return;
 
     await interaction.reply({
-
         embeds: [
-
             createEmbed(
                 "#F7C8D0",
                 title,
                 description
             )
-
         ],
-
         ephemeral: true
-
     });
 }
 
@@ -442,7 +293,6 @@ async function errorReply(
 // ======================================================
 
 module.exports = {
-
     name: "taixiu",
 
     aliases: [
@@ -457,57 +307,37 @@ module.exports = {
         // ==================================================
 
         if (getGame()) {
-
             return message.reply({
-
                 embeds: [
-
                     createEmbed(
-
                         "#F8D49D",
+                        "✧ TÀI XỈU",
+                        `“Một ván vẫn đang diễn ra...” — Furina
 
-                        "✧ 𝑻à𝒊 𝑿ỉ𝒖",
-
-                        `*“Một ván vẫn đang diễn ra... hãy kiên nhẫn.”* — Furina
-
-> ♡ **Ván hiện tại chưa kết thúc.**
-
-Hãy chờ màn trình diễn hiện tại hạ màn
-rồi tham gia ván tiếp theo.`
-
+> ♡ Hãy chờ màn diễn hiện tại hạ màn.`
                     )
-
                 ]
-
             });
-
         }
 
         // ==================================================
         // CREATE GAME
         // ==================================================
 
-        const game =
-            createGame();
+        const game = createGame();
 
         let time = 30;
 
         // ==================================================
-        // MESSAGE
+        // FIRST MESSAGE
         // ==================================================
 
-        const msg =
-            await message.channel.send({
-
-                embeds: [
-
-                    createEmbed(
-
-                        "#B8D8FF",
-
-                        "✦ 𝑻à𝒊 𝑿ỉ𝒖",
-
-                        `${randomFurinaQuote("start")}
+        const msg = await message.channel.send({
+            embeds: [
+                createEmbed(
+                    "#B8D8FF",
+                    "✦ TÀI XỈU",
+                    `${randomFurinaQuote("start")}
 
 **✦ TÀI**
 **✧ XỈU**
@@ -515,8 +345,10 @@ rồi tham gia ván tiếp theo.`
 **❖ LẺ**
 **♢ CHỌN SỐ**
 
-Chọn một cửa bên dưới và nhập
-số xu mà bạn muốn đặt cược.
+Chọn một cửa bên dưới và nhập số xu muốn đặt.
+
+**⏳ Thời gian**
+> \`30 giây\`
 
 **👥 Người đặt cược**
 > \`0 người\`
@@ -524,60 +356,33 @@ số xu mà bạn muốn đặt cược.
 **💰 Tổng cược**
 > \`0 xu\`
 
-*Fontaine đang chờ đợi lựa chọn của bạn...*`
-
-                    )
-
-                ],
-
-                components:
-                    createRows()
-
-            });
+*Fontaine đang chờ lựa chọn của bạn...*`
+                )
+            ],
+            components: createRows()
+        });
 
         // ==================================================
-        // UPDATE MESSAGE
+        // UPDATE EMBED
         // ==================================================
 
-        const updateMessage =
-            async () => {
+        const updateMessage = async () => {
+            if (!game) return;
 
-                if (!game)
-                    return;
+            try {
+                const players = danhSachCuoc(game);
+                const playerCount = soNguoiCuoc(game);
+                const totalBet = tongCuoc(game);
 
-                try {
+                const quote =
+                    time <= 10
+                        ? randomFurinaQuote("warning")
+                        : randomFurinaQuote("betting");
 
-                    const players =
-                        danhSachCuoc(game);
+                const description = `${quote}
 
-                    const playerCount =
-                        soNguoiCuoc(game);
-
-                    const totalBet =
-                        tongCuoc(game);
-
-                    const quote =
-                        time <= 10
-                            ? randomFurinaQuote(
-                                "warning"
-                            )
-                            : randomFurinaQuote(
-                                "betting"
-                            );
-
-                    await msg.edit({
-
-                        embeds: [
-
-                            createEmbed(
-
-                                "#B8D8FF",
-
-                                "✦ 𝑻à𝒊 𝑿ỉ𝒖",
-
-                                `${quote}
-
-> ⏳ **Còn lại:** \`${Math.max(time, 0)} giây\`
+**⏳ Còn lại**
+> \`${Math.max(time, 0)} giây\`
 
 **✦ TÀI**
 **✧ XỈU**
@@ -591,40 +396,32 @@ số xu mà bạn muốn đặt cược.
 **💰 Tổng cược**
 > \`${money(totalBet)} xu\`
 
-${playerCount > 0
-    ? `**Danh sách cược**
+**Danh sách cược**
+${players}
 
-${players}`
-    : "*Chưa có ai đặt cược...*"
-}
+*Hãy chọn thật cẩn thận...*`;
 
-*Hãy chọn thật cẩn thận...*
-*...số phận đang dõi theo ngươi.*`
+                await msg.edit({
+                    embeds: [
+                        createEmbed(
+                            "#B8D8FF",
+                            "✦ TÀI XỈU",
+                            description
+                        )
+                    ],
+                    components: time > 0 ? createRows() : []
+                });
 
-                            )
-
-                        ],
-
-                        components:
-                            time > 0
-                                ? createRows()
-                                : []
-
-                    });
-
-                } catch (err) {
-
-                    console.error(
-                        "TAIXIU UPDATE ERROR:",
-                        err
-                    );
-
-                }
-
-            };
+            } catch (err) {
+                console.error(
+                    "TAIXIU UPDATE ERROR:",
+                    err
+                );
+            }
+        };
 
         // ==================================================
-        // COLLECTOR
+        // BUTTON COLLECTOR
         // ==================================================
 
         const collector =
@@ -632,44 +429,28 @@ ${players}`
                 time: 30000
             });
 
-        // ==================================================
-        // BUTTON
-        // ==================================================
-
         collector.on(
             "collect",
             async interaction => {
 
                 try {
 
-                    // ==========================================
-                    // CHỌN SỐ
-                    // ==========================================
-
                     if (
                         interaction.customId ===
                         "tx_so"
                     ) {
-
                         await interaction.showModal(
                             createNumberModal()
                         );
 
                         return;
-
                     }
 
-                    // ==========================================
-                    // CỬA THƯỜNG
-                    // ==========================================
-
                     const typeMap = {
-
                         tx_tai: "tai",
                         tx_xiu: "xiu",
                         tx_chan: "chan",
                         tx_le: "le"
-
                     };
 
                     const type =
@@ -677,8 +458,7 @@ ${players}`
                             interaction.customId
                         ];
 
-                    if (!type)
-                        return;
+                    if (!type) return;
 
                     await interaction.showModal(
                         createBetModal(type)
@@ -697,7 +477,7 @@ ${players}`
         );
 
         // ==================================================
-        // HANDLE MODAL
+        // MODAL HANDLER
         // ==================================================
 
         const handleModal =
@@ -726,9 +506,9 @@ ${players}`
                     let bet = 0;
                     let number = null;
 
-                    // ==========================================
+                    // ======================================
                     // CƯỢC SỐ
-                    // ==========================================
+                    // ======================================
 
                     if (
                         customId ===
@@ -753,9 +533,9 @@ ${players}`
 
                     }
 
-                    // ==========================================
+                    // ======================================
                     // CƯỢC THƯỜNG
-                    // ==========================================
+                    // ======================================
 
                     else {
 
@@ -774,9 +554,9 @@ ${players}`
 
                     }
 
-                    // ==========================================
+                    // ======================================
                     // CHECK GAME
-                    // ==========================================
+                    // ======================================
 
                     if (
                         !game ||
@@ -791,9 +571,9 @@ ${players}`
 
                     }
 
-                    // ==========================================
+                    // ======================================
                     // CHECK TIME
-                    // ==========================================
+                    // ======================================
 
                     if (time <= 0) {
 
@@ -805,9 +585,9 @@ ${players}`
 
                     }
 
-                    // ==========================================
+                    // ======================================
                     // CHECK TYPE
-                    // ==========================================
+                    // ======================================
 
                     if (
                         ![
@@ -827,16 +607,14 @@ ${players}`
 
                     }
 
-                    // ==========================================
+                    // ======================================
                     // CHECK NUMBER
-                    // ==========================================
+                    // ======================================
 
                     if (type === "so") {
 
                         if (
-                            !Number.isInteger(
-                                number
-                            ) ||
+                            !Number.isInteger(number) ||
                             number < 3 ||
                             number > 18
                         ) {
@@ -844,21 +622,19 @@ ${players}`
                             return errorReply(
                                 interaction,
                                 "♢ SỐ KHÔNG HỢP LỆ",
-                                "Số dự đoán phải nằm trong khoảng **3 → 18**."
+                                "Số dự đoán phải từ **3 → 18**."
                             );
 
                         }
 
                     }
 
-                    // ==========================================
+                    // ======================================
                     // CHECK MONEY
-                    // ==========================================
+                    // ======================================
 
                     if (
-                        !Number.isSafeInteger(
-                            bet
-                        ) ||
+                        !Number.isSafeInteger(bet) ||
                         bet <= 0
                     ) {
 
@@ -870,9 +646,9 @@ ${players}`
 
                     }
 
-                    // ==========================================
+                    // ======================================
                     // USER
-                    // ==========================================
+                    // ======================================
 
                     const user =
                         getUser(
@@ -889,14 +665,13 @@ ${players}`
 
                     }
 
-                    // ==========================================
-                    // CHECK BALANCE
-                    // ==========================================
+                    // ======================================
+                    // BALANCE
+                    // ======================================
 
                     if (
-                        Number(
-                            user.money || 0
-                        ) < bet
+                        Number(user.money || 0) <
+                        bet
                     ) {
 
                         return errorReply(
@@ -906,72 +681,61 @@ ${players}`
                                 user.money
                             )} xu**.
 
-Cần ít nhất **${money(
+Cần **${money(
                                 bet
                             )} xu** để đặt cược.`
                         );
 
                     }
 
-                    // ==========================================
-                    // PUSH BET
-                    // ==========================================
+                    // ==================================================
+                    // TRỪ TIỀN NGAY KHI ĐẶT CƯỢC
+                    // ==================================================
+
+                    user.money -= bet;
+
+                    // ==================================================
+                    // ADD BET
+                    // ==================================================
 
                     game.players.push({
-
-                        id:
-                            interaction.user.id,
-
+                        id: interaction.user.id,
                         type,
-
                         number,
-
                         money: bet
-
                     });
 
-                    // ==========================================
+                    save();
+
+                    // ==================================================
                     // SUCCESS
-                    // ==========================================
+                    // ==================================================
 
                     await interaction.reply({
-
                         embeds: [
-
                             createEmbed(
-
                                 "#B7E4C7",
-
-                                "✦ 𝑪𝒖̛𝒐̛̣𝒄 𝑻𝒉𝒂̀𝒏𝒉 𝑪𝒐̂𝒏𝒈",
-
+                                "✦ ĐẶT CƯỢC THÀNH CÔNG",
                                 `${randomFurinaQuote("betting")}
 
 **${nhanCua({
-    type,
-    number
-})}**
+                                    type,
+                                    number
+                                })}**
 
-> 💰 **Tiền cược:** \`${money(
-    bet
-)} xu\`
+> ♡ Cược: \`${money(
+                                    bet
+                                )} xu\`
 
-> ♡ **Số dư:** \`${money(
-    user.money - bet
-)} xu\`
+> ✦ Số dư: \`${money(
+                                    user.money
+                                )} xu\`
 
-*Lựa chọn của bạn đã được ghi nhận.*`
-
+*Lựa chọn đã được ghi nhận.*`
                             )
-
                         ],
-
                         ephemeral: true
-
                     });
-
-                    // ==========================================
-                    // UPDATE EMBED
-                    // ==========================================
 
                     await updateMessage();
 
@@ -988,18 +752,14 @@ Cần ít nhất **${money(
                     ) {
 
                         await interaction.reply({
-
                             content:
                                 "❖ Có lỗi xảy ra khi đặt cược.",
-
                             ephemeral: true
-
                         });
 
                     }
 
                 }
-
             };
 
         // ==================================================
@@ -1024,29 +784,20 @@ Cần ít nhất **${money(
 
                     time--;
 
-                    if (
-                        time <= 0
-                    ) {
+                    if (time <= 0) {
 
-                        clearInterval(
-                            timer
-                        );
+                        clearInterval(timer);
 
-                        collector.stop(
-                            "time"
-                        );
+                        collector.stop("time");
 
                         client.off(
                             "interactionCreate",
                             handleModal
                         );
 
-                        await endGame(
-                            msg
-                        );
+                        await endGame(msg);
 
                         return;
-
                     }
 
                     await updateMessage();
@@ -1066,14 +817,8 @@ Cần ít nhất **${money(
                 reason
             ) => {
 
-                if (
-                    reason !== "time"
-                ) {
-
-                    clearInterval(
-                        timer
-                    );
-
+                if (reason !== "time") {
+                    clearInterval(timer);
                 }
 
                 client.off(
@@ -1083,9 +828,7 @@ Cần ít nhất **${money(
 
             }
         );
-
     }
-
 };
 
 // ======================================================
@@ -1094,30 +837,18 @@ Cần ít nhất **${money(
 
 async function endGame(msg) {
 
-    const game =
-        closeGame();
+    const game = closeGame();
 
-    if (!game)
-        return;
+    if (!game) return;
 
     // ==================================================
     // DICE
     // ==================================================
 
     const dice = [
-
-        Math.floor(
-            Math.random() * 6
-        ) + 1,
-
-        Math.floor(
-            Math.random() * 6
-        ) + 1,
-
-        Math.floor(
-            Math.random() * 6
-        ) + 1
-
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1
     ];
 
     const total =
@@ -1138,143 +869,97 @@ async function endGame(msg) {
     const resultsByUser =
         new Map();
 
-    for (
-        const p
-        of game.players
-    ) {
+    for (const p of game.players) {
 
         const user =
             getUser(p.id);
 
-        if (!user)
-            continue;
+        if (!user) continue;
 
         let win = false;
-
         let payout = 1;
 
-        // ==============================================
-        // CHECK WIN
-        // ==============================================
+        // ==================================================
+        // CHECK
+        // ==================================================
 
-        if (
-            p.type === "tai"
-        ) {
-
+        if (p.type === "tai") {
             win = isTai;
-
         }
 
-        else if (
-            p.type === "xiu"
-        ) {
-
+        else if (p.type === "xiu") {
             win = !isTai;
-
         }
 
-        else if (
-            p.type === "chan"
-        ) {
-
+        else if (p.type === "chan") {
             win = isChan;
-
         }
 
-        else if (
-            p.type === "le"
-        ) {
-
+        else if (p.type === "le") {
             win = !isChan;
-
         }
 
-        else if (
-            p.type === "so"
-        ) {
+        else if (p.type === "so") {
 
             win =
                 p.number === total;
 
             payout =
-                SO_PAYOUT[
-                    p.number
-                ] || 1;
-
+                SO_PAYOUT[p.number] || 1;
         }
 
-        // ==============================================
-        // USER RESULT
-        // ==============================================
+        // ==================================================
+        // RESULT OBJECT
+        // ==================================================
 
-        if (
-            !resultsByUser.has(
-                p.id
-            )
-        ) {
+        if (!resultsByUser.has(p.id)) {
 
             resultsByUser.set(
-
                 p.id,
-
                 {
                     lines: [],
                     net: 0,
                     wins: []
                 }
-
             );
 
         }
 
         const entry =
-            resultsByUser.get(
-                p.id
-            );
+            resultsByUser.get(p.id);
 
-        // ==============================================
+        // ==================================================
         // WIN
-        // ==============================================
+        // ==================================================
 
         if (win) {
 
             const reward =
                 p.money * payout;
 
-            user.money +=
-                reward;
+            user.money += reward;
 
             entry.net +=
                 reward;
 
             entry.wins.push({
-
-                type:
-                    nhanCua(p),
-
-                bet:
-                    p.money,
-
+                type: nhanCua(p),
+                bet: p.money,
                 reward
-
             });
 
         }
 
-        // ==============================================
+        // ==================================================
         // LOSE
-        // ==============================================
+        // ==================================================
 
         else {
-
-            user.money -=
-                p.money;
 
             entry.net -=
                 p.money;
 
         }
-
     }
 
     // ==================================================
@@ -1282,69 +967,6 @@ async function endGame(msg) {
     // ==================================================
 
     save();
-
-    // ==================================================
-    // WINNERS
-    // ==================================================
-
-    let winnerText = "";
-
-    for (
-        const [
-            id,
-            entry
-        ]
-        of resultsByUser
-    ) {
-
-        if (
-            !entry.wins.length
-        ) {
-            continue;
-        }
-
-        const member =
-            msg.guild?.members.cache.get(
-                id
-            );
-
-        const displayName =
-            member?.displayName ||
-            `<@${id}>`;
-
-        for (
-            const win
-            of entry.wins
-        ) {
-
-            winnerText +=
-
-                `**${displayName}**\n` +
-
-                `> ${win.type}\n` +
-
-                `> ♡ Cược: \`${money(
-                    win.bet
-                )} xu\`\n` +
-
-                `> ✦ Nhận: **+${money(
-                    win.reward
-                )} xu**\n\n`;
-
-        }
-
-    }
-
-    // ==================================================
-    // NO WINNER
-    // ==================================================
-
-    if (!winnerText) {
-
-        winnerText =
-            "*Không có người chiến thắng trong ván này...*";
-
-    }
 
     // ==================================================
     // PLAYER COUNT
@@ -1357,7 +979,52 @@ async function endGame(msg) {
         tongCuoc(game);
 
     // ==================================================
-    // RESULT COLOR
+    // WINNER TEXT
+    // ==================================================
+
+    let winnerText = "";
+
+    for (
+        const [id, entry]
+        of resultsByUser
+    ) {
+
+        if (!entry.wins.length) {
+            continue;
+        }
+
+        const member =
+            msg.guild?.members.cache.get(id);
+
+        const displayName =
+            member?.displayName ||
+            `Người chơi`;
+
+        for (
+            const win
+            of entry.wins
+        ) {
+
+            winnerText +=
+                `**${displayName}**\n` +
+                `> ${win.type}\n` +
+                `> ♡ Cược: \`${money(
+                    win.bet
+                )} xu\`\n` +
+                `> ✦ Nhận: **+${money(
+                    win.reward
+                )} xu**\n\n`;
+        }
+    }
+
+    if (!winnerText) {
+
+        winnerText =
+            "*Không có người chiến thắng...*";
+    }
+
+    // ==================================================
+    // RESULT
     // ==================================================
 
     const resultColor =
@@ -1365,83 +1032,51 @@ async function endGame(msg) {
             ? "#F2A7B5"
             : "#A8C7FA";
 
+    const resultDescription =
+        `${randomFurinaQuote("result")}
+
+**🎲 Xúc xắc**
+> \`${dice[0]}\` · \`${dice[1]}\` · \`${dice[2]}\`
+
+**◇ Tổng**
+> **${total}**
+
+**✦ Kết quả**
+> ${isTai ? "✦ **TÀI**" : "✧ **XỈU**"}
+> ${isChan ? "◇ **CHẴN**" : "❖ **LẺ**"}
+
+**♡ Ván đấu**
+> 👥 \`${playerCount} người\`
+> 💰 \`${money(totalBet)} xu\`
+
+**✦ Người chiến thắng**
+
+${winnerText}*Màn diễn đã hạ màn.*`;
+
     // ==================================================
-    // DELETE OLD MESSAGE
+    // DELETE OLD EMBED
     // ==================================================
 
     try {
-
         await msg.delete();
-
     } catch (err) {
-
         console.error(
             "TAIXIU DELETE ERROR:",
             err
         );
-
     }
 
     // ==================================================
-    // RESULT EMBED
-    // ==================================================
-
-    const resultEmbed =
-        createEmbed(
-
-            resultColor,
-
-            "❖ 𝑲ế𝒕 𝑸𝒖ả 𝑻à𝒊 𝑿ỉ𝒖",
-
-            `${randomFurinaQuote("result")}
-
-**🎲 Xúc xắc**
-
-> \`${dice[0]}\` · \`${dice[1]}\` · \`${dice[2]}\`
-
-**◇ Tổng**
-
-> **${total}**
-
-**✦ Kết quả**
-
-> ${isTai
-                ? "✦ **TÀI**"
-                : "✧ **XỈU**"
-            }
-
-> ${isChan
-                ? "◇ **CHẴN**"
-                : "❖ **LẺ**"
-            }
-
-**♡ Ván đấu**
-
-> 👥 \`${playerCount} người\`
-> 💰 \`${money(totalBet)} xu\`
-
-**WINNER**
-
-${winnerText}
-
-*“Một màn trình diễn tuyệt đẹp... xin chúc mừng những người chiến thắng.”* ♡`
-
-        );
-
-    // ==================================================
-    // SEND NEW MESSAGE
+    // SEND NEW RESULT EMBED
     // ==================================================
 
     await msg.channel.send({
-
         embeds: [
-            resultEmbed
-        ],
-
-        allowedMentions: {
-            parse: []
-        }
-
+            createEmbed(
+                resultColor,
+                "❖ KẾT QUẢ TÀI XỈU",
+                resultDescription
+            )
+        ]
     });
-
 }
