@@ -31,6 +31,58 @@ const TAG_CATEGORY = {
 
 
 // ======================================================
+// FETCH CÓ RETRY - NÉ LỖI MẠNG TẠM THỜI (timeout, reset...)
+// ======================================================
+
+const FETCH_RETRIES = 3;
+
+const FETCH_RETRY_DELAY_MS = 500;
+
+function delay(ms) {
+
+    return new Promise(resolve =>
+        setTimeout(resolve, ms)
+    );
+
+}
+
+async function fetchWithRetry(url, options) {
+
+    let lastErr;
+
+    for (
+        let attempt = 1;
+        attempt <= FETCH_RETRIES;
+        attempt++
+    ) {
+
+        try {
+
+            return await fetch(url, options);
+
+        }
+        catch (err) {
+
+            lastErr = err;
+
+            if (attempt < FETCH_RETRIES) {
+
+                await delay(
+                    FETCH_RETRY_DELAY_MS * attempt
+                );
+
+            }
+
+        }
+
+    }
+
+    throw lastErr;
+
+}
+
+
+// ======================================================
 // TRA TAG THẬT TRÊN DANBOORU (dùng chung cho các hàm dưới)
 //
 // Dùng endpoint autocomplete (giống ô search trên web Danbooru) vì
@@ -61,7 +113,7 @@ async function searchDanbooruTags(query) {
 
 
         const res =
-            await fetch(url, {
+            await fetchWithRetry(url, {
 
                 headers: {
 
@@ -249,7 +301,7 @@ async function fetchPosts(
 
 
         const res =
-            await fetch(url, {
+            await fetchWithRetry(url, {
 
                 headers: {
 

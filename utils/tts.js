@@ -99,7 +99,19 @@ function splitGttsChunks(text) {
 // GỌI GOOGLE TRANSLATE TTS CHO 1 ĐOẠN
 // ======================================================
 
-async function fetchGttsChunk(text) {
+const GTTS_RETRIES = 3;
+
+const GTTS_RETRY_DELAY_MS = 500;
+
+function delay(ms) {
+
+    return new Promise(resolve =>
+        setTimeout(resolve, ms)
+    );
+
+}
+
+async function fetchGttsChunkOnce(text) {
 
     const params =
         new URLSearchParams({
@@ -127,6 +139,49 @@ async function fetchGttsChunk(text) {
     }
 
     return Buffer.from(await res.arrayBuffer());
+
+}
+
+// gTTS là endpoint không chính thức, thỉnh thoảng bị reset/timeout
+// tạm thời - retry vài lần trước khi bỏ cuộc, tránh mất cả câu chat.
+async function fetchGttsChunk(text) {
+
+    let lastErr;
+
+    for (
+        let attempt = 1;
+        attempt <= GTTS_RETRIES;
+        attempt++
+    ) {
+
+        try {
+
+            return await fetchGttsChunkOnce(text);
+
+        }
+        catch (err) {
+
+            lastErr = err;
+
+            console.error(
+                `❌ gTTS lỗi (lần ${attempt}/${GTTS_RETRIES}):`,
+                err.message,
+                err.cause || ""
+            );
+
+            if (attempt < GTTS_RETRIES) {
+
+                await delay(
+                    GTTS_RETRY_DELAY_MS * attempt
+                );
+
+            }
+
+        }
+
+    }
+
+    throw lastErr;
 
 }
 
@@ -186,8 +241,17 @@ async function processQueue(session) {
 
         await new Promise(resolve => {
 
-            session.player.once(AudioPlayerStatus.Idle, resolve);
-            session.player.once("error", resolve);
+            const onDone = () => {
+
+                session.player.off(AudioPlayerStatus.Idle, onDone);
+                session.player.off("error", onDone);
+
+                resolve();
+
+            };
+
+            session.player.once(AudioPlayerStatus.Idle, onDone);
+            session.player.once("error", onDone);
 
         });
 
