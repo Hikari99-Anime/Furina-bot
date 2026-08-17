@@ -8,7 +8,7 @@ on:
         required: false
         default: "150"
       mode:
-        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2"
+        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2 | nahida-diag"
         required: false
         default: "logs"
       env_line:
@@ -95,6 +95,23 @@ jobs:
               pm2 jlist
               echo "--- ps aux | grep node ---"
               ps aux | grep -i node | grep -v grep
+            elif [ "${{ github.event.inputs.mode }}" = "nahida-diag" ]; then
+              echo "--- pm2 describe nahida-bot ---"
+              pm2 describe nahida-bot
+              echo "--- pm2 logs nahida-bot (error+out, 150 dòng) ---"
+              pm2 logs nahida-bot --lines 150 --nostream
+              echo "--- thư mục Nahida-bot ---"
+              ls -la /root/Nahida-bot 2>&1
+              echo "--- .env tồn tại? (không in nội dung) ---"
+              ls -la /root/Nahida-bot/.env 2>&1
+              echo "--- package.json ---"
+              cat /root/Nahida-bot/package.json 2>&1
+              echo "--- git status / log ---"
+              cd /root/Nahida-bot && git status && git log -1 --oneline
+              echo "--- thử restart để bắt lỗi khởi động ---"
+              pm2 restart nahida-bot
+              sleep 3
+              pm2 logs nahida-bot --lines 40 --nostream
             else
               pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
             fi
