@@ -167,14 +167,13 @@ jobs:
               cp giftcodes.json /root/giftcodes.json.bak.$TS 2>&1
               echo "Backup luu tai /root/*.bak.$TS"
 
-              echo "--- git checkout --theirs (giu ban dang co tren VPS - live data) ---"
-              git checkout --theirs -- data.json noitu_state.json 2>&1
-              git add data.json noitu_state.json
+              echo "--- giu nguyen file dang co tren disk (live data), chi danh dau da resolve ---"
+              git add data.json noitu_state.json giftcodes.json
 
-              echo "--- git status sau khi resolve ---"
-              git status
+              echo "--- commit de tree sach truoc khi pull ---"
+              git commit -m "Sync runtime data (resolve stuck stash conflict)"
 
-              echo "--- stash list truoc khi drop ---"
+              echo "--- stash list (se bo qua, khong pop lai ban cu) ---"
               git stash list
               git stash drop 2>&1 || echo "khong co stash de drop"
 
