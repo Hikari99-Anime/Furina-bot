@@ -119,32 +119,30 @@ function isRealFish(fish) {
 // LẤY INVENTORY
 // ======================================================
 
-function getInventoryFish(user) {
+// ======================================================
+// BẢO LƯU BỘ SƯU TẬP
+// ======================================================
+//
+// user.fish       = cá đang có trong túi
+// user.collection = cá đã từng câu được
+//
+// Bán cá KHÔNG được xóa collection.
+//
+// ======================================================
 
-    const result = [];
+function ensureCollection(user) {
 
-    const userFish =
+    user.collection ??= {};
+
+    const inventory =
         user.fish || {};
 
     for (
-        const fishId in userFish
+        const fishId in inventory
     ) {
 
-        const fishInfo =
-            fishList.find(
-                fish =>
-                    String(fish.id) ===
-                    String(fishId)
-            );
-
-        if (
-            !isRealFish(fishInfo)
-        ) {
-            continue;
-        }
-
         const fishes =
-            userFish[fishId];
+            inventory[fishId];
 
         if (
             !Array.isArray(fishes) ||
@@ -153,18 +151,24 @@ function getInventoryFish(user) {
             continue;
         }
 
-        result.push({
+        const fish =
+            fishList.find(
+                item =>
+                    String(item.id) ===
+                    String(fishId)
+            );
 
-            fish: fishInfo,
+        if (
+            !fish ||
+            !isRealFish(fish)
+        ) {
+            continue;
+        }
 
-            fishId,
-
-            fishes
-
-        });
+        user.collection[
+            String(fishId)
+        ] = true;
     }
-
-    return result;
 }
 
 // ======================================================

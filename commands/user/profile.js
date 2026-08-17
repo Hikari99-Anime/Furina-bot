@@ -7,7 +7,8 @@ const {
     baits,
     emoji,
     rodTitles,
-    formatMoney
+    formatMoney,
+    fishList
 } = require("../../config");
 
 const {
@@ -87,8 +88,13 @@ module.exports = {
             );
 
         user.fish ??= {};
+
+        user.collection ??= {};
+
         user.moi ??= {};
+
         user.rodData ??= {};
+
         user.can ??= {};
 
         user.daily ??= {
@@ -101,33 +107,23 @@ module.exports = {
 
 
         // ==================================================
-        // STATS LỊCH SỬ CÂU CÁ
-        // ==================================================
-        //
-        // QUAN TRỌNG:
-        //
-        // user.fish
-        // = cá hiện đang còn trong túi
-        //
-        // user.stats
-        // = thống kê từ trước tới nay
-        //
-        // Vì vậy bán hết cá cũng không làm mất
-        // tổng số cá đã câu.
-        //
+        // STATS LỊCH SỬ
         // ==================================================
 
         user.stats ??= {};
+
 
         user.stats.totalFishCaught =
             Number(
                 user.stats.totalFishCaught || 0
             );
 
+
         user.stats.totalWeightCaught =
             Number(
                 user.stats.totalWeightCaught || 0
             );
+
 
         user.stats.biggestFish =
             Number(
@@ -136,14 +132,58 @@ module.exports = {
 
 
         // ==================================================
-        // MIGRATE DATA CŨ
+        // MIGRATE COLLECTION CŨ
         // ==================================================
         //
-        // Nếu trước đây bot chưa có stats,
-        // profile sẽ lấy dữ liệu cá đang còn trong túi
-        // làm số liệu ban đầu.
+        // Nếu user chưa có collection,
+        // lấy những loài hiện còn trong túi làm collection.
         //
-        // Chỉ chạy khi totalFishCaught = 0.
+        // Sau này bán cá:
+        //
+        // user.fish       -> bị xóa
+        // user.collection -> KHÔNG bị xóa
+        //
+        // ==================================================
+
+        for (
+            const id in user.fish
+        ) {
+
+            const fishInventory =
+                user.fish[id];
+
+
+            if (
+                !Array.isArray(
+                    fishInventory
+                )
+            ) {
+
+                continue;
+
+            }
+
+
+            if (
+                fishInventory.length > 0
+            ) {
+
+                user.collection[id] = true;
+
+            }
+
+        }
+
+
+        // ==================================================
+        // STATS MIGRATION
+        // ==================================================
+        //
+        // User cũ chưa có thống kê:
+        // lấy số cá hiện còn trong túi làm dữ liệu ban đầu.
+        //
+        // Không thể khôi phục những con cá đã bán
+        // trước khi hệ thống stats tồn tại.
         //
         // ==================================================
 
@@ -304,12 +344,15 @@ module.exports = {
 
 
         // ==================================================
-        // THỐNG KÊ CÁ HIỆN CÓ
+        // BỘ SƯU TẬP
         // ==================================================
         //
-        // Chỉ dùng để đếm số loài hiện đang sở hữu.
+        // QUAN TRỌNG:
         //
-        // KHÔNG dùng để tính tổng cá đã câu.
+        // Đếm từ user.collection
+        // KHÔNG đếm từ user.fish.
+        //
+        // Vì vậy bán hết cá vẫn không mất loài.
         //
         // ==================================================
 
@@ -317,26 +360,11 @@ module.exports = {
 
 
         for (
-            const id in user.fish
+            const id in user.collection
         ) {
 
-            const fishInventory =
-                user.fish[id];
-
-
             if (
-                !Array.isArray(
-                    fishInventory
-                )
-            ) {
-
-                continue;
-
-            }
-
-
-            if (
-                fishInventory.length > 0
+                user.collection[id] === true
             ) {
 
                 fishSpecies++;
@@ -344,6 +372,16 @@ module.exports = {
             }
 
         }
+
+
+        // ==================================================
+        // GIỚI HẠN TỐI ĐA BỘ SƯU TẬP
+        // ==================================================
+
+        const totalFishTypes =
+            Array.isArray(fishList)
+                ? fishList.length
+                : 150;
 
 
         // ==================================================
@@ -506,6 +544,71 @@ module.exports = {
 
 
         // ==================================================
+        // COLLECTION TITLE
+        // ==================================================
+
+        let collectionTitle =
+            "🗃️ Người mới khám phá";
+
+
+        if (
+            fishSpecies >= totalFishTypes
+        ) {
+
+            collectionTitle =
+                "👑 Bậc thầy sưu tầm";
+
+        }
+
+        else if (
+            fishSpecies >= 100
+        ) {
+
+            collectionTitle =
+                "🏆 Nhà sưu tầm huyền thoại";
+
+        }
+
+        else if (
+            fishSpecies >= 50
+        ) {
+
+            collectionTitle =
+                "💎 Nhà sưu tầm chuyên nghiệp";
+
+        }
+
+        else if (
+            fishSpecies >= 25
+        ) {
+
+            collectionTitle =
+                "🐠 Nhà sưu tầm tập sự";
+
+        }
+
+
+        // ==================================================
+        // COLLECTION PROGRESS
+        // ==================================================
+
+        const collectionPercent =
+            totalFishTypes > 0
+
+                ? Math.min(
+                    100,
+                    Math.floor(
+                        (
+                            fishSpecies /
+                            totalFishTypes
+                        ) * 100
+                    )
+                )
+
+                : 0;
+
+
+        // ==================================================
         // PROFILE EMBED
         // ==================================================
 
@@ -529,19 +632,25 @@ module.exports = {
 
                     `👤 **HỒ SƠ ${target.username}**\n` +
 
-                    `✦ ${fishermanTitle}\n\n` +
+                    `✦ ${fishermanTitle}\n` +
 
-                    `💰 ${formatMoney(user.money)} ${emoji.money}\n` +
+                    `✦ ${collectionTitle}\n\n` +
 
-                    `🎣 ${rodText}  ·  🍀 ${rodLuck}  ·  🛠️ ${durability}\n\n` +
+                    `💰 ${formatMoney(user.money)} ${emoji.money}\n\n` +
 
-                    `🐟 **${totalFish.toLocaleString()}** cá đã câu  ·  📚 ${fishSpecies} loài đang có\n` +
+                    `🎣 ${rodText}\n` +
+
+                    `🍀 Luck: ${rodLuck}  ·  🛠️ Độ bền: ${durability}\n\n` +
+
+                    `🐟 **${totalFish.toLocaleString()}** cá đã câu\n` +
+
+                    `📚 **${fishSpecies}/${totalFishTypes}** loài đã khám phá (${collectionPercent}%)\n\n` +
 
                     `⚖️ **${totalWeight.toFixed(2)} KG** tổng đã câu\n` +
 
                     `🏆 **${biggestFish.toFixed(2)} KG** kỷ lục lớn nhất\n\n` +
 
-                    `🪱 ${baitText}\n` +
+                    `🪱 ${baitText}\n\n` +
 
                     `🔥 Daily ${dailyStreak} ngày\n\n` +
 
