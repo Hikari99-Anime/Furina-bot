@@ -8,7 +8,7 @@ on:
         required: false
         default: "150"
       mode:
-        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env"
+        description: "logs | diag | net | disable-ipv6 | enable-ipv6 | set-env | pm2"
         required: false
         default: "logs"
       env_line:
@@ -88,6 +88,13 @@ jobs:
                 echo "Added .env key: $KEY"
               fi
               pm2 restart furina-bot
+            elif [ "${{ github.event.inputs.mode }}" = "pm2" ]; then
+              echo "--- pm2 list ---"
+              pm2 list
+              echo "--- pm2 jlist (chi tiết) ---"
+              pm2 jlist
+              echo "--- ps aux | grep node ---"
+              ps aux | grep -i node | grep -v grep
             else
               pm2 logs furina-bot --lines ${{ github.event.inputs.lines }} --nostream
             fi
