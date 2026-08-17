@@ -1420,7 +1420,7 @@ async function endGame(msg) {
 > 👥 \`${playerCount} người\`
 > 💰 \`${money(totalBet)} xu\`
 
-**𝑾𝒊𝒏𝒏𝒆𝒓𝒔**
+**WINNER**
 
 ${winnerText}
 
