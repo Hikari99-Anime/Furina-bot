@@ -1,16 +1,20 @@
 // ==========================================================
 // DISCORD FISHING BOT
-// BALANCED ECONOMY V3
+// BALANCED ECONOMY V4
 // ==========================================================
 // 150 FISH / 5 ZONES
 //
-// ECONOMY:
-// - Giá cá giảm
+// CƠ CHẾ:
+// - 150 loài cá
+// - 5 vùng
+// - Giá cá cân bằng
 // - Có tỷ lệ câu hụt
 // - Có rác
-// - Rod có khấu hao
-// - Luck chỉ hỗ trợ rarity
-// - Legendary / Mythical cực hiếm
+// - Cần câu có khấu hao
+// - Mồi có chi phí
+// - Luck hỗ trợ cá hiếm
+// - Legendary / Mythical rất hiếm
+// - Không khai báo sellConfig trùng
 // ==========================================================
 
 
@@ -125,15 +129,7 @@ const rateStone = {
 
 
 // ==========================================================
-// FISH LIST - 150 LOÀI
-// ==========================================================
-//
-// Giá được giảm để tránh economy bị lạm phát.
-//
-// price = giá / kg
-//
-// rate = trọng số xuất hiện trong cùng rarity.
-//
+// FISH LIST
 // ==========================================================
 
 const fishList = [
@@ -223,7 +219,7 @@ const fishList = [
     {
         id: "ca8",
         name: "Cá kèo",
-        emoji: "🦈",
+        emoji: "🐡",
         price: 30,
         rate: 80,
         rarity: "common",
@@ -951,10 +947,6 @@ const fishConfig = {
 
     list: fishList,
 
-    sellMultiplier: 1,
-
-    minSellPrice: 0,
-
     trashEnabled: true,
 
     trash: trashItems
@@ -1059,8 +1051,6 @@ const rods = {
         emoji: "<:cancau_2:1534635569219633212>",
 
         price: 30000,
-
-        // 30k / 50 lượt = 600 Fcoin / lượt
 
         uses: 50,
 
@@ -1452,14 +1442,24 @@ const insurance = {
 
 
 // ==========================================================
-// SELL
+// SELL CONFIG
+// ==========================================================
+//
+// QUAN TRỌNG:
+// Chỉ khai báo sellConfig DUY NHẤT Ở ĐÂY.
+//
+// Common      = 45%
+// Rare        = 52%
+// Epic        = 60%
+// Legendary   = 70%
+// Mythical    = 80%
 // ==========================================================
 
 const sellConfig = {
 
-    multiplier: 1,
+    multiplier: 0.45,
 
-    minPrice: 0,
+    minPrice: 5,
 
     trashSellPrice: 0
 
@@ -1598,36 +1598,6 @@ const levelConfig = {
 };
 
 
-
-// ==========================================================
-// SELL CONFIG
-// ==========================================================
-//
-// Giá bán thực tế:
-//
-// fish.price × weight × multiplier
-//
-// 0.60 = chỉ nhận 60% giá trị gốc.
-//
-// Mục tiêu:
-// - Cá thường: lời ít
-// - Cá rare: có lời
-// - Epic: lời khá
-// - Legendary: rất lời nhưng hiếm
-// - Mythical: jackpot
-//
-// ==========================================================
-
-const sellConfig = {
-
-    multiplier: 0.60,
-
-    minPrice: 5,
-
-    trashSellPrice: 0
-
-};
-
 // ==========================================================
 // ECONOMY
 // ==========================================================
@@ -1651,6 +1621,33 @@ const economyConfig = {
     rodCostWeight: 1,
 
     includeBaitCost: true
+
+};
+
+
+// ==========================================================
+// FISHING CONFIG
+// ==========================================================
+//
+// missChance = tỷ lệ câu hụt.
+//
+// 18%:
+// 100 lượt câu -> trung bình khoảng 18 lượt hụt.
+//
+// Đây là xác suất, không đảm bảo chính xác từng 100 lượt.
+// ==========================================================
+
+const fishingConfig = {
+
+    missChance: 18,
+
+    minWeight: 0.5,
+
+    maxWeight: 50,
+
+    trashEnabled: true,
+
+    cooldown: 3000
 
 };
 
@@ -1771,6 +1768,11 @@ const fishingZones = {
 
 // ==========================================================
 // RARITY LUCK
+// ==========================================================
+//
+// Luck không làm Mythical xuất hiện quá mạnh.
+// Nó chỉ tăng khả năng chọn rarity cao hơn.
+//
 // ==========================================================
 
 const rarityLuckConfig = {
@@ -2165,30 +2167,15 @@ function calculateFishSellPrice(
     const basePrice =
         Number(fish.price) || 0;
 
-    // ======================================================
-    // SELL MULTIPLIER THEO RARITY
-    // ======================================================
-    //
-    // Common      = 55%
-    // Rare        = 60%
-    // Epic        = 65%
-    // Legendary   = 72%
-    // Mythical    = 80%
-    //
-    // Cá hiếm vẫn đáng câu,
-    // nhưng cá thường không thể farm tiền quá nhanh.
-    //
-    // ======================================================
-
     const rarityMultiplier = {
 
-        common: 0.55,
+        common: 0.45,
 
-        rare: 0.60,
+        rare: 0.52,
 
-        epic: 0.65,
+        epic: 0.60,
 
-        legendary: 0.72,
+        legendary: 0.70,
 
         mythical: 0.80
 
@@ -2439,7 +2426,10 @@ function generateFishingResult(
 
             weight: 0,
 
-            price: 0
+            price: 0,
+
+            profitClass:
+                profitClass.LOSS
 
         };
 
@@ -2451,9 +2441,15 @@ function generateFishingResult(
     // ======================================================
 
     const missChance =
-        Number(
-            fishingConfig.missChance
-        ) || 0;
+        Math.max(
+            0,
+            Math.min(
+                100,
+                Number(
+                    fishingConfig.missChance
+                ) || 0
+            )
+        );
 
     if (
         Math.random() * 100 <
@@ -2483,9 +2479,15 @@ function generateFishingResult(
     // ======================================================
 
     const trashChance =
-        Number(
-            zone.trashRate
-        ) || 0;
+        Math.max(
+            0,
+            Math.min(
+                100,
+                Number(
+                    zone.trashRate
+                ) || 0
+            )
+        );
 
     if (
         fishingConfig.trashEnabled &&
@@ -2544,7 +2546,10 @@ function generateFishingResult(
 
             weight: 0,
 
-            price: 0
+            price: 0,
+
+            profitClass:
+                profitClass.LOSS
 
         };
 
@@ -2625,7 +2630,7 @@ function calculateFishProfit(
 
 
 // ==========================================================
-// ANALYZE ZONE
+// ANALYZE ZONE RATES
 // ==========================================================
 
 function analyzeZoneRates(
@@ -2854,6 +2859,7 @@ function validateConfig() {
 
     const errors = [];
 
+
     // ======================================================
     // FISH COUNT
     // ======================================================
@@ -2867,6 +2873,7 @@ function validateConfig() {
         );
 
     }
+
 
     const ids =
         new Set();
@@ -3096,6 +3103,22 @@ function validateConfig() {
     }
 
 
+    // ======================================================
+    // FISHING
+    // ======================================================
+
+    if (
+        fishingConfig.missChance < 0 ||
+        fishingConfig.missChance > 100
+    ) {
+
+        errors.push(
+            "fishingConfig.missChance phải từ 0 -> 100"
+        );
+
+    }
+
+
     return {
 
         valid:
@@ -3150,6 +3173,7 @@ module.exports = {
 
     // Fishing
     generateFishingResult,
+    fishingConfig,
 
     // Economy
     getAverageWeight,
@@ -3177,6 +3201,7 @@ module.exports = {
     // Sell
     calculateFishSellPrice,
     calculateTrashSellPrice,
+    sellConfig,
 
     // Rod
     rods,
@@ -3210,9 +3235,6 @@ module.exports = {
     // Shop
     shop,
 
-    // Sell
-    sellConfig,
-
     // Quest
     questConfig,
 
@@ -3221,9 +3243,6 @@ module.exports = {
 
     // Level
     levelConfig,
-
-    // Fishing
-    fishingConfig,
 
     // Economy
     economyConfig,
