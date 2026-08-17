@@ -2,28 +2,6 @@
 // DISCORD FISHING BOT
 // BALANCED ECONOMY V2
 // ==========================================================
-// 150 FISH / 5 ZONES
-//
-// ECONOMY:
-// 🔴 LỖ NHẸ
-// ⚪ HÒA VỐN
-// 🟢 LỜI ÍT
-// 💰 LỜI NHIỀU
-//
-// DESIGN:
-// - Cá hiếm có rate cực thấp
-// - Luck chỉ hỗ trợ cá hiếm
-// - Luck cao mới đẩy được Legendary / Mythical
-// - Không để Luck biến cá hiếm thành cá thường
-// - Rod mạnh hơn nhưng không quá OP
-// - Cá đầu zone có thể lỗ/hòa vốn
-// - Cá cuối zone mới tạo lợi nhuận lớn
-// ==========================================================
-
-
-// ==========================================================
-// PREFIX
-// ==========================================================
 
 const prefix = "f";
 
@@ -109,20 +87,12 @@ function randomFloat(min, max) {
 // ==========================================================
 // RATE STONE
 // ==========================================================
-// Không để +5 rate trực tiếp.
-// Mỗi lần dùng chỉ +0.10 Luck.
-//
-// Nếu hệ thống hiện tại của bạn đang xử lý `rate`
-// theo phần trăm thì đổi sang 2% - 3%.
-//
-// Ở đây quy ước rate = Luck.
-// ==========================================================
 
 const rateStone = {
 
-    da_tang_rate: {
+    da_rate: {
 
-        id: "da_tang_rate",
+        id: "da_rate",
 
         name: "Đá tăng tỉ lệ",
 
@@ -143,20 +113,285 @@ const rateStone = {
 // FISH LIST
 // ==========================================================
 //
-// GIỮ NGUYÊN fishList 150 CON CỦA BẠN Ở ĐÂY.
+// Bạn chưa đưa danh sách 150 cá gốc trong tin nhắn.
+// Phần này tạo đủ ca1 -> ca150 để config không crash.
 //
-// Không cần sửa:
-// - id
-// - name
-// - emoji
-// - price
-// - min
-// - max
+// Sau này bạn có thể thay toàn bộ block này bằng:
+// const fishList = [ ...150 con cá thật... ];
 //
-// Hệ thống bên dưới sẽ tự cân bằng rate.
-//
-// const fishList = [...];
+// Không cần sửa các phần khác.
 // ==========================================================
+
+const fishList = Array.from(
+    { length: 150 },
+    (_, index) => {
+
+        const number =
+            index + 1;
+
+        let rarity;
+        let price;
+        let rate;
+        let min;
+        let max;
+
+        // --------------------------------------------------
+        // CA 1 - 50
+        // --------------------------------------------------
+
+        if (number <= 50) {
+
+            if (number <= 35) {
+
+                rarity = "common";
+                price = 80 + number * 4;
+                rate = 100 - number * 0.8;
+
+            } else if (number <= 44) {
+
+                rarity = "rare";
+                price = 300 + number * 10;
+                rate = 25 - (number - 35) * 1.2;
+
+            } else if (number <= 48) {
+
+                rarity = "epic";
+                price = 700 + number * 20;
+                rate = 10 - (number - 44) * 1.2;
+
+            } else if (number <= 49) {
+
+                rarity = "legendary";
+                price = 2500;
+                rate = 2;
+
+            } else {
+
+                rarity = "mythical";
+                price = 8000;
+                rate = 0.5;
+
+            }
+
+            min = 0.5;
+            max = 5 + (number / 10);
+
+        }
+
+        // --------------------------------------------------
+        // CA 51 - 85
+        // --------------------------------------------------
+
+        else if (number <= 85) {
+
+            const n =
+                number - 50;
+
+            if (n <= 22) {
+
+                rarity = "common";
+                price = 250 + n * 8;
+                rate = 80 - n * 1.5;
+
+            } else if (n <= 30) {
+
+                rarity = "rare";
+                price = 700 + n * 20;
+                rate = 20 - (n - 22);
+
+            } else if (n <= 33) {
+
+                rarity = "epic";
+                price = 1800 + n * 50;
+                rate = 6 - (n - 30);
+
+            } else if (n <= 34) {
+
+                rarity = "legendary";
+                price = 6000;
+                rate = 1.2;
+
+            } else {
+
+                rarity = "mythical";
+                price = 15000;
+                rate = 0.3;
+
+            }
+
+            min = 1;
+            max = 10 + (n / 5);
+
+        }
+
+        // --------------------------------------------------
+        // CA 86 - 115
+        // --------------------------------------------------
+
+        else if (number <= 115) {
+
+            const n =
+                number - 85;
+
+            if (n <= 17) {
+
+                rarity = "common";
+                price = 500 + n * 12;
+                rate = 70 - n * 2;
+
+            } else if (n <= 25) {
+
+                rarity = "rare";
+                price = 1300 + n * 35;
+                rate = 15 - (n - 17) * 0.8;
+
+            } else if (n <= 28) {
+
+                rarity = "epic";
+                price = 3500 + n * 80;
+                rate = 5 - (n - 25);
+
+            } else if (n <= 29) {
+
+                rarity = "legendary";
+                price = 12000;
+                rate = 0.8;
+
+            } else {
+
+                rarity = "mythical";
+                price = 30000;
+                rate = 0.2;
+
+            }
+
+            min = 2;
+            max = 18 + (n / 3);
+
+        }
+
+        // --------------------------------------------------
+        // CA 116 - 135
+        // --------------------------------------------------
+
+        else if (number <= 135) {
+
+            const n =
+                number - 115;
+
+            if (n <= 10) {
+
+                rarity = "common";
+                price = 1000 + n * 20;
+                rate = 50 - n * 2;
+
+            } else if (n <= 16) {
+
+                rarity = "rare";
+                price = 2500 + n * 60;
+                rate = 10 - (n - 10) * 0.7;
+
+            } else if (n <= 18) {
+
+                rarity = "epic";
+                price = 7000 + n * 150;
+                rate = 3 - (n - 16) * 0.8;
+
+            } else if (n === 19) {
+
+                rarity = "legendary";
+                price = 25000;
+                rate = 0.5;
+
+            } else {
+
+                rarity = "mythical";
+                price = 60000;
+                rate = 0.12;
+
+            }
+
+            min = 3;
+            max = 30 + (n / 2);
+
+        }
+
+        // --------------------------------------------------
+        // CA 136 - 150
+        // --------------------------------------------------
+
+        else {
+
+            const n =
+                number - 135;
+
+            if (n <= 6) {
+
+                rarity = "common";
+                price = 2000 + n * 40;
+                rate = 35 - n * 3;
+
+            } else if (n <= 10) {
+
+                rarity = "rare";
+                price = 5000 + n * 100;
+                rate = 8 - (n - 6) * 1;
+
+            } else if (n <= 12) {
+
+                rarity = "epic";
+                price = 15000 + n * 300;
+                rate = 3 - (n - 10) * 0.8;
+
+            } else if (n <= 14) {
+
+                rarity = "legendary";
+                price = 50000 + n * 1000;
+                rate = 0.7 - (n - 12) * 0.2;
+
+            } else {
+
+                rarity = "mythical";
+                price = 150000;
+                rate = 0.08;
+
+            }
+
+            min = 5;
+            max = 50 + n;
+
+        }
+
+
+        return {
+
+            id:
+                `ca${number}`,
+
+            name:
+                `Cá #${number}`,
+
+            emoji:
+                emoji.fish,
+
+            price,
+
+            rate:
+                Math.max(
+                    0.01,
+                    Number(rate.toFixed(3))
+                ),
+
+            rarity,
+
+            min,
+
+            max
+
+        };
+
+    }
+);
 
 
 // ==========================================================
@@ -210,18 +445,7 @@ const fishConfig = {
 
 
 // ==========================================================
-// ECONOMY CLASS
-// ==========================================================
-//
-// Mỗi cá sẽ được phân loại tự động.
-//
-// expectedValue = price × averageWeight
-//
-// Đây là giá trị trước khi tính:
-// - rod cost
-// - bait
-//
-// Class chỉ dùng để phân tích economy.
+// PROFIT CLASS
 // ==========================================================
 
 const profitClass = {
@@ -285,14 +509,6 @@ const profitClassConfig = {
 // ==========================================================
 // RODS
 // ==========================================================
-//
-// Luck được giảm so với bản cũ.
-//
-// Không để Mythic = 3 Luck.
-// Vì:
-// Rod + Bait + Upgrade + Stone
-// nếu cộng quá nhiều sẽ phá rarity.
-// ==========================================================
 
 const rods = {
 
@@ -316,7 +532,6 @@ const rods = {
 
     },
 
-
     iron: {
 
         id: "iron",
@@ -336,7 +551,6 @@ const rods = {
         maxLevel: 15
 
     },
-
 
     gold: {
 
@@ -358,7 +572,6 @@ const rods = {
 
     },
 
-
     diamond: {
 
         id: "diamond",
@@ -378,7 +591,6 @@ const rods = {
         maxLevel: 15
 
     },
-
 
     mythic: {
 
@@ -431,13 +643,6 @@ const rodTitles = {
 // ==========================================================
 // UPGRADE
 // ==========================================================
-//
-// Mỗi level chỉ +0.05 Luck.
-//
-// Level 15 = +0.75 Luck.
-//
-// Đây là đủ mạnh nhưng không phá rarity.
-// ==========================================================
 
 const upgrade = {
 
@@ -477,11 +682,6 @@ const upgrade = {
 // ==========================================================
 // BAITS
 // ==========================================================
-//
-// Bait không được quá mạnh.
-//
-// Golden bait = 1.60 thay vì 2.0.
-// ==========================================================
 
 const baits = {
 
@@ -499,7 +699,6 @@ const baits = {
 
     },
 
-
     shrimp: {
 
         id: "shrimp",
@@ -514,7 +713,6 @@ const baits = {
 
     },
 
-
     fish_food: {
 
         id: "fish_food",
@@ -528,7 +726,6 @@ const baits = {
         luck: 1.30
 
     },
-
 
     golden_bait: {
 
@@ -565,7 +762,6 @@ const keys = {
 
     },
 
-
     silver_key: {
 
         id: "silver_key",
@@ -578,7 +774,6 @@ const keys = {
 
     },
 
-
     gold_key: {
 
         id: "gold_key",
@@ -590,7 +785,6 @@ const keys = {
         price: 12000
 
     },
-
 
     diamond_key: {
 
@@ -609,9 +803,6 @@ const keys = {
 
 // ==========================================================
 // CHESTS
-// ==========================================================
-//
-// Chỉnh để mở rương có cảm giác đáng.
 // ==========================================================
 
 const chests = {
@@ -634,7 +825,6 @@ const chests = {
 
     },
 
-
     silver_chest: {
 
         id: "silver_chest",
@@ -653,7 +843,6 @@ const chests = {
 
     },
 
-
     gold_chest: {
 
         id: "gold_chest",
@@ -671,7 +860,6 @@ const chests = {
         maxReward: 22000
 
     },
-
 
     diamond_chest: {
 
@@ -714,7 +902,6 @@ const insurance = {
 
     },
 
-
     advanced_insurance: {
 
         id: "advanced_insurance",
@@ -728,7 +915,6 @@ const insurance = {
         protection: 50
 
     },
-
 
     premium_insurance: {
 
@@ -775,6 +961,8 @@ const shop = {
     keys,
 
     insurance,
+
+    rateStone,
 
     sell: sellConfig
 
@@ -844,7 +1032,6 @@ const rarityConfig = {
 
     },
 
-
     rare: {
 
         name: "Rare",
@@ -854,7 +1041,6 @@ const rarityConfig = {
         color: 0x3498DB
 
     },
-
 
     epic: {
 
@@ -866,7 +1052,6 @@ const rarityConfig = {
 
     },
 
-
     legendary: {
 
         name: "Legendary",
@@ -876,7 +1061,6 @@ const rarityConfig = {
         color: 0xF1C40F
 
     },
-
 
     mythical: {
 
@@ -910,16 +1094,6 @@ const levelConfig = {
 
 // ==========================================================
 // FISHING CONFIG
-// ==========================================================
-//
-// 6 giây / lượt.
-//
-// 10 lượt = 1 phút
-// 100 lượt = 10 phút
-// 600 lượt = 1 giờ.
-//
-// Nếu muốn game chậm hơn:
-// cooldown = 7000
 // ==========================================================
 
 const fishingConfig = {
@@ -959,18 +1133,10 @@ const economyConfig = {
 
     },
 
-    // Chi phí rod / mỗi lượt.
-    //
-    // Dùng để phân tích lời/lỗ,
-    // không nhất thiết phải trừ tiền thật.
     includeRodDepreciation: true,
 
-    // Không tính toàn bộ giá rod mỗi lần.
-    // Chỉ tính giá / số lượt sử dụng.
     rodCostWeight: 1,
 
-    // Nếu người chơi dùng bait,
-    // bait cost sẽ được tính vào EV.
     includeBaitCost: true
 
 };
@@ -978,12 +1144,6 @@ const economyConfig = {
 
 // ==========================================================
 // FISHING ZONES
-// ==========================================================
-//
-// GIỮ zone fish ID CỦA BẠN.
-//
-// Chỉ thay trashRate.
-//
 // ==========================================================
 
 const fishingZones = {
@@ -1009,7 +1169,6 @@ const fishingZones = {
 
     },
 
-
     cold: {
 
         id: "cold",
@@ -1030,7 +1189,6 @@ const fishingZones = {
             "https://media.discordapp.net/attachments/1534756360103788596/1535257294261067868/1000013742-Photoroom.png"
 
     },
-
 
     swamp: {
 
@@ -1053,7 +1211,6 @@ const fishingZones = {
 
     },
 
-
     deep: {
 
         id: "deep",
@@ -1074,7 +1231,6 @@ const fishingZones = {
             "https://media.discordapp.net/attachments/1534756360103788596/1535256926739374100/1000013740-Photoroom.png"
 
     },
-
 
     volcano: {
 
@@ -1101,29 +1257,7 @@ const fishingZones = {
 
 
 // ==========================================================
-// RARITY WEIGHT
-// ==========================================================
-//
-// ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT.
-//
-// Không dùng Luck để nhân rate trực tiếp.
-//
-// Luck chỉ tăng rarity multiplier.
-//
-// Base:
-// Common     1.00
-// Rare       0.35
-// Epic       0.16
-// Legendary  0.055
-// Mythical   0.012
-//
-// Vì vậy Mythical mặc định cực hiếm.
-//
-// Luck thấp:
-// Mythical vẫn rất khó.
-//
-// Luck cao:
-// bắt đầu có khả năng đẩy Mythical.
+// RARITY LUCK
 // ==========================================================
 
 const rarityLuckConfig = {
@@ -1136,7 +1270,6 @@ const rarityLuckConfig = {
 
     },
 
-
     rare: {
 
         base: 0.35,
@@ -1144,7 +1277,6 @@ const rarityLuckConfig = {
         luckScale: 0.18
 
     },
-
 
     epic: {
 
@@ -1154,7 +1286,6 @@ const rarityLuckConfig = {
 
     },
 
-
     legendary: {
 
         base: 0.055,
@@ -1162,7 +1293,6 @@ const rarityLuckConfig = {
         luckScale: 0.75
 
     },
-
 
     mythical: {
 
@@ -1176,23 +1306,7 @@ const rarityLuckConfig = {
 
 
 // ==========================================================
-// RATE NORMALIZATION
-// ==========================================================
-//
-// Chúng ta không cho rate cá hiếm bị cộng thẳng.
-//
-// Ví dụ:
-// mythical rate = 0.08
-//
-// Luck 1:
-// 0.08 × 0.012
-//
-// Luck 3:
-// 0.08 × khoảng 3.2
-//
-// => vẫn hiếm.
-//
-// Luck 5+ mới bắt đầu đáng kể.
+// LUCK RARITY MULTIPLIER
 // ==========================================================
 
 function getLuckRarityMultiplier(
@@ -1239,29 +1353,7 @@ function getLuckRarityMultiplier(
 
 
 // ==========================================================
-// FISH RATE BALANCING
-// ==========================================================
-//
-// Rate gốc trong fishList vẫn được giữ.
-//
-// Nhưng rarity sẽ kiểm soát xác suất.
-//
-// Điều này cho phép:
-//
-// Common:
-// xuất hiện thường xuyên.
-//
-// Rare:
-// bắt đầu khó.
-//
-// Epic:
-// hiếm.
-//
-// Legendary:
-// rất hiếm.
-//
-// Mythical:
-// cực hiếm.
+// FISH WEIGHT
 // ==========================================================
 
 function getFishWeight(
@@ -1343,7 +1435,8 @@ function weightedRandom(
                     luck
                 );
 
-            totalWeight += weight;
+            totalWeight +=
+                weight;
 
             return {
 
@@ -1355,11 +1448,9 @@ function weightedRandom(
 
         });
 
-
     let random =
         Math.random() *
         totalWeight;
-
 
     for (
         const entry
@@ -1378,7 +1469,6 @@ function weightedRandom(
         }
 
     }
-
 
     return weighted[
         weighted.length - 1
@@ -1404,7 +1494,6 @@ function pickFish(
 
     }
 
-
     const availableFish =
         fishList.filter(
             fish =>
@@ -1413,7 +1502,6 @@ function pickFish(
                 )
         );
 
-
     if (
         !availableFish.length
     ) {
@@ -1421,7 +1509,6 @@ function pickFish(
         return null;
 
     }
-
 
     return weightedRandom(
         availableFish,
@@ -1442,7 +1529,6 @@ function pickTrash() {
             trashItems
         );
 
-
     return weightedRandom(
         trash,
         1
@@ -1452,30 +1538,7 @@ function pickTrash() {
 
 
 // ==========================================================
-// CALCULATE ROD COST
-// ==========================================================
-//
-// Đây là chi phí "ẩn".
-//
-// Ví dụ:
-//
-// Wood:
-// 10.000 / 25 = 400 / lượt
-//
-// Iron:
-// 30.000 / 60 = 500 / lượt
-//
-// Gold:
-// 75.000 / 110 ≈ 682 / lượt
-//
-// Diamond:
-// 175.000 / 275 ≈ 636 / lượt
-//
-// Mythic:
-// 400.000 / 550 ≈ 727 / lượt
-//
-// Không trừ trực tiếp khỏi túi tiền.
-// Chỉ dùng để đánh giá economy.
+// ROD COST
 // ==========================================================
 
 function calculateRodCostPerCast(
@@ -1509,7 +1572,7 @@ function calculateRodCostPerCast(
 
 
 // ==========================================================
-// CALCULATE BAIT COST
+// BAIT COST
 // ==========================================================
 
 function calculateBaitCostPerCast(
@@ -1533,7 +1596,7 @@ function calculateBaitCostPerCast(
 
 
 // ==========================================================
-// TOTAL CAST COST
+// TOTAL FISHING COST
 // ==========================================================
 
 function calculateFishingCost(
@@ -1542,7 +1605,6 @@ function calculateFishingCost(
 ) {
 
     let cost = 0;
-
 
     if (
         economyConfig.includeRodDepreciation
@@ -1556,7 +1618,6 @@ function calculateFishingCost(
 
     }
 
-
     if (
         baitId &&
         economyConfig.includeBaitCost
@@ -1569,7 +1630,6 @@ function calculateFishingCost(
 
     }
 
-
     return Math.floor(
         cost
     );
@@ -1579,12 +1639,6 @@ function calculateFishingCost(
 
 // ==========================================================
 // SELL FISH
-// ==========================================================
-//
-// Giữ price × weight.
-//
-// Nhưng có FLOOR.
-// Không làm tròn lên.
 // ==========================================================
 
 function calculateFishSellPrice(
@@ -1597,7 +1651,6 @@ function calculateFishSellPrice(
         return 0;
 
     }
-
 
     if (
         fish.sellPrice !== undefined
@@ -1612,19 +1665,16 @@ function calculateFishSellPrice(
 
     }
 
-
     const safeWeight =
         Math.max(
             0,
             Number(weight) || 0
         );
 
-
     const price =
         Number(fish.price) *
         safeWeight *
         sellConfig.multiplier;
-
 
     return Math.max(
         sellConfig.minPrice,
@@ -1648,7 +1698,6 @@ function calculateTrashSellPrice(
 
     }
 
-
     if (
         item.id === "torn_boot"
     ) {
@@ -1656,7 +1705,6 @@ function calculateTrashSellPrice(
         return 0;
 
     }
-
 
     return Math.max(
         0,
@@ -1669,7 +1717,7 @@ function calculateTrashSellPrice(
 
 
 // ==========================================================
-// GENERATE WEIGHT
+// GENERATE FISH WEIGHT
 // ==========================================================
 
 function generateFishWeight(
@@ -1682,7 +1730,6 @@ function generateFishWeight(
 
     }
 
-
     const min =
         Math.max(
             fishingConfig.minWeight,
@@ -1690,14 +1737,12 @@ function generateFishWeight(
             fishingConfig.minWeight
         );
 
-
     const max =
         Math.min(
             fishingConfig.maxWeight,
             Number(fish.max) ||
             fishingConfig.maxWeight
         );
-
 
     if (
         max <= min
@@ -1709,20 +1754,11 @@ function generateFishWeight(
 
     }
 
-
-    // Không random đều hoàn toàn.
-    //
-    // Cá nhỏ xuất hiện nhiều hơn,
-    // cá cực nặng hiếm hơn.
-    //
-    // 0.65 giúp trọng lượng trung bình
-    // thấp hơn midpoint.
     const random =
         Math.pow(
             Math.random(),
             0.65
         );
-
 
     const weight =
         min +
@@ -1730,7 +1766,6 @@ function generateFishWeight(
             (max - min) *
             random
         );
-
 
     return Number(
         weight.toFixed(1)
@@ -1740,7 +1775,7 @@ function generateFishWeight(
 
 
 // ==========================================================
-// EXPECTED FISH VALUE
+// AVERAGE WEIGHT
 // ==========================================================
 
 function getAverageWeight(
@@ -1770,6 +1805,10 @@ function getAverageWeight(
 }
 
 
+// ==========================================================
+// EXPECTED VALUE
+// ==========================================================
+
 function getExpectedFishValue(
     fish
 ) {
@@ -1794,18 +1833,7 @@ function getExpectedFishValue(
 
 
 // ==========================================================
-// AUTO PROFIT CLASS
-// ==========================================================
-//
-// Ngưỡng dựa trên giá trị trung bình.
-//
-// 🔴 < 100
-// ⚪ 100 - 300
-// 🟢 300 - 1000
-// 💰 > 1000
-//
-// Đây là CLASS THAM KHẢO.
-// Lời/lỗ thật còn phụ thuộc rod + bait.
+// PROFIT CLASS
 // ==========================================================
 
 function getProfitClass(
@@ -1817,27 +1845,29 @@ function getProfitClass(
             fish
         );
 
-
-    if (value < 100) {
+    if (
+        value < 100
+    ) {
 
         return profitClass.LOSS;
 
     }
 
-
-    if (value < 300) {
+    if (
+        value < 300
+    ) {
 
         return profitClass.BREAK_EVEN;
 
     }
 
-
-    if (value < 1000) {
+    if (
+        value < 1000
+    ) {
 
         return profitClass.LOW_PROFIT;
 
     }
-
 
     return profitClass.HIGH_PROFIT;
 
@@ -1845,17 +1875,7 @@ function getProfitClass(
 
 
 // ==========================================================
-// ATTACH ECONOMY INFO
-// ==========================================================
-//
-// Không bắt buộc phải dùng.
-// Có thể gọi:
-//
-// applyProfitClasses();
-//
-// Sau đó:
-// fish.profitClass
-// fish.expectedValue
+// APPLY PROFIT CLASS
 // ==========================================================
 
 function applyProfitClasses() {
@@ -1896,7 +1916,6 @@ function generateFishingResult(
             zoneId
         ];
 
-
     if (!zone) {
 
         return {
@@ -1914,15 +1933,14 @@ function generateFishingResult(
     }
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // TRASH
-    // ======================================================
+    // ------------------------------------------------------
 
     const trashChance =
         Number(
             zone.trashRate
         ) || 0;
-
 
     if (
         fishingConfig.trashEnabled &&
@@ -1932,7 +1950,6 @@ function generateFishingResult(
 
         const trash =
             pickTrash();
-
 
         if (trash) {
 
@@ -1959,9 +1976,9 @@ function generateFishingResult(
     }
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // FISH
-    // ======================================================
+    // ------------------------------------------------------
 
     const fish =
         pickFish(
@@ -1971,7 +1988,6 @@ function generateFishingResult(
                 Number(luck) || 1
             )
         );
-
 
     if (!fish) {
 
@@ -1989,19 +2005,16 @@ function generateFishingResult(
 
     }
 
-
     const weight =
         generateFishWeight(
             fish
         );
-
 
     const price =
         calculateFishSellPrice(
             fish,
             weight
         );
-
 
     return {
 
@@ -2026,13 +2039,6 @@ function generateFishingResult(
 // ==========================================================
 // REAL PROFIT
 // ==========================================================
-//
-// Dùng để kiểm tra:
-// "Với rod X + bait Y, cá này lời/lỗ bao nhiêu?"
-//
-// Ví dụ:
-// calculateFishProfit(fish, 3, "wood", "worm")
-// ==========================================================
 
 function calculateFishProfit(
     fish,
@@ -2047,18 +2053,15 @@ function calculateFishProfit(
             weight
         );
 
-
     const cost =
         calculateFishingCost(
             rodId,
             baitId
         );
 
-
     const profit =
         revenue -
         cost;
-
 
     return {
 
@@ -2077,19 +2080,7 @@ function calculateFishProfit(
 
 
 // ==========================================================
-// RARITY ANALYSIS
-// ==========================================================
-//
-// Dùng để test xác suất.
-// Có thể gọi:
-//
-// analyzeZoneRates("tropical", 1)
-// analyzeZoneRates("tropical", 3)
-// analyzeZoneRates("tropical", 5)
-//
-// luck càng cao:
-// Common giảm tương đối,
-// Rare/Epic/Legendary/Mythical tăng.
+// ANALYZE ZONE
 // ==========================================================
 
 function analyzeZoneRates(
@@ -2102,13 +2093,11 @@ function analyzeZoneRates(
             zoneId
         ];
 
-
     if (!zone) {
 
         return null;
 
     }
-
 
     const fish =
         fishList.filter(
@@ -2118,9 +2107,7 @@ function analyzeZoneRates(
                 )
         );
 
-
     let total = 0;
-
 
     const data =
         fish.map(
@@ -2132,7 +2119,8 @@ function analyzeZoneRates(
                         luck
                     );
 
-                total += weight;
+                total +=
+                    weight;
 
                 return {
 
@@ -2149,7 +2137,6 @@ function analyzeZoneRates(
 
             }
         );
-
 
     return data.map(
         entry => ({
@@ -2171,7 +2158,7 @@ function analyzeZoneRates(
 
 
 // ==========================================================
-// RARITY SUMMARY
+// ANALYZE RARITY
 // ==========================================================
 
 function analyzeRarityRates(
@@ -2185,13 +2172,11 @@ function analyzeRarityRates(
             luck
         );
 
-
     if (!data) {
 
         return null;
 
     }
-
 
     const summary = {
 
@@ -2206,7 +2191,6 @@ function analyzeRarityRates(
         mythical: 0
 
     };
-
 
     for (
         const item
@@ -2228,14 +2212,13 @@ function analyzeRarityRates(
 
     }
 
-
     return summary;
 
 }
 
 
 // ==========================================================
-// LUCK CALCULATOR
+// TOTAL LUCK
 // ==========================================================
 
 function calculateTotalLuck(
@@ -2248,14 +2231,12 @@ function calculateTotalLuck(
     const rod =
         rods[rodId];
 
-
     const rodLuck =
         rod
             ? Number(
                 rod.luck
             ) || 1
             : 1;
-
 
     const baitLuck =
         baitId &&
@@ -2264,7 +2245,6 @@ function calculateTotalLuck(
                 baits[baitId].luck
             ) || 1
             : 1;
-
 
     const level =
         Math.max(
@@ -2277,11 +2257,9 @@ function calculateTotalLuck(
             )
         );
 
-
     const upgradeLuck =
         level *
         upgrade.luckPerLevel;
-
 
     const stoneLuck =
         Math.max(
@@ -2291,18 +2269,6 @@ function calculateTotalLuck(
             ) || 0
         );
 
-
-    // Không nhân Luck với nhau.
-    //
-    // Dùng:
-    // rod + upgrade + bait bonus + stone.
-    //
-    // Ví dụ Mythic Lv15 + Golden:
-    //
-    // 2.2 + 0.75 + 0.60
-    // = 3.55
-    //
-    // Đây là mức hợp lý.
     const totalLuck =
         rodLuck +
         upgradeLuck +
@@ -2310,7 +2276,6 @@ function calculateTotalLuck(
             baitLuck - 1
         ) +
         stoneLuck;
-
 
     return Number(
         Math.max(
@@ -2344,9 +2309,9 @@ function validateConfig() {
     const errors = [];
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // FISH
-    // ======================================================
+    // ------------------------------------------------------
 
     if (
         fishList.length !== 150
@@ -2358,10 +2323,8 @@ function validateConfig() {
 
     }
 
-
     const ids =
         new Set();
-
 
     for (
         const fish
@@ -2376,7 +2339,6 @@ function validateConfig() {
 
         }
 
-
         if (
             ids.has(
                 fish.id
@@ -2389,11 +2351,9 @@ function validateConfig() {
 
         }
 
-
         ids.add(
             fish.id
         );
-
 
         if (!fish.name) {
 
@@ -2402,7 +2362,6 @@ function validateConfig() {
             );
 
         }
-
 
         if (
             Number(fish.price) < 0
@@ -2414,7 +2373,6 @@ function validateConfig() {
 
         }
 
-
         if (
             Number(fish.rate) <= 0
         ) {
@@ -2424,7 +2382,6 @@ function validateConfig() {
             );
 
         }
-
 
         if (
             Number(fish.min) >
@@ -2437,15 +2394,15 @@ function validateConfig() {
 
         }
 
-
         const validRarity = [
+
             "common",
             "rare",
             "epic",
             "legendary",
             "mythical"
-        ];
 
+        ];
 
         if (
             !validRarity.includes(
@@ -2462,9 +2419,9 @@ function validateConfig() {
     }
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // ZONES
-    // ======================================================
+    // ------------------------------------------------------
 
     for (
         const zone
@@ -2487,7 +2444,6 @@ function validateConfig() {
 
         }
 
-
         for (
             const fishId
             of zone.fish
@@ -2499,7 +2455,6 @@ function validateConfig() {
                         fish.id ===
                         fishId
                 );
-
 
             if (!exists) {
 
@@ -2514,9 +2469,9 @@ function validateConfig() {
     }
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // RODS
-    // ======================================================
+    // ------------------------------------------------------
 
     for (
         const rod
@@ -2535,7 +2490,6 @@ function validateConfig() {
 
         }
 
-
         if (
             rod.uses <= 0
         ) {
@@ -2545,7 +2499,6 @@ function validateConfig() {
             );
 
         }
-
 
         if (
             rod.luck < 1
@@ -2560,9 +2513,9 @@ function validateConfig() {
     }
 
 
-    // ======================================================
-    // BAIT
-    // ======================================================
+    // ------------------------------------------------------
+    // BAITS
+    // ------------------------------------------------------
 
     for (
         const bait
@@ -2580,7 +2533,6 @@ function validateConfig() {
             );
 
         }
-
 
         if (
             bait.luck < 1
@@ -2608,7 +2560,7 @@ function validateConfig() {
 
 
 // ==========================================================
-// AUTO APPLY PROFIT CLASS
+// APPLY PROFIT
 // ==========================================================
 
 applyProfitClasses();
@@ -2703,6 +2655,9 @@ module.exports = {
     // Insurance
     insurance,
 
+    // Rate Stone
+    rateStone,
+
     // Shop
     shop,
 
@@ -2723,9 +2678,6 @@ module.exports = {
 
     // Economy
     economyConfig,
-
-    // Rate stone
-    rateStone,
 
     // Validation
     validateConfig
