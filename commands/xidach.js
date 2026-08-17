@@ -21,7 +21,6 @@ const {
 // ======================================================
 
 function taoBoBai() {
-
     const ranks = [
         "2", "3", "4", "5", "6", "7",
         "8", "9", "10", "J", "Q", "K", "A"
@@ -37,39 +36,24 @@ function taoBoBai() {
     const deck = [];
 
     for (const suit of suits) {
-
         for (const rank of ranks) {
-
             deck.push({
                 rank,
                 suit
             });
-
         }
-
     }
 
     // Fisher-Yates shuffle
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(
+            Math.random() * (i + 1)
+        );
 
-    for (
-        let i = deck.length - 1;
-        i > 0;
-        i--
-    ) {
-
-        const j =
-            Math.floor(
-                Math.random() * (i + 1)
-            );
-
-        [
-            deck[i],
-            deck[j]
-        ] = [
+        [deck[i], deck[j]] = [
             deck[j],
             deck[i]
         ];
-
     }
 
     return deck;
@@ -80,7 +64,6 @@ function taoBoBai() {
 // ======================================================
 
 function giaTri(rank) {
-
     if (rank === "A") {
         return 1;
     }
@@ -90,9 +73,7 @@ function giaTri(rank) {
         rank === "Q" ||
         rank === "K"
     ) {
-
         return 10;
-
     }
 
     return Number(rank);
@@ -103,13 +84,11 @@ function giaTri(rank) {
 // ======================================================
 
 function tongDiem(hand) {
-
     return hand.reduce(
         (sum, card) =>
             sum + giaTri(card.rank),
         0
     );
-
 }
 
 // ======================================================
@@ -117,14 +96,12 @@ function tongDiem(hand) {
 // ======================================================
 
 function hienThi(hand) {
-
     return hand
         .map(
             card =>
-                `\`${card.rank}${card.suit}\``
+                `${card.rank}${card.suit}`
         )
-        .join(" ");
-
+        .join("  ");
 }
 
 // ======================================================
@@ -132,27 +109,21 @@ function hienThi(hand) {
 // ======================================================
 
 function laXiDach(hand) {
-
     if (hand.length !== 2) {
         return false;
     }
 
-    const hasAce =
-        hand.some(
-            card =>
-                card.rank === "A"
-        );
-
-    const hasTen =
-        hand.some(
-            card =>
-                giaTri(card.rank) === 10
-        );
-
-    return (
-        hasAce &&
-        hasTen
+    const hasAce = hand.some(
+        card =>
+            card.rank === "A"
     );
+
+    const hasTen = hand.some(
+        card =>
+            giaTri(card.rank) === 10
+    );
+
+    return hasAce && hasTen;
 }
 
 // ======================================================
@@ -160,12 +131,10 @@ function laXiDach(hand) {
 // ======================================================
 
 function laNguLinh(hand) {
-
     return (
         hand.length >= 5 &&
         tongDiem(hand) <= 21
     );
-
 }
 
 // ======================================================
@@ -177,72 +146,47 @@ function taoEmbed(
     title,
     description
 ) {
-
     return new EmbedBuilder()
-
         .setColor(color)
-
-        .setTitle(
-            "୨୧ ───────── ୨୧\n" +
-            title +
-            "\n୨୧ ───────── ୨୧"
-        )
-
-        .setDescription(
-            description
-        )
-
+        .setTitle(title)
+        .setDescription(description)
         .setFooter({
-            text:
-                "✦ Fishing Adventure · Xì Dách"
+            text: "✦ Furina · Fontaine · Xì Dách"
         })
-
         .setTimestamp();
-
 }
 
 // ======================================================
 // NÚT
 // ======================================================
 
-function taoButtons(
-    userId
-) {
-
+function taoButtons(userId) {
     return new ActionRowBuilder()
-
         .addComponents(
 
             new ButtonBuilder()
-
                 .setCustomId(
                     `xidach_hit_${userId}`
                 )
-
                 .setLabel(
-                    "🃏 Rút bài"
+                    "✦ RÚT BÀI"
                 )
-
                 .setStyle(
                     ButtonStyle.Primary
                 ),
 
             new ButtonBuilder()
-
                 .setCustomId(
                     `xidach_stand_${userId}`
                 )
-
                 .setLabel(
-                    "✋ Dừng"
+                    "✧ DỪNG"
                 )
-
                 .setStyle(
                     ButtonStyle.Secondary
                 )
 
         );
-
 }
 
 // ======================================================
@@ -279,16 +223,16 @@ module.exports = {
                 embeds: [
 
                     taoEmbed(
+                        "#F7C8D0",
+                        "✧ CƯỢC KHÔNG HỢP LỆ",
 
-                        "#EF4444",
+                        `♢ Cách dùng
 
-                        "❌ CƯỢC KHÔNG HỢP LỆ",
+${prefix}xidach <số tiền>
 
-                        `Cách dùng:\n\n` +
-                        `\`${prefix}xidach <số tiền>\`\n\n` +
-                        `Ví dụ:\n` +
-                        `\`${prefix}xidach 10000\``
+♢ Ví dụ
 
+${prefix}xidach 10000`
                     )
 
                 ]
@@ -313,13 +257,10 @@ module.exports = {
                 embeds: [
 
                     taoEmbed(
+                        "#F7C8D0",
+                        "❖ KHÔNG TÌM THẤY DỮ LIỆU",
 
-                        "#EF4444",
-
-                        "❌ KHÔNG TÌM THẤY DỮ LIỆU",
-
-                        "Không tìm thấy dữ liệu người chơi."
-
+                        `Không tìm thấy dữ liệu người chơi.`
                     )
 
                 ]
@@ -346,19 +287,18 @@ module.exports = {
                 embeds: [
 
                     taoEmbed(
+                        "#F7C8D0",
+                        "✧ KHÔNG ĐỦ FCOIN",
 
-                        "#EF4444",
+                        `♢ SỐ DƯ
 
-                        "❌ KHÔNG ĐỦ FCOIN",
+${formatMoney(user.money)} ${emoji.money}
 
-                        `💰 Số dư hiện tại: ` +
-                        `**${formatMoney(user.money)}** ${emoji.money}\n\n` +
+♢ TIỀN CƯỢC
 
-                        `🎲 Tiền cược: ` +
-                        `**${formatMoney(bet)}** ${emoji.money}\n\n` +
+${formatMoney(bet)} ${emoji.money}
 
-                        `Bạn không đủ tiền để bắt đầu ván.`
-
+Bạn không đủ tiền để bắt đầu ván.`
                     )
 
                 ]
@@ -393,10 +333,14 @@ module.exports = {
         ];
 
         // ==================================================
-        // XỬ LÝ KẾT THÚC
+        // TRẠNG THÁI
         // ==================================================
 
         let finished = false;
+
+        // ==================================================
+        // KẾT THÚC
+        // ==================================================
 
         async function ketThuc(
             msg,
@@ -412,12 +356,12 @@ module.exports = {
 
             let reward = 0;
             let resultText = "";
-            let color = "#9CA3AF";
-            let title = "🤝 HÒA";
+            let color = "#A8A8B8";
+            let title = "◇ HÒA";
 
-            // ==============================================
+            // ==================================================
             // THẮNG
-            // ==============================================
+            // ==================================================
 
             if (
                 ketQua === "win"
@@ -428,62 +372,56 @@ module.exports = {
                         bet * heSo
                     );
 
-                user.money +=
-                    reward;
+                user.money += reward;
 
                 resultText =
-                    `✅ **Bạn thắng!**\n` +
-                    `💰 Nhận: **+${formatMoney(reward)}** ${emoji.money}`;
+                    `✦ BẠN THẮNG`;
 
                 color =
-                    "#86EFAC";
+                    "#B7E4C7";
 
                 title =
-                    "🎉 BẠN THẮNG";
+                    "✦ KẾT QUẢ XÌ DÁCH";
 
             }
 
-            // ==============================================
+            // ==================================================
             // THUA
-            // ==============================================
+            // ==================================================
 
             else if (
                 ketQua === "lose"
             ) {
 
                 resultText =
-                    `❌ **Bạn thua!**\n` +
-                    `💸 Mất: **${formatMoney(bet)}** ${emoji.money}`;
+                    `✧ BẠN THUA`;
 
                 color =
-                    "#EF4444";
+                    "#F7C8D0";
 
                 title =
-                    "💀 BẠN THUA";
+                    "✧ KẾT QUẢ XÌ DÁCH";
 
             }
 
-            // ==============================================
+            // ==================================================
             // HÒA
-            // ==============================================
+            // ==================================================
 
             else {
 
-                user.money +=
-                    bet;
+                user.money += bet;
 
-                reward =
-                    bet;
+                reward = bet;
 
                 resultText =
-                    `🤝 **Hòa!**\n` +
-                    `💰 Hoàn lại: **${formatMoney(bet)}** ${emoji.money}`;
+                    `◇ HÒA`;
 
                 color =
-                    "#F5C451";
+                    "#F5D7A1";
 
                 title =
-                    "🤝 HÒA";
+                    "◇ KẾT QUẢ XÌ DÁCH";
 
             }
 
@@ -499,6 +437,63 @@ module.exports = {
                     dealerHand
                 );
 
+            let resultDetails = "";
+
+            if (
+                ketQua === "win"
+            ) {
+
+                resultDetails =
+                    `❖ KẾT QUẢ
+
+${resultText}
+
+♢ TIỀN CƯỢC
+${formatMoney(bet)} ${emoji.money}
+
+✦ TIỀN NHẬN
++${formatMoney(reward)} ${emoji.money}
+
+◇ SỐ DƯ
+${formatMoney(user.money)} ${emoji.money}`;
+
+            }
+
+            else if (
+                ketQua === "lose"
+            ) {
+
+                resultDetails =
+                    `❖ KẾT QUẢ
+
+${resultText}
+
+♢ TIỀN CƯỢC
+${formatMoney(bet)} ${emoji.money}
+
+◇ SỐ DƯ
+${formatMoney(user.money)} ${emoji.money}`;
+
+            }
+
+            else {
+
+                resultDetails =
+                    `❖ KẾT QUẢ
+
+${resultText}
+
+♢ TIỀN CƯỢC
+${formatMoney(bet)} ${emoji.money}
+
+✦ HOÀN LẠI
++${formatMoney(bet)} ${emoji.money}
+
+◇ SỐ DƯ
+${formatMoney(user.money)} ${emoji.money}`;
+
+            }
+
             const embed =
                 taoEmbed(
 
@@ -506,21 +501,21 @@ module.exports = {
 
                     title,
 
-                    `👤 **Bài của bạn**\n` +
-                    `${hienThi(playerHand)}\n` +
-                    `📊 Điểm: **${playerScore}**\n\n` +
+                    `✦ BẠN
 
-                    `🤖 **Bài nhà cái**\n` +
-                    `${hienThi(dealerHand)}\n` +
-                    `📊 Điểm: **${dealerScore}**\n\n` +
+${hienThi(playerHand)}
+◇ ${playerScore} điểm
 
-                    `୨୧ ───────── ୨୧\n\n` +
+✧ NHÀ CÁI
 
-                    `${resultText}\n\n` +
+${hienThi(dealerHand)}
+◇ ${dealerScore} điểm
 
-                    `💳 **Số dư:** ` +
-                    `${formatMoney(user.money)} ${emoji.money}`
+────────────────────
 
+${resultDetails}
+
+${randomQuote(ketQua)}`
                 );
 
             try {
@@ -535,8 +530,58 @@ module.exports = {
 
                 });
 
-            } catch {}
+            } catch (err) {
 
+                console.error(
+                    "XIDACH RESULT ERROR:",
+                    err
+                );
+
+            }
+
+        }
+
+        // ==================================================
+        // THOẠI NGẮN
+        // ==================================================
+
+        function randomQuote(type) {
+
+            const quotes = {
+
+                win: [
+                    "“Một màn trình diễn tuyệt đẹp.” — Furina",
+                    "“Quả nhiên vận may đã mỉm cười.” — Furina",
+                    "“Thật xứng đáng với một chiến thắng.” — Furina"
+                ],
+
+                lose: [
+                    "“Ôi... thật đáng tiếc.” — Furina",
+                    "“Có vẻ hôm nay số phận không đứng về phía ngươi.” — Furina",
+                    "“Một kết quả ngoài dự đoán...” — Furina"
+                ],
+
+                push: [
+                    "“Xem ra số phận vẫn chưa chọn ai.” — Furina",
+                    "“Một kết quả cân bằng.” — Furina",
+                    "“Hai bên đều giữ được vị trí của mình.” — Furina"
+                ]
+
+            };
+
+            const list =
+                quotes[type] ||
+                quotes.push;
+
+            return (
+                "\n" +
+                list[
+                    Math.floor(
+                        Math.random() *
+                        list.length
+                    )
+                ]
+            );
         }
 
         // ==================================================
@@ -568,9 +613,9 @@ module.exports = {
                     dealerHand
                 );
 
-            // ==============================================
+            // ==================================================
             // NHÀ CÁI XÌ DÁCH
-            // ==============================================
+            // ==================================================
 
             if (
                 laXiDach(
@@ -585,9 +630,9 @@ module.exports = {
 
             }
 
-            // ==============================================
+            // ==================================================
             // NHÀ CÁI NGŨ LINH
-            // ==============================================
+            // ==================================================
 
             if (
                 laNguLinh(
@@ -615,9 +660,9 @@ module.exports = {
 
             }
 
-            // ==============================================
+            // ==================================================
             // NHÀ CÁI QUÁ 21
-            // ==============================================
+            // ==================================================
 
             if (
                 dealerScore > 21
@@ -631,9 +676,9 @@ module.exports = {
 
             }
 
-            // ==============================================
+            // ==================================================
             // SO ĐIỂM
-            // ==============================================
+            // ==================================================
 
             if (
                 playerScore >
@@ -680,8 +725,7 @@ module.exports = {
             const reward =
                 bet * 3;
 
-            user.money +=
-                reward;
+            user.money += reward;
 
             save();
 
@@ -691,24 +735,31 @@ module.exports = {
 
                     taoEmbed(
 
-                        "#FFD700",
+                        "#F6D77A",
 
-                        "🃏 XÌ DÁCH!"
+                        "✦ XÌ DÁCH!",
 
-                        ,
+                        `✦ BẠN
 
-                        `👤 **Bài của bạn**\n` +
-                        `${hienThi(playerHand)}\n` +
-                        `📊 **21 điểm · XÌ DÁCH**\n\n` +
+${hienThi(playerHand)}
+◇ 21 điểm · XÌ DÁCH
 
-                        `୨୧ ───────── ୨୧\n\n` +
+────────────────────
 
-                        `🎉 **XÌ DÁCH!**\n` +
-                        `💰 Tiền nhận: **+${formatMoney(reward)}** ${emoji.money}\n\n` +
+❖ KẾT QUẢ
 
-                        `💳 Số dư mới: ` +
-                        `**${formatMoney(user.money)}** ${emoji.money}`
+✦ XÌ DÁCH
 
+♢ TIỀN CƯỢC
+${formatMoney(bet)} ${emoji.money}
+
+✦ TIỀN NHẬN
++${formatMoney(reward)} ${emoji.money}
+
+◇ SỐ DƯ
+${formatMoney(user.money)} ${emoji.money}
+
+“Quả nhiên là một màn trình diễn tuyệt đẹp.” — Furina`
                     )
 
                 ]
@@ -718,7 +769,7 @@ module.exports = {
         }
 
         // ==================================================
-        // GIAO DIỆN BAN ĐẦU
+        // EMBED BAN ĐẦU
         // ==================================================
 
         const msg =
@@ -728,27 +779,28 @@ module.exports = {
 
                     taoEmbed(
 
-                        "#FFD166",
+                        "#F6D77A",
 
-                        "🃏 XÌ DÁCH",
+                        "✦ XÌ DÁCH",
 
-                        `👤 **Bài của bạn**\n` +
-                        `${hienThi(playerHand)}\n` +
-                        `📊 Điểm: **${tongDiem(playerHand)}**\n\n` +
+                        `✦ BÀI CỦA BẠN
 
-                        `🤖 **Nhà cái**\n` +
-                        `${dealerHand[0].rank}${dealerHand[0].suit} 🂠\n\n` +
+${hienThi(playerHand)}
+◇ ${tongDiem(playerHand)} điểm
 
-                        `୨୧ ───────── ୨୧\n\n` +
+✧ NHÀ CÁI
 
-                        `💰 **Tiền cược:** ` +
-                        `${formatMoney(bet)} ${emoji.money}\n\n` +
+${dealerHand[0].rank}${dealerHand[0].suit}  🂠
 
-                        `🃏 Rút bài để tiếp tục\n` +
-                        `✋ Dừng để nhà cái chơi\n\n` +
+♢ CƯỢC
 
-                        `⏳ Bạn có **30 giây** để hành động.`
+${formatMoney(bet)} ${emoji.money}
 
+⏳ THỜI GIAN
+
+30 giây
+
+“Ván diễn đã bắt đầu.” — Furina`
                     )
 
                 ],
@@ -782,9 +834,9 @@ module.exports = {
             "collect",
             async interaction => {
 
-                // ==========================================
+                // ==================================================
                 // CHỈ CHỦ VÁN
-                // ==========================================
+                // ==================================================
 
                 if (
                     interaction.user.id !==
@@ -793,8 +845,15 @@ module.exports = {
 
                     return interaction.reply({
 
-                        content:
-                            "❌ Đây không phải ván Xì Dách của bạn.",
+                        embeds: [
+
+                            taoEmbed(
+                                "#F7C8D0",
+                                "✧ KHÔNG PHẢI VÁN CỦA BẠN",
+                                `Ván Xì Dách này thuộc về <@${message.author.id}>.`
+                            )
+
+                        ],
 
                         ephemeral: true
 
@@ -802,9 +861,9 @@ module.exports = {
 
                 }
 
-                // ==========================================
+                // ==================================================
                 // RÚT BÀI
-                // ==========================================
+                // ==================================================
 
                 if (
                     interaction.customId ===
@@ -820,9 +879,9 @@ module.exports = {
                             playerHand
                         );
 
-                    // ======================================
+                    // ==================================================
                     // QUÁ 21
-                    // ======================================
+                    // ==================================================
 
                     if (
                         score > 21
@@ -845,9 +904,9 @@ module.exports = {
 
                     }
 
-                    // ======================================
+                    // ==================================================
                     // NGŨ LINH
-                    // ======================================
+                    // ==================================================
 
                     if (
                         laNguLinh(
@@ -873,9 +932,9 @@ module.exports = {
 
                     }
 
-                    // ======================================
+                    // ==================================================
                     // CẬP NHẬT
-                    // ======================================
+                    // ==================================================
 
                     return interaction.update({
 
@@ -883,24 +942,26 @@ module.exports = {
 
                             taoEmbed(
 
-                                "#FFD166",
+                                "#F6D77A",
 
-                                "🃏 XÌ DÁCH",
+                                "✦ XÌ DÁCH",
 
-                                `👤 **Bài của bạn**\n` +
-                                `${hienThi(playerHand)}\n` +
-                                `📊 Điểm: **${score}**\n\n` +
+                                `✦ BÀI CỦA BẠN
 
-                                `🤖 **Nhà cái**\n` +
-                                `${dealerHand[0].rank}${dealerHand[0].suit} 🂠\n\n` +
+${hienThi(playerHand)}
+◇ ${score} điểm
 
-                                `୨୧ ───────── ୨୧\n\n` +
+✧ NHÀ CÁI
 
-                                `💰 **Tiền cược:** ` +
-                                `${formatMoney(bet)} ${emoji.money}\n\n` +
+${dealerHand[0].rank}${dealerHand[0].suit}  🂠
 
-                                `🃏 Bạn có thể rút tiếp hoặc dừng.`
+♢ CƯỢC
 
+${formatMoney(bet)} ${emoji.money}
+
+⏳ Vẫn còn thời gian để lựa chọn.
+
+“Hmm... vẫn còn cơ hội.” — Furina`
                             )
 
                         ],
@@ -917,9 +978,9 @@ module.exports = {
 
                 }
 
-                // ==========================================
+                // ==================================================
                 // DỪNG
-                // ==========================================
+                // ==================================================
 
                 if (
                     interaction.customId ===
@@ -957,8 +1018,7 @@ module.exports = {
             ) => {
 
                 if (
-                    reason ===
-                    "time"
+                    reason === "time"
                 ) {
 
                     if (
