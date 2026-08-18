@@ -22,14 +22,21 @@ const {
 // CONFIG
 // ======================================================
 
-const MAX_LEVEL = 15;
+const MAX_LEVEL = 30;
 
-const DOWNGRADE_LEVEL = 5;
-const DESTROY_LEVEL = 10;
+// Từ +10 bắt đầu có nguy cơ tụt cấp
+const DOWNGRADE_LEVEL = 10;
 
-const DOWNGRADE_CHANCE = 0.9;
-const DOWNGRADE_CHANCE_LV10 = 0.5;
-const DESTROY_CHANCE = 0.5;
+// Từ +25 bắt đầu có nguy cơ gãy
+const DESTROY_LEVEL = 25;
+
+// Tỉ lệ tụt cấp
+const DOWNGRADE_CHANCE = 0.35;
+const DOWNGRADE_CHANCE_LV20 = 0.55;
+const DOWNGRADE_CHANCE_LV25 = 0.70;
+
+// Tỉ lệ gãy ở +25 trở lên
+const DESTROY_CHANCE = 0.20;
 
 // ======================================================
 // RATE STONE
@@ -38,6 +45,15 @@ const DESTROY_CHANCE = 0.5;
 const RATE_STONE_ID = "da_rate";
 const RATE_STONE_BONUS = 5;
 const MAX_RATE_STONES = 5;
+
+// ======================================================
+// TIME
+// ======================================================
+
+const STONE_SELECT_TIME = 30000;
+const CONFIRM_TIME = 30000;
+const INSURANCE_TIME = 20000;
+const UPGRADE_COUNTDOWN = 3;
 
 // ======================================================
 // STYLE
@@ -72,6 +88,7 @@ const BLESSINGS = [
     "🎀 Hãy ngẩng cao đầu! Vị thần của Fontaine đang chúc phúc cho bạn.",
 
     "🌊 Dòng nước đã chọn bạn cho màn trình diễn hôm nay."
+
 ];
 
 function getBlessing() {
@@ -88,19 +105,28 @@ function getBlessing() {
 // UPGRADE COST
 // ======================================================
 
-function getUpgradeCost(
-    base,
-    level
-) {
+function getUpgradeCost(base, level) {
 
-    return Math.floor(
-        (
-            Number(
-                base.price
-            ) || 0
-        ) *
-        (level + 1) *
-        0.5
+    const basePrice =
+        Number(base?.price) || 0;
+
+    /*
+     * Công thức:
+     *
+     * +0 → 50% giá gốc
+     * +1 → 100%
+     * +2 → 150%
+     * ...
+     * +29 → 1500%
+     */
+
+    return Math.max(
+        1,
+        Math.floor(
+            basePrice *
+            (level + 1) *
+            0.5
+        )
     );
 }
 
@@ -110,19 +136,37 @@ function getUpgradeCost(
 
 function getSuccessRate(level) {
 
-    const rate =
+    const configRate =
         upgrade?.success?.[level];
 
     if (
-        rate !== undefined
+        configRate !== undefined
     ) {
 
-        return Number(rate);
+        return Math.max(
+            5,
+            Math.min(
+                100,
+                Number(configRate)
+            )
+        );
     }
+
+    /*
+     * Fallback 30 cấp:
+     *
+     * +0  = 100%
+     * +5  = 85%
+     * +10 = 70%
+     * +15 = 55%
+     * +20 = 40%
+     * +25 = 25%
+     * +29 = 13%
+     */
 
     return Math.max(
         10,
-        100 - level * 5
+        100 - level * 3
     );
 }
 
@@ -177,18 +221,9 @@ function getRateStoneCount(user) {
     return Math.max(
         0,
         Number(
-            user?.items?.[
-                RATE_STONE_ID
-            ] ||
-
-            user?.inventory?.[
-                RATE_STONE_ID
-            ] ||
-
-            user?.[
-                RATE_STONE_ID
-            ] ||
-
+            user?.items?.[RATE_STONE_ID] ??
+            user?.inventory?.[RATE_STONE_ID] ??
+            user?.[RATE_STONE_ID] ??
             0
         )
     );
@@ -230,7 +265,8 @@ function removeRateStones(
                     user.items[
                         RATE_STONE_ID
                     ]
-                ) - amount
+                ) -
+                amount
             );
 
         return;
@@ -256,7 +292,8 @@ function removeRateStones(
                     user.inventory[
                         RATE_STONE_ID
                     ]
-                ) - amount
+                ) -
+                amount
             );
 
         return;
@@ -271,7 +308,8 @@ function removeRateStones(
                 user[
                     RATE_STONE_ID
                 ] || 0
-            ) - amount
+            ) -
+            amount
         );
 }
 
@@ -285,9 +323,15 @@ function normalizeRod(
 ) {
 
     rod.level =
-        Number(
-            rod.level
-        ) || 0;
+        Math.max(
+            0,
+            Math.min(
+                MAX_LEVEL,
+                Number(
+                    rod.level
+                ) || 0
+            )
+        );
 
     rod.luck =
         Number(
@@ -315,11 +359,9 @@ function normalizeRod(
         Number(
             rod.maxUses
         ) ||
-
         Number(
             base.uses
         ) ||
-
         1;
 
     rod.uses =
@@ -365,6 +407,7 @@ function rodText(
         `🍀 Luck **${formatLuck(
             rod.luck
         )}**`
+
     );
 }
 
@@ -451,6 +494,393 @@ function createRateStoneButtons(
 }
 
 // ======================================================
+// CONFIRM BUTTONS
+// ======================================================
+
+function createConfirmButtons(
+    ownerID
+) {
+
+    return [
+
+        new ActionRowBuilder()
+            .addComponents(
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `upgrade_confirm_${ownerID}`
+                    )
+
+                    .setLabel(
+                        "Xác nhận nâng cấp"
+                    )
+
+                    .setEmoji(
+                        "✅"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Success
+                    ),
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `upgrade_cancel_${ownerID}`
+                    )
+
+                    .setLabel(
+                        "Hủy"
+                    )
+
+                    .setEmoji(
+                        "❌"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Danger
+                    )
+
+            )
+
+    ];
+}
+
+// ======================================================
+// INSURANCE BUTTONS
+// ======================================================
+
+function createInsuranceButtons(
+    ownerID,
+    insuranceCount
+) {
+
+    return [
+
+        new ActionRowBuilder()
+            .addComponents(
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `upgrade_insurance_yes_${ownerID}`
+                    )
+
+                    .setLabel(
+                        `Dùng bảo hiểm (${insuranceCount})`
+                    )
+
+                    .setEmoji(
+                        "🎫"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Success
+                    ),
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `upgrade_insurance_no_${ownerID}`
+                    )
+
+                    .setLabel(
+                        "Không dùng"
+                    )
+
+                    .setEmoji(
+                        "⚔️"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Primary
+                    ),
+
+                new ButtonBuilder()
+
+                    .setCustomId(
+                        `upgrade_insurance_cancel_${ownerID}`
+                    )
+
+                    .setLabel(
+                        "Hủy"
+                    )
+
+                    .setEmoji(
+                        "❌"
+                    )
+
+                    .setStyle(
+                        ButtonStyle.Danger
+                    )
+
+            )
+
+    ];
+}
+
+// ======================================================
+// FAILURE RISK
+// ======================================================
+
+function getFailureRisk(
+    level
+) {
+
+    if (
+        level < DOWNGRADE_LEVEL
+    ) {
+
+        return {
+            downgrade: 0,
+            destroy: 0
+        };
+    }
+
+    if (
+        level < 20
+    ) {
+
+        return {
+            downgrade:
+                DOWNGRADE_CHANCE,
+            destroy:
+                0
+        };
+    }
+
+    if (
+        level < DESTROY_LEVEL
+    ) {
+
+        return {
+            downgrade:
+                DOWNGRADE_CHANCE_LV20,
+            destroy:
+                0
+        };
+    }
+
+    return {
+        downgrade:
+            DOWNGRADE_CHANCE_LV25,
+        destroy:
+            DESTROY_CHANCE
+    };
+}
+
+// ======================================================
+// RISK TEXT
+// ======================================================
+
+function getRiskText(
+    risk
+) {
+
+    if (
+        risk.downgrade <= 0 &&
+        risk.destroy <= 0
+    ) {
+
+        return (
+            `🛡️ Thất bại: **Không mất cấp**`
+        );
+    }
+
+    let text = "";
+
+    if (
+        risk.downgrade > 0
+    ) {
+
+        text +=
+
+            `⬇️ Giảm cấp: **${formatRate(
+                risk.downgrade * 100
+            )}%**\n`;
+    }
+
+    if (
+        risk.destroy > 0
+    ) {
+
+        text +=
+
+            `💥 Gãy cần: **${formatRate(
+                risk.destroy * 100
+            )}%**\n`;
+    }
+
+    return text.trim();
+}
+
+// ======================================================
+// CANCEL EMBED
+// ======================================================
+
+function createCancelEmbed(
+    reason = "Bạn đã hủy quá trình cường hóa."
+) {
+
+    return new EmbedBuilder()
+
+        .setColor(
+            "#ff6b81"
+        )
+
+        .setTitle(
+            "❌ `UPGRADE CANCELLED`"
+        )
+
+        .setDescription(
+
+            `${DIVIDER}\n\n` +
+
+            `${reason}\n\n` +
+
+            `💰 Tiền: **Không bị trừ**\n` +
+
+            `🪨 Đá: **Không bị sử dụng**\n` +
+
+            `🎫 Bảo hiểm: **Không bị sử dụng**\n\n` +
+
+            `✦ Không có tài nguyên nào bị mất.\n\n` +
+
+            `${DIVIDER}`
+
+        )
+
+        .setFooter(
+            FOOTER
+        );
+}
+
+// ======================================================
+// CONFIRM EMBED
+// ======================================================
+
+function createConfirmEmbed(
+    base,
+    rod,
+    price,
+    baseSuccessRate,
+    selectedStones,
+    finalSuccessRate,
+    stoneBonus,
+    user,
+    risk,
+    remainingSeconds
+) {
+
+    const nextLevel =
+        rod.level + 1;
+
+    const balance =
+        Number(
+            user.money || 0
+        );
+
+    const afterMoney =
+        balance -
+        price;
+
+    return new EmbedBuilder()
+
+        .setColor(
+            "#ffd166"
+        )
+
+        .setTitle(
+            "⚠️ `XÁC NHẬN CƯỜNG HÓA`"
+        )
+
+        .setDescription(
+
+            `${DIVIDER}\n\n` +
+
+            rodText(
+                base,
+                rod
+            ) +
+
+            `\n\n` +
+
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+
+            `📈 **THÔNG TIN NÂNG CẤP**\n\n` +
+
+            `🎣 Cấp: **+${rod.level} → +${nextLevel}**\n` +
+
+            `🍀 Luck hiện tại: **${formatLuck(
+                rod.luck
+            )}**\n\n` +
+
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+
+            `💰 **CHI PHÍ**\n\n` +
+
+            `💸 Giá nâng cấp: **${formatMoney(
+                price
+            )} ${emoji.money}**\n` +
+
+            `💰 Số dư hiện tại: **${formatMoney(
+                balance
+            )} ${emoji.money}**\n` +
+
+            `💳 Số dư sau nâng: **${formatMoney(
+                afterMoney
+            )} ${emoji.money}**\n\n` +
+
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+
+            `🎲 **TỈ LỆ**\n\n` +
+
+            `🎯 Tỉ lệ gốc: **${formatRate(
+                baseSuccessRate
+            )}%**\n` +
+
+            `🪨 Đá sử dụng: **${selectedStones}**\n` +
+
+            `📈 Bonus đá: **+${formatRate(
+                stoneBonus
+            )}%**\n` +
+
+            `✨ Tỉ lệ cuối: **${formatRate(
+                finalSuccessRate
+            )}%**\n\n` +
+
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+
+            `⚠️ **RỦI RO**\n\n` +
+
+            `${getRiskText(
+                risk
+            )}\n\n` +
+
+            `🎫 Bảo hiểm hiện có: **${Number(
+                user.insurance || 0
+            )} vé**\n\n` +
+
+            `━━━━━━━━━━━━━━━━━━━━\n\n` +
+
+            `⏳ Tự động hủy sau: **${remainingSeconds} giây**\n\n` +
+
+            `⚠️ **Tiền và đá chỉ bị trừ sau khi bạn xác nhận.**\n\n` +
+
+            `Hãy kiểm tra kỹ thông tin trước khi tiếp tục.\n\n` +
+
+            `${DIVIDER}`
+
+        )
+
+        .setFooter({
+            text:
+                `${FOOTER.text} · Xác nhận để tiếp tục`
+        });
+}
+
+// ======================================================
 // MODULE
 // ======================================================
 
@@ -486,14 +916,9 @@ module.exports = {
             });
         }
 
-        user.can ||=
-            {};
-
-        user.rodData ||=
-            {};
-
-        user.items ||=
-            {};
+        user.can ||= {};
+        user.rodData ||= {};
+        user.items ||= {};
 
         // ==================================================
         // CURRENT ROD
@@ -664,7 +1089,7 @@ module.exports = {
                         )
 
                         .setTitle(
-                            "✨ `MAX LEVEL`"
+                            "👑 `MAX LEVEL`"
                         )
 
                         .setDescription(
@@ -678,9 +1103,9 @@ module.exports = {
 
                             `\n\n` +
 
-                            `👑 Cần câu đã đạt cấp tối đa **+${MAX_LEVEL}**.\n` +
+                            `✨ Cần câu đã đạt cấp tối đa **+${MAX_LEVEL}**.\n` +
 
-                            `✨ Không thể cường hóa thêm.`
+                            `👑 Không thể cường hóa thêm.`
 
                         )
 
@@ -709,13 +1134,16 @@ module.exports = {
             );
 
         // ==================================================
-        // MONEY
+        // MONEY CHECK
         // ==================================================
 
-        if (
+        const currentMoney =
             Number(
                 user.money || 0
-            ) <
+            );
+
+        if (
+            currentMoney <
             price
         ) {
 
@@ -744,20 +1172,20 @@ module.exports = {
 
                             `\n\n` +
 
-                            `💸 Chi phí: **${formatMoney(
+                            `💸 Giá nâng cấp: **${formatMoney(
                                 price
                             )} ${emoji.money}**\n` +
 
                             `💰 Số dư: **${formatMoney(
-                                user.money || 0
+                                currentMoney
                             )} ${emoji.money}**\n` +
 
-                            `❌ Thiếu: **${formatMoney(
+                            `❌ Còn thiếu: **${formatMoney(
                                 price -
-                                Number(
-                                    user.money || 0
-                                )
-                            )} ${emoji.money}**`
+                                currentMoney
+                            )} ${emoji.money}**\n\n` +
+
+                            `✦ Bạn chưa mất bất kỳ tài nguyên nào.`
 
                         )
 
@@ -791,7 +1219,7 @@ module.exports = {
                         )
 
                         .setTitle(
-                            "🪨 `RATE STONE`"
+                            "🪨 `CHỌN RATE STONE`"
                         )
 
                         .setDescription(
@@ -805,6 +1233,14 @@ module.exports = {
 
                             `\n\n` +
 
+                            `💰 Giá nâng cấp: **${formatMoney(
+                                price
+                            )} ${emoji.money}**\n` +
+
+                            `💰 Số dư: **${formatMoney(
+                                currentMoney
+                            )} ${emoji.money}**\n\n` +
+
                             `🎲 Tỉ lệ gốc: **${formatRate(
                                 baseSuccessRate
                             )}%**\n` +
@@ -815,7 +1251,11 @@ module.exports = {
 
                             `📦 Tối đa: **${MAX_RATE_STONES} đá**\n\n` +
 
-                            `✦ Chọn số đá muốn sử dụng.\n\n` +
+                            `✦ Chọn số đá muốn sử dụng.\n` +
+
+                            `⏳ Thời gian lựa chọn: **30 giây**\n\n` +
+
+                            `⚠️ **Chưa có tiền hoặc đá nào bị trừ.**\n\n` +
 
                             `${DIVIDER}`
 
@@ -839,7 +1279,8 @@ module.exports = {
         // WAIT STONE
         // ==================================================
 
-        let selectedStones = 0;
+        let selectedStones =
+            0;
 
         try {
 
@@ -857,7 +1298,7 @@ module.exports = {
                             ),
 
                     time:
-                        30000
+                        STONE_SELECT_TIME
 
                 });
 
@@ -874,15 +1315,9 @@ module.exports = {
                 );
 
             if (
-
                 selectedStones < 0 ||
-
-                selectedStones >
-                MAX_RATE_STONES ||
-
-                selectedStones >
-                currentStoneCount
-
+                selectedStones > MAX_RATE_STONES ||
+                selectedStones > currentStoneCount
             ) {
 
                 return interaction.update({
@@ -903,7 +1338,9 @@ module.exports = {
 
                                 `${DIVIDER}\n\n` +
 
-                                `Số lượng đá không hợp lệ.`
+                                `Số lượng đá không hợp lệ.\n\n` +
+
+                                `🪨 Đá hiện có: **${currentStoneCount}**`
 
                             )
 
@@ -918,6 +1355,10 @@ module.exports = {
                 });
             }
 
+            // ==================================================
+            // FINAL RATE
+            // ==================================================
+
             const stoneBonus =
                 selectedStones *
                 RATE_STONE_BONUS;
@@ -929,7 +1370,177 @@ module.exports = {
                     stoneBonus
                 );
 
+            const risk =
+                getFailureRisk(
+                    rod.level
+                );
+
+            // ==================================================
+            // CONFIRM COUNTDOWN
+            // ==================================================
+
+            let remainingSeconds =
+                30;
+
             await interaction.update({
+
+                embeds: [
+
+                    createConfirmEmbed(
+                        base,
+                        rod,
+                        price,
+                        baseSuccessRate,
+                        selectedStones,
+                        finalSuccessRate,
+                        stoneBonus,
+                        user,
+                        risk,
+                        remainingSeconds
+                    )
+
+                ],
+
+                components:
+                    createConfirmButtons(
+                        message.author.id
+                    )
+
+            });
+
+            const countdown =
+                setInterval(
+                    async () => {
+
+                        remainingSeconds--;
+
+                        if (
+                            remainingSeconds <= 0
+                        ) {
+
+                            clearInterval(
+                                countdown
+                            );
+
+                            return;
+                        }
+
+                        try {
+
+                            await stoneMessage.edit({
+
+                                embeds: [
+
+                                    createConfirmEmbed(
+                                        base,
+                                        rod,
+                                        price,
+                                        baseSuccessRate,
+                                        selectedStones,
+                                        finalSuccessRate,
+                                        stoneBonus,
+                                        user,
+                                        risk,
+                                        remainingSeconds
+                                    )
+
+                                ],
+
+                                components:
+                                    createConfirmButtons(
+                                        message.author.id
+                                    )
+
+                            });
+
+                        } catch {}
+
+                    },
+                    1000
+                );
+
+            // ==================================================
+            // WAIT CONFIRM
+            // ==================================================
+
+            let confirmInteraction;
+
+            try {
+
+                confirmInteraction =
+                    await stoneMessage.awaitMessageComponent({
+
+                        filter:
+                            buttonInteraction =>
+
+                                buttonInteraction.user.id ===
+                                message.author.id &&
+
+                                (
+                                    buttonInteraction.customId ===
+                                    `upgrade_confirm_${message.author.id}` ||
+
+                                    buttonInteraction.customId ===
+                                    `upgrade_cancel_${message.author.id}`
+                                ),
+
+                        time:
+                            CONFIRM_TIME
+
+                    });
+
+            } catch {
+
+                clearInterval(
+                    countdown
+                );
+
+                return stoneMessage.edit({
+
+                    embeds: [
+
+                        createCancelEmbed(
+                            "⏰ Bạn đã hết thời gian xác nhận nâng cấp."
+                        )
+
+                    ],
+
+                    components: []
+
+                });
+            }
+
+            clearInterval(
+                countdown
+            );
+
+            // ==================================================
+            // CANCEL
+            // ==================================================
+
+            if (
+                confirmInteraction.customId ===
+                `upgrade_cancel_${message.author.id}`
+            ) {
+
+                return confirmInteraction.update({
+
+                    embeds: [
+
+                        createCancelEmbed()
+
+                    ],
+
+                    components: []
+
+                });
+            }
+
+            // ==================================================
+            // CONFIRM
+            // ==================================================
+
+            await confirmInteraction.update({
 
                 embeds: [
 
@@ -940,69 +1551,30 @@ module.exports = {
                         )
 
                         .setTitle(
-                            "🎭 `THE SHOW BEGINS`"
+                            "🎭 `UPGRADE CONFIRMED`"
                         )
 
                         .setDescription(
 
                             `${DIVIDER}\n\n` +
 
-                            rodText(
-                                base,
-                                rod
-                            ) +
+                            `🎣 **${base.name}**\n\n` +
 
-                            `\n\n` +
+                            `📈 \`+${rod.level}\` → \`+${rod.level + 1}\`\n\n` +
 
-                            `🎲 Tỉ lệ: **${formatRate(
-                                finalSuccessRate
-                            )}%**\n` +
-
-                            `🪨 Đá sử dụng: **${selectedStones}**\n` +
-
-                            `💸 Chi phí: **${formatMoney(
+                            `💰 Giá: **${formatMoney(
                                 price
-                            )} ${emoji.money}**\n\n` +
+                            )} ${emoji.money}**\n` +
 
-                            `💧 *${getBlessing()}*\n\n` +
+                            `🪨 Đá: **${selectedStones}**\n` +
 
-                            `🎭 *Màn trình diễn sắp bắt đầu...*`
+                            `🎯 Tỉ lệ: **${formatRate(
+                                finalSuccessRate
+                            )}%**\n\n` +
 
-                        )
+                            `⏳ **Đã xác nhận!**\n` +
 
-                        .setFooter(
-                            FOOTER
-                        )
-
-                ],
-
-                components: []
-
-            });
-
-        } catch {
-
-            return stoneMessage.edit({
-
-                embeds: [
-
-                    new EmbedBuilder()
-
-                        .setColor(
-                            "#ffd166"
-                        )
-
-                        .setTitle(
-                            "⏰ `UPGRADE TIMEOUT`"
-                        )
-
-                        .setDescription(
-
-                            `${DIVIDER}\n\n` +
-
-                            `Bạn không chọn số đá trong **30 giây**.\n\n` +
-
-                            `✦ Hãy dùng lại lệnh \`upgrade\` để thử lại.`
+                            `Đang kiểm tra bảo hiểm...`
 
                         )
 
@@ -1015,44 +1587,33 @@ module.exports = {
                 components: []
 
             });
-        }
 
-        // ==================================================
-        // FINAL RATE
-        // ==================================================
+            // ==================================================
+            // INSURANCE
+            // ==================================================
 
-        const stoneBonus =
-            selectedStones *
-            RATE_STONE_BONUS;
+            let useInsurance =
+                false;
 
-        const finalSuccessRate =
-            Math.min(
-                100,
-                baseSuccessRate +
-                stoneBonus
-            );
+            const hasRisk =
+                risk.downgrade > 0 ||
+                risk.destroy > 0;
 
-        // ==================================================
-        // INSURANCE
-        // ==================================================
+            const insuranceCount =
+                Number(
+                    user.insurance || 0
+                );
 
-        const hasRisk =
-            rod.level >=
-            DOWNGRADE_LEVEL;
+            if (
+                hasRisk &&
+                insuranceCount > 0
+            ) {
 
-        let useInsurance = false;
+                let insuranceSeconds =
+                    20;
 
-        if (
-            hasRisk &&
-            Number(
-                user.insurance || 0
-            ) > 0
-        ) {
-
-            const insuranceMessage =
-                await message.channel.send({
-
-                    embeds: [
+                const insuranceEmbed =
+                    () =>
 
                         new EmbedBuilder()
 
@@ -1061,7 +1622,7 @@ module.exports = {
                             )
 
                             .setTitle(
-                                "🎫 `INSURANCE`"
+                                "🎫 `BẢO HIỂM`"
                             )
 
                             .setDescription(
@@ -1075,22 +1636,313 @@ module.exports = {
 
                                 `\n\n` +
 
-                                `⚠️ Cường hóa thất bại có thể làm cần giảm cấp.` +
+                                `⚠️ **Cường hóa này có rủi ro!**\n\n` +
 
-                                (
-                                    rod.level >=
-                                    DESTROY_LEVEL
-                                        ? `\n💥 Ở cấp cao còn có nguy cơ gãy.`
-                                        : ""
-                                ) +
+                                `${getRiskText(
+                                    risk
+                                )}\n\n` +
 
-                                `\n\n` +
+                                `🎫 Vé bảo hiểm hiện có: **${Number(
+                                    user.insurance || 0
+                                )}**\n\n` +
 
-                                `🎫 Vé bảo hiểm: **${user.insurance}**\n\n` +
+                                `🛡️ Nếu dùng bảo hiểm và upgrade thất bại gây tụt cấp/gãy, vé sẽ bảo vệ cần.\n\n` +
 
-                                `💡 Vé chỉ bị trừ khi thực sự bảo vệ cần.\n\n` +
+                                `⏳ Tự động chọn **Không dùng** sau: **${insuranceSeconds} giây**\n\n` +
 
-                                `✦ Bạn có **20 giây** để lựa chọn.`
+                                `${DIVIDER}`
+
+                            )
+
+                            .setFooter(
+                                FOOTER
+                            );
+
+                await stoneMessage.edit({
+
+                    embeds: [
+                        insuranceEmbed()
+                    ],
+
+                    components:
+                        createInsuranceButtons(
+                            message.author.id,
+                            insuranceCount
+                        )
+
+                });
+
+                const insuranceCountdown =
+                    setInterval(
+                        async () => {
+
+                            insuranceSeconds--;
+
+                            if (
+                                insuranceSeconds <= 0
+                            ) {
+
+                                clearInterval(
+                                    insuranceCountdown
+                                );
+
+                                return;
+                            }
+
+                            try {
+
+                                await stoneMessage.edit({
+
+                                    embeds: [
+                                        insuranceEmbed()
+                                    ],
+
+                                    components:
+                                        createInsuranceButtons(
+                                            message.author.id,
+                                            insuranceCount
+                                        )
+
+                                });
+
+                            } catch {}
+
+                        },
+                        1000
+                    );
+
+                try {
+
+                    const insuranceInteraction =
+                        await stoneMessage.awaitMessageComponent({
+
+                            filter:
+                                buttonInteraction =>
+
+                                    buttonInteraction.user.id ===
+                                    message.author.id &&
+
+                                    (
+                                        buttonInteraction.customId ===
+                                        `upgrade_insurance_yes_${message.author.id}` ||
+
+                                        buttonInteraction.customId ===
+                                        `upgrade_insurance_no_${message.author.id}` ||
+
+                                        buttonInteraction.customId ===
+                                        `upgrade_insurance_cancel_${message.author.id}`
+                                    ),
+
+                            time:
+                                INSURANCE_TIME
+
+                        });
+
+                    clearInterval(
+                        insuranceCountdown
+                    );
+
+                    // ==========================================
+                    // CANCEL INSURANCE
+                    // ==========================================
+
+                    if (
+                        insuranceInteraction.customId ===
+                        `upgrade_insurance_cancel_${message.author.id}`
+                    ) {
+
+                        return insuranceInteraction.update({
+
+                            embeds: [
+
+                                createCancelEmbed(
+                                    "Bạn đã hủy quá trình cường hóa ở bước bảo hiểm."
+                                )
+
+                            ],
+
+                            components: []
+
+                        });
+                    }
+
+                    // ==========================================
+                    // USE INSURANCE
+                    // ==========================================
+
+                    if (
+                        insuranceInteraction.customId ===
+                        `upgrade_insurance_yes_${message.author.id}`
+                    ) {
+
+                        useInsurance =
+                            true;
+                    }
+
+                    // ==========================================
+                    // NO INSURANCE
+                    // ==========================================
+
+                    await insuranceInteraction.update({
+
+                        embeds: [
+
+                            new EmbedBuilder()
+
+                                .setColor(
+                                    useInsurance
+                                        ? "#66ccff"
+                                        : "#ffcc66"
+                                )
+
+                                .setTitle(
+                                    useInsurance
+                                        ? "🎫 `INSURANCE READY`"
+                                        : "⚔️ `NO INSURANCE`"
+                                )
+
+                                .setDescription(
+
+                                    `${DIVIDER}\n\n` +
+
+                                    (
+                                        useInsurance
+                                            ? `🎫 Vé bảo hiểm đã được chọn.\n\n`
+                                            : `⚔️ Bạn quyết định không dùng bảo hiểm.\n\n`
+                                    ) +
+
+                                    `🎣 **${base.name}**\n` +
+
+                                    `📈 \`+${rod.level}\` → \`+${rod.level + 1}\`\n` +
+
+                                    `💰 Giá: **${formatMoney(
+                                        price
+                                    )} ${emoji.money}**\n` +
+
+                                    `🪨 Đá: **${selectedStones}**\n` +
+
+                                    `🎯 Tỉ lệ: **${formatRate(
+                                        finalSuccessRate
+                                    )}%**\n\n` +
+
+                                    `⏳ Chuẩn bị cường hóa...`
+
+                                )
+
+                                .setFooter(
+                                    FOOTER
+                                )
+
+                        ],
+
+                        components: []
+
+                    });
+
+                } catch {
+
+                    clearInterval(
+                        insuranceCountdown
+                    );
+
+                    useInsurance =
+                        false;
+
+                    await stoneMessage.edit({
+
+                        embeds: [
+
+                            new EmbedBuilder()
+
+                                .setColor(
+                                    "#ffcc66"
+                                )
+
+                                .setTitle(
+                                    "⚔️ `NO INSURANCE`"
+                                )
+
+                                .setDescription(
+
+                                    `${DIVIDER}\n\n` +
+
+                                    `⏰ Bạn không chọn bảo hiểm trong thời gian quy định.\n\n` +
+
+                                    `⚔️ Hệ thống sẽ tiếp tục **không dùng bảo hiểm**.\n\n` +
+
+                                    `⏳ Chuẩn bị cường hóa...`
+
+                                )
+
+                                .setFooter(
+                                    FOOTER
+                                )
+
+                        ],
+
+                        components: []
+
+                    });
+                }
+
+            }
+
+            // ==================================================
+            // UPGRADE COUNTDOWN
+            // ==================================================
+
+            for (
+                let seconds =
+                    UPGRADE_COUNTDOWN;
+                seconds >= 1;
+                seconds--
+            ) {
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
+                await stoneMessage.edit({
+
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor(
+                                "#7ddcff"
+                            )
+
+                            .setTitle(
+                                `🎭 \`UPGRADE ${seconds}\``
+                            )
+
+                            .setDescription(
+
+                                `${DIVIDER}\n\n` +
+
+                                `🎣 **${base.name}**\n\n` +
+
+                                `📈 \`+${rod.level}\` → \`+${rod.level + 1}\`\n` +
+
+                                `💰 Giá: **${formatMoney(
+                                    price
+                                )} ${emoji.money}**\n` +
+
+                                `🪨 Đá: **${selectedStones}**\n` +
+
+                                `🎯 Tỉ lệ: **${formatRate(
+                                    finalSuccessRate
+                                )}%**\n\n` +
+
+                                `━━━━━━━━━━━━━━━━━━━━\n\n` +
+
+                                `🎭 **${seconds}...**\n\n` +
+
+                                `💧 *${getBlessing()}*`
 
                             )
 
@@ -1100,560 +1952,551 @@ module.exports = {
 
                     ],
 
-                    components: [
-
-                        new ActionRowBuilder()
-                            .addComponents(
-
-                                new ButtonBuilder()
-
-                                    .setCustomId(
-                                        `upgrade_yes_${message.author.id}`
-                                    )
-
-                                    .setLabel(
-                                        `Dùng vé (${user.insurance})`
-                                    )
-
-                                    .setEmoji(
-                                        "🎫"
-                                    )
-
-                                    .setStyle(
-                                        ButtonStyle.Success
-                                    ),
-
-                                new ButtonBuilder()
-
-                                    .setCustomId(
-                                        `upgrade_no_${message.author.id}`
-                                    )
-
-                                    .setLabel(
-                                        "Không dùng"
-                                    )
-
-                                    .setEmoji(
-                                        "❌"
-                                    )
-
-                                    .setStyle(
-                                        ButtonStyle.Secondary
-                                    )
-
-                            )
-
-                    ]
+                    components: []
 
                 });
+            }
 
-            useInsurance =
-                await new Promise(
-                    resolve => {
+            // ==================================================
+            // RE-CHECK MONEY
+            // ==================================================
 
-                        const collector =
-                            insuranceMessage
-                                .createMessageComponentCollector({
-
-                                    time:
-                                        20000,
-
-                                    max:
-                                        1
-
-                                });
-
-                        collector.on(
-                            "collect",
-                            async interaction => {
-
-                                if (
-                                    interaction.user.id !==
-                                    message.author.id
-                                ) {
-
-                                    return interaction.reply({
-
-                                        content:
-                                            "❌ Đây không phải bảng nâng cấp của bạn.",
-
-                                        ephemeral:
-                                            true
-
-                                    });
-                                }
-
-                                await interaction.deferUpdate();
-
-                                resolve(
-
-                                    interaction.customId ===
-                                    `upgrade_yes_${message.author.id}`
-
-                                );
-                            }
-                        );
-
-                        collector.on(
-                            "end",
-                            collected => {
-
-                                if (
-                                    collected.size === 0
-                                ) {
-
-                                    resolve(
-                                        false
-                                    );
-                                }
-                            }
-                        );
-                    }
-                );
-
-            try {
-
-                await insuranceMessage.delete();
-
-            } catch {}
-
-        }
-
-        // ==================================================
-        // OLD DATA
-        // ==================================================
-
-        const startLevel =
-            rod.level;
-
-        const startLuck =
-            rod.luck;
-
-        const startUses =
-            rod.uses;
-
-        const startMaxUses =
-            rod.maxUses;
-
-        // ==================================================
-        // PAY
-        // ==================================================
-
-        user.money =
-            Number(
-                user.money || 0
-            ) -
-            price;
-
-        // ==================================================
-        // REMOVE STONES
-        // ==================================================
-
-        if (
-            selectedStones > 0
-        ) {
-
-            removeRateStones(
-                user,
-                selectedStones
-            );
-        }
-
-        // ==================================================
-        // RANDOM
-        // ==================================================
-
-        const roll =
-            Math.random() *
-            100;
-
-        const success =
-            roll <
-            finalSuccessRate;
-
-        let resultText =
-            "";
-
-        let color =
-            "#ffcc66";
-
-        // ==================================================
-        // SUCCESS
-        // ==================================================
-
-        if (success) {
-
-            rod.level =
-                Math.min(
-                    MAX_LEVEL,
-                    rod.level + 1
-                );
-
-            const luckPerLevel =
+            const latestMoney =
                 Number(
-                    upgrade?.luckPerLevel
+                    user.money || 0
                 );
-
-            const luckIncrease =
-                Number.isFinite(
-                    luckPerLevel
-                )
-                    ? luckPerLevel
-                    : 0.1;
-
-            rod.luck =
-                Number(
-                    rod.luck
-                ) +
-                luckIncrease;
-
-            rod.luck =
-                Math.round(
-                    rod.luck * 10
-                ) / 10;
-
-            const title =
-                rodTitles?.[
-                    rod.level
-                ];
-
-            color =
-                "#8affb2";
-
-            resultText =
-
-                `✨ **Cường hóa thành công!**\n\n` +
-
-                `\`+${startLevel}\` → \`+${rod.level}\`\n` +
-
-                `🍀 Luck ${formatLuck(
-                    startLuck
-                )} → **${formatLuck(
-                    rod.luck
-                )}**` +
-
-                (
-                    title
-                        ? `\n👑 ${title}`
-                        : ""
-                );
-
-        }
-
-        // ==================================================
-        // FAIL
-        // ==================================================
-
-        else {
-
-            let downgrade =
-                false;
-
-            let destroy =
-                false;
-
-            // ==============================================
-            // LEVEL 10+
-            // ==============================================
 
             if (
-                rod.level >=
-                DESTROY_LEVEL
+                latestMoney <
+                price
             ) {
 
-                const wearRatio =
-                    Math.max(
-                        0,
-                        Math.min(
-                            1,
-                            1 -
-                            (
-                                rod.uses /
-                                rod.maxUses
+                return stoneMessage.edit({
+
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor(
+                                "#ff6b81"
                             )
-                        )
+
+                            .setTitle(
+                                "❌ `UPGRADE FAILED`"
+                            )
+
+                            .setDescription(
+
+                                `${DIVIDER}\n\n` +
+
+                                `Số dư của bạn không còn đủ để thực hiện nâng cấp.\n\n` +
+
+                                `💸 Giá: **${formatMoney(
+                                    price
+                                )} ${emoji.money}**\n` +
+
+                                `💰 Số dư: **${formatMoney(
+                                    latestMoney
+                                )} ${emoji.money}**\n\n` +
+
+                                `🪨 Đá chưa bị trừ.\n` +
+
+                                `💰 Tiền chưa bị trừ.\n\n` +
+
+                                `✦ Hãy thử lại.`
+
+                            )
+
+                            .setFooter(
+                                FOOTER
+                            )
+
+                    ],
+
+                    components: []
+
+                });
+            }
+
+            // ==================================================
+            // CHECK STONE AGAIN
+            // ==================================================
+
+            const latestStoneCount =
+                getRateStoneCount(
+                    user
+                );
+
+            if (
+                selectedStones >
+                latestStoneCount
+            ) {
+
+                return stoneMessage.edit({
+
+                    embeds: [
+
+                        new EmbedBuilder()
+
+                            .setColor(
+                                "#ff6b81"
+                            )
+
+                            .setTitle(
+                                "❌ `STONE ERROR`"
+                            )
+
+                            .setDescription(
+
+                                `${DIVIDER}\n\n` +
+
+                                `Số đá của bạn không còn đủ để thực hiện nâng cấp.\n\n` +
+
+                                `🪨 Cần: **${selectedStones}**\n` +
+
+                                `🪨 Hiện có: **${latestStoneCount}**\n\n` +
+
+                                `💰 Tiền chưa bị trừ.\n` +
+
+                                `🪨 Đá chưa bị trừ.`
+
+                            )
+
+                            .setFooter(
+                                FOOTER
+                            )
+
+                    ],
+
+                    components: []
+
+                });
+            }
+
+            // ==================================================
+            // PAY
+            // ==================================================
+
+            user.money =
+                latestMoney -
+                price;
+
+            // ==================================================
+            // REMOVE STONES
+            // ==================================================
+
+            if (
+                selectedStones > 0
+            ) {
+
+                removeRateStones(
+                    user,
+                    selectedStones
+                );
+            }
+
+            // ==================================================
+            // ROLL
+            // ==================================================
+
+            const roll =
+                Math.random() *
+                100;
+
+            const success =
+                roll <
+                finalSuccessRate;
+
+            let resultText =
+                "";
+
+            let color =
+                "#ffcc66";
+
+            // ==================================================
+            // SUCCESS
+            // ==================================================
+
+            if (
+                success
+            ) {
+
+                const startLevel =
+                    rod.level;
+
+                const startLuck =
+                    rod.luck;
+
+                rod.level =
+                    Math.min(
+                        MAX_LEVEL,
+                        rod.level + 1
                     );
 
-                const downgradeChance =
-                    DOWNGRADE_CHANCE_LV10 +
-                    (
-                        1 -
-                        DOWNGRADE_CHANCE_LV10
-                    ) *
-                    wearRatio;
+                const luckPerLevel =
+                    Number(
+                        upgrade?.luckPerLevel
+                    );
 
-                downgrade =
-                    Math.random() <
-                    downgradeChance;
+                const luckIncrease =
+                    Number.isFinite(
+                        luckPerLevel
+                    )
+                        ? luckPerLevel
+                        : 0.1;
+
+                rod.luck =
+                    Number(
+                        rod.luck
+                    ) +
+                    luckIncrease;
+
+                rod.luck =
+                    Math.round(
+                        rod.luck * 10
+                    ) / 10;
+
+                const title =
+                    rodTitles?.[
+                        rod.level
+                    ];
+
+                color =
+                    "#8affb2";
+
+                resultText =
+
+                    `✨ **Cường hóa thành công!**\n\n` +
+
+                    `📈 \`+${startLevel}\` → \`+${rod.level}\`\n` +
+
+                    `🍀 Luck **${formatLuck(
+                        startLuck
+                    )}** → **${formatLuck(
+                        rod.luck
+                    )}**` +
+
+                    (
+                        title
+                            ? `\n👑 ${title}`
+                            : ""
+                    );
+
+            }
+
+            // ==================================================
+            // FAIL
+            // ==================================================
+
+            else {
+
+                let downgrade =
+                    false;
+
+                let destroy =
+                    false;
+
+                // ==============================================
+                // DESTROY ROLL
+                // ==============================================
 
                 if (
-                    rod.uses > 0
+                    risk.destroy > 0
                 ) {
 
                     destroy =
                         Math.random() <
-                        DESTROY_CHANCE;
+                        risk.destroy;
+                }
+
+                // ==============================================
+                // DOWNGRADE ROLL
+                // ==============================================
+
+                if (
+                    !destroy &&
+                    risk.downgrade > 0
+                ) {
+
+                    downgrade =
+                        Math.random() <
+                        risk.downgrade;
+                }
+
+                // ==============================================
+                // INSURANCE
+                // ==============================================
+
+                if (
+                    useInsurance &&
+                    (
+                        downgrade ||
+                        destroy
+                    )
+                ) {
+
+                    user.insurance =
+                        Math.max(
+                            0,
+                            Number(
+                                user.insurance ||
+                                0
+                            ) - 1
+                        );
+
+                    color =
+                        "#66ccff";
+
+                    resultText =
+
+                        `🎫 **Bảo hiểm đã bảo vệ cần!**\n\n` +
+
+                        `Cường hóa thất bại nhưng hậu quả đã được bảo vệ.\n\n` +
+
+                        `🎣 Cấp vẫn: **+${rod.level}**\n` +
+
+                        `🍀 Luck: **${formatLuck(
+                            rod.luck
+                        )}**\n\n` +
+
+                        `🎫 Vé còn lại: **${user.insurance}**`;
+
+                }
+
+                // ==============================================
+                // DESTROY
+                // ==============================================
+
+                else if (
+                    destroy
+                ) {
+
+                    rod.uses =
+                        0;
+
+                    rod.destroyed =
+                        true;
+
+                    color =
+                        "#ff4d67";
+
+                    resultText =
+
+                        `💥 **Cường hóa thất bại, cần đã bị gãy!**\n\n` +
+
+                        `🎣 Cấp: **+${rod.level}**\n` +
+
+                        `🍀 Luck: **${formatLuck(
+                            rod.luck
+                        )}**\n` +
+
+                        `⚖️ Độ bền: **0/${rod.maxUses}**\n\n` +
+
+                        `🛠️ Hãy sửa chữa cần để sử dụng lại.`;
+
+                }
+
+                // ==============================================
+                // DOWNGRADE
+                // ==============================================
+
+                else if (
+                    downgrade
+                ) {
+
+                    const oldLevel =
+                        rod.level;
+
+                    rod.level =
+                        Math.max(
+                            0,
+                            rod.level - 1
+                        );
+
+                    color =
+                        "#ff8888";
+
+                    resultText =
+
+                        `⬇️ **Cường hóa thất bại!**\n\n` +
+
+                        `📉 \`+${oldLevel}\` → \`+${rod.level}\`\n` +
+
+                        `🍀 Luck: **${formatLuck(
+                            rod.luck
+                        )}**\n\n` +
+
+                        `💸 Tiền và đá đã được sử dụng.\n` +
+
+                        `⚔️ Hãy thử lại khi bạn sẵn sàng.`;
+
+                }
+
+                // ==============================================
+                // NORMAL FAIL
+                // ==============================================
+
+                else {
+
+                    color =
+                        "#ffcc66";
+
+                    resultText =
+
+                        `❌ **Cường hóa thất bại.**\n\n` +
+
+                        `🎣 Cấp vẫn: **+${rod.level}**\n` +
+
+                        `🍀 Luck vẫn: **${formatLuck(
+                            rod.luck
+                        )}**\n\n` +
+
+                        `💸 Tiền và đá đã được sử dụng.\n\n` +
+
+                        `🎭 Màn trình diễn chưa kết thúc...`;
                 }
             }
 
-            // ==============================================
-            // LEVEL 5-9
-            // ==============================================
+            // ==================================================
+            // SAVE
+            // ==================================================
 
-            else if (
-                rod.level >=
-                DOWNGRADE_LEVEL
-            ) {
+            save();
 
-                downgrade =
-                    Math.random() <
-                    DOWNGRADE_CHANCE;
-            }
+            // ==================================================
+            // REMAINING STONES
+            // ==================================================
 
-            // ==============================================
-            // INSURANCE
-            // ==============================================
+            const remainingStones =
+                getRateStoneCount(
+                    user
+                );
 
-            if (
-                useInsurance &&
-                (
-                    downgrade ||
-                    destroy
-                )
-            ) {
+            // ==================================================
+            // FINAL EMBED
+            // ==================================================
 
-                user.insurance =
-                    Math.max(
-                        0,
-                        Number(
-                            user.insurance ||
-                            0
-                        ) - 1
-                    );
+            const finalEmbed =
+                new EmbedBuilder()
 
-                color =
-                    "#66ccff";
+                    .setColor(
+                        color
+                    )
 
-                resultText =
+                    .setAuthor({
 
-                    `🎫 **Bảo hiểm đã bảo vệ cần!**\n\n` +
+                        name:
+                            `${message.author.username} · Upgrade`,
 
-                    `Cường hóa thất bại nhưng:\n` +
+                        iconURL:
+                            message.author.displayAvatarURL({
 
-                    `✨ Cấp vẫn \`+${rod.level}\`\n` +
+                                extension:
+                                    "png",
 
-                    `🍀 Luck vẫn **${formatLuck(
-                        rod.luck
-                    )}**\n\n` +
+                                size:
+                                    128
 
-                    `🎫 Vé còn: **${user.insurance}**`;
+                            })
 
-            }
+                    })
 
-            // ==============================================
-            // DESTROY
-            // ==============================================
+                    .setTitle(
 
-            else if (
-                destroy
-            ) {
+                        success
+                            ? "✨ `UPGRADE SUCCESS`"
+                            : "🎭 `UPGRADE RESULT`"
 
-                rod.level =
-                    Math.max(
-                        0,
-                        rod.level - 1
-                    );
+                    )
 
-                rod.uses =
-                    0;
+                    .setDescription(
 
-                rod.destroyed =
-                    true;
+                        `${DIVIDER}\n\n` +
 
-                color =
-                    "#ff4d67";
+                        rodText(
+                            base,
+                            rod
+                        ) +
 
-                resultText =
+                        `\n\n` +
 
-                    `💥 **Cường hóa thất bại, cần bị gãy!**\n\n` +
+                        `━━━━━━━━━━━━━━━━━━━━\n` +
 
-                    `Cấp còn \`+${rod.level}\`\n` +
+                        `💰 **GIAO DỊCH**\n\n` +
 
-                    `🍀 Luck **${formatLuck(
-                        rod.luck
-                    )}**\n` +
+                        `💸 Đã trả: **${formatMoney(
+                            price
+                        )} ${emoji.money}**\n` +
 
-                    `⚖️ Độ bền \`0/${rod.maxUses}\`\n\n` +
+                        `💰 Số dư còn: **${formatMoney(
+                            user.money
+                        )} ${emoji.money}**\n` +
 
-                    `🛠️ Hãy sửa chữa cần để sử dụng lại.`;
+                        `🪨 Đá đã dùng: **${selectedStones}**\n` +
 
-            }
+                        `🪨 Đá còn: **${remainingStones}**\n\n` +
 
-            // ==============================================
-            // DOWNGRADE
-            // ==============================================
+                        `━━━━━━━━━━━━━━━━━━━━\n` +
 
-            else if (
-                downgrade
-            ) {
+                        `🎲 **TỈ LỆ**\n\n` +
 
-                rod.level =
-                    Math.max(
-                        0,
-                        rod.level - 1
-                    );
+                        `🎯 Tỉ lệ gốc: **${formatRate(
+                            baseSuccessRate
+                        )}%**\n` +
 
-                color =
-                    "#ff8888";
+                        `📈 Bonus đá: **+${formatRate(
+                            stoneBonus
+                        )}%**\n` +
 
-                resultText =
+                        `✨ Tỉ lệ cuối: **${formatRate(
+                            finalSuccessRate
+                        )}%**\n\n` +
 
-                    `⬇️ **Cường hóa thất bại, cần bị giảm cấp!**\n\n` +
+                        `━━━━━━━━━━━━━━━━━━━━\n\n` +
 
-                    `Cấp còn \`+${rod.level}\`\n` +
+                        `${resultText}\n\n` +
 
-                    `🍀 Luck **${formatLuck(
-                        rod.luck
-                    )}**\n\n` +
+                        `💧 *${getBlessing()}*\n\n` +
 
-                    `💸 Xu đã mất, hãy thử lại.`;
+                        `${DIVIDER}`
 
-            }
+                    )
 
-            // ==============================================
-            // NORMAL FAIL
-            // ==============================================
+                    .setFooter(
+                        FOOTER
+                    )
 
-            else {
+                    .setTimestamp();
 
-                color =
-                    "#ffcc66";
+            // ==================================================
+            // FINAL UPDATE
+            // ==================================================
 
-                resultText =
+            return stoneMessage.edit({
 
-                    `❌ **Cường hóa thất bại.**\n\n` +
+                embeds: [
+                    finalEmbed
+                ],
 
-                    `Cấp vẫn \`+${rod.level}\`\n` +
+                components: []
 
-                    `🍀 Luck vẫn **${formatLuck(
-                        rod.luck
-                    )}**\n\n` +
+            });
 
-                    `💸 Xu đã mất, hãy thử lại.`;
-            }
+        } catch {
+
+            return stoneMessage.edit({
+
+                embeds: [
+
+                    createCancelEmbed(
+                        "⏰ Bạn không chọn số đá trong 30 giây. Quá trình cường hóa đã tự động hủy."
+                    )
+
+                ],
+
+                components: []
+
+            });
         }
-
-        // ==================================================
-        // SAVE
-        // ==================================================
-
-        save();
-
-        // ==================================================
-        // REMAINING STONES
-        // ==================================================
-
-        const remainingStones =
-            getRateStoneCount(
-                user
-            );
-
-        // ==================================================
-        // FINAL EMBED
-        // ==================================================
-
-        const finalEmbed =
-            new EmbedBuilder()
-
-                .setColor(
-                    color
-                )
-
-                .setAuthor({
-
-                    name:
-                        `${message.author.username} · Upgrade`,
-
-                    iconURL:
-                        message.author.displayAvatarURL({
-
-                            extension:
-                                "png",
-
-                            size:
-                                128
-
-                        })
-
-                })
-
-                .setTitle(
-
-                    success
-                        ? "✨ `UPGRADE SUCCESS`"
-                        : "🎭 `UPGRADE RESULT`"
-
-                )
-
-                .setDescription(
-
-                    `${DIVIDER}\n\n` +
-
-                    rodText(
-                        base,
-                        rod
-                    ) +
-
-                    `\n\n` +
-
-                    `🎲 Tỉ lệ gốc: **${formatRate(
-                        baseSuccessRate
-                    )}%**\n` +
-
-                    `🪨 Đá sử dụng: **${selectedStones}**\n` +
-
-                    `📈 Bonus đá: **+${formatRate(
-                        stoneBonus
-                    )}%**\n` +
-
-                    `🎯 Tỉ lệ thực tế: **${formatRate(
-                        finalSuccessRate
-                    )}%**\n\n` +
-
-                    `${DIVIDER}\n\n` +
-
-                    `${resultText}\n\n` +
-
-                    `💧 *${getBlessing()}*\n\n` +
-
-                    `${DIVIDER}\n\n` +
-
-                    `🪨 Đá còn lại: **${remainingStones}**\n` +
-
-                    `💰 Số dư: **${formatMoney(
-                        user.money
-                    )} ${emoji.money}**`
-
-                )
-
-                .setFooter(
-                    FOOTER
-                )
-
-                .setTimestamp();
-
-        // ==================================================
-        // UPDATE MESSAGE
-        // ==================================================
-
-        return stoneMessage.edit({
-
-            embeds: [
-                finalEmbed
-            ],
-
-            components: []
-
-        });
     }
 };

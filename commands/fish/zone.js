@@ -69,7 +69,7 @@ function getZoneKey(zone) {
 }
 
 // ======================================================
-// LẤY VÙNG HIỆN TẠI
+// RANDOM VÙNG MỖI 4 GIỜ
 // ======================================================
 
 function getCurrentZone() {
@@ -77,7 +77,10 @@ function getCurrentZone() {
     const now =
         new Date();
 
-    // Chủ nhật → Volcano
+    // ==================================================
+    // CHỦ NHẬT → VOLCANO
+    // ==================================================
+
     if (
         now.getDay() === 0 &&
         fishingZones.volcano
@@ -85,6 +88,10 @@ function getCurrentZone() {
 
         return fishingZones.volcano;
     }
+
+    // ==================================================
+    // CÁC VÙNG BÌNH THƯỜNG
+    // ==================================================
 
     const zones = [
 
@@ -103,22 +110,48 @@ function getCurrentZone() {
     }
 
     /*
-     * Mỗi vùng hoạt động 6 giờ:
+     * Mỗi vùng hoạt động 4 giờ:
      *
-     * 00:00 → Tropical
-     * 06:00 → Cold
-     * 12:00 → Swamp
-     * 18:00 → Deep
+     * 00:00 → 04:00
+     * 04:00 → 08:00
+     * 08:00 → 12:00
+     * 12:00 → 16:00
+     * 16:00 → 20:00
+     * 20:00 → 00:00
+     *
+     * Random dựa trên ngày + khung giờ.
+     *
+     * Vì không dùng Math.random() trực tiếp
+     * nên bot restart cũng không làm đổi vùng.
      */
+
+    const slot =
+        Math.floor(
+            now.getHours() / 4
+        );
+
+    // Số ngày tính từ Unix Epoch
+    const day =
+        Math.floor(
+            now.getTime() / 86400000
+        );
+
+    // Seed cố định cho từng khung 4 giờ
+    let seed =
+        day * 6 +
+        slot;
+
+    // Pseudo-random
+    seed =
+        (seed * 9301 + 49297) % 233280;
 
     const index =
         Math.floor(
-            now.getHours() / 6
+            (seed / 233280) *
+            zones.length
         );
 
-    return zones[
-        index % zones.length
-    ];
+    return zones[index];
 }
 
 // ======================================================
@@ -130,24 +163,62 @@ function getNextChange() {
     const now =
         new Date();
 
+    const currentHour =
+        now.getHours();
+
+    /*
+     * Các mốc đổi vùng:
+     *
+     * 00:00
+     * 04:00
+     * 08:00
+     * 12:00
+     * 16:00
+     * 20:00
+     */
+
+    const nextHour =
+        (
+            Math.floor(
+                currentHour / 4
+            ) + 1
+        ) * 4;
+
     const next =
         new Date(now);
 
-    next.setHours(
-        (
-            Math.floor(
-                now.getHours() / 6
-            ) + 1
-        ) * 6,
-        0,
-        0,
-        0
-    );
+    // ==================================================
+    // QUA NGÀY MỚI
+    // ==================================================
 
-    /*
-     * Chủ nhật là vùng đặc biệt.
-     * Vẫn hiển thị thời gian đổi theo chu kỳ 6 giờ.
-     */
+    if (
+        nextHour >= 24
+    ) {
+
+        next.setDate(
+            next.getDate() + 1
+        );
+
+        next.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+    } else {
+
+        next.setHours(
+            nextHour,
+            0,
+            0,
+            0
+        );
+    }
+
+    // ==================================================
+    // TÍNH THỜI GIAN CÒN LẠI
+    // ==================================================
 
     const diff =
         Math.max(
