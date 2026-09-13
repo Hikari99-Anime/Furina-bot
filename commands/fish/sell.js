@@ -1860,10 +1860,58 @@ module.exports = {
         }
 
         // ==================================================
-        // !sell ID AMOUNT
+        // ARGUMENT
+        // ==================================================
+
+        /*
+         *
+         * !sell
+         * => bán toàn bộ
+         *
+         * !sell 10
+         * => bán 10 con
+         *
+         * !sell 12 10
+         * => bán 10 con cá ID 12
+         *
+         */
+
+        let fishId = null;
+
+        let amount = null;
+
+        // ==================================================
+        // !SELL ALL
+        // ==================================================
+
+        /*
+         * "all"/"tatca"/"het" đều hiểu là bán toàn bộ,
+         * giống hệt việc không truyền tham số gì.
+         */
+
+        const ALL_KEYWORDS = [
+            "all",
+            "tatca",
+            "het"
+        ];
+
+        const isAllKeyword =
+            args?.length === 1 &&
+            ALL_KEYWORDS.includes(
+                String(args[0]).toLowerCase()
+            );
+
+        // ==================================================
+        // !SELL ID AMOUNT
         // ==================================================
 
         if (
+            isAllKeyword
+        ) {
+
+            // fishId/amount giữ nguyên null → bán toàn bộ
+
+        } else if (
             args?.length >= 2
         ) {
 
